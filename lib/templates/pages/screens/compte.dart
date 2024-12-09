@@ -75,7 +75,7 @@ class _ComptePageState extends State<ComptePage> {
                             NotificatedCard(
                               title: "Burger",
                               titleSize: 20,
-                              subtitle: "Food",
+                              subtitle: "Nourriture",
                               icon: FontAwesomeIcons.burger,
                               iconBackgroundColor: Colors.yellow,
                               price: -18,

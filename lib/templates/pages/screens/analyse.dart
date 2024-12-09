@@ -32,7 +32,7 @@ class _AnalysePageState extends State<AnalysePage> {
           NotificatedCard(
             title: "Burger",
             titleSize: 20,
-            subtitle: "Food",
+            subtitle: "Nourriture",
             icon: FontAwesomeIcons.burger,
             iconBackgroundColor: Colors.yellow,
             price: -18,

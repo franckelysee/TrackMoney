@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trackmoney/utils/app_config.dart';
 
 class MyButton extends StatelessWidget {
@@ -43,10 +44,13 @@ class MyButton extends StatelessWidget {
 }
 
 class CircularButton extends StatefulWidget {
-  const CircularButton({super.key, required this.icon, this.iconColor, this.color});
+  const CircularButton(
+      {super.key, required this.icon, this.iconColor, this.color, this.radius, required this.onpressed});
   final IconData icon;
   final Color? iconColor;
   final Color? color;
+  final double? radius;
+  final VoidCallback? onpressed;
   @override
   State<CircularButton> createState() => _CircularButtonState();
 }
@@ -58,12 +62,15 @@ class _CircularButtonState extends State<CircularButton> {
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color:widget.color?? AppConfig.greenbuttonColor,
-        borderRadius: BorderRadius.circular(50),
+        color: widget.color ?? AppConfig.greenbuttonColor,
+        borderRadius: BorderRadius.circular(widget.radius ?? 50),
       ),
       child: IconButton(
-        onPressed: () {},
-        icon: Icon(widget.icon, color: widget.iconColor?? Colors.white,),
+        onPressed: widget.onpressed,
+        icon: Icon(
+          widget.icon,
+          color: widget.iconColor ?? Colors.white,
+        ),
         color: Colors.white,
       ),
     );

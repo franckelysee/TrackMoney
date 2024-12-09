@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/utils/app_config.dart';
 
@@ -87,7 +88,12 @@ class _CardComponentState extends State<CardComponent> {
             ],
           ),
         ),
-        CircularButton(icon: Icons.add, )
+        CircularButton(
+          icon: Icons.add,
+          onpressed: () {
+            Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+          },
+        )
       ],
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trackmoney/templates/pages/auth/auth.dart';
-import 'package:trackmoney/routes/init_routes.dart';  
+import 'package:trackmoney/routes/init_routes.dart';
+import 'package:trackmoney/utils/app_config.dart';  
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create:(context) => ThemeProvider(),child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -15,10 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: Provider.of<ThemeProvider>(context).themeData,
       onGenerateRoute: onGenerateRoute,
       home: const AuthPage(),
     );

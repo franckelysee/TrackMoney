@@ -17,8 +17,8 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      foregroundColor: AppConfig.primaryColor,
-      backgroundColor: Colors.white,
+      foregroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).cardColor,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

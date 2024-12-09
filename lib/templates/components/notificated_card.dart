@@ -43,7 +43,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Card(
-            color: widget.backgroundColor ?? Color(0xFFffffff),
+            color: widget.backgroundColor ?? Theme.of(context).cardColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -61,7 +61,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
                     decoration: BoxDecoration(
                       color: widget.iconBackgroundColor ?? Color(0xFF3273EC),
                       borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: Colors.white, width: 1),
+                      border: Border.all(color: Theme.of(context).cardColor, width: 1),
                     ),
                     child: Icon(
                       widget.icon,
@@ -79,7 +79,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
                       style: TextStyle(
                         fontSize: widget.titleSize,
                         fontWeight: FontWeight.w600,
-                        color: widget.textColor ?? Colors.black,
+                        color: widget.textColor ?? Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     SizedBox(

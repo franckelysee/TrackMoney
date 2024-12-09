@@ -16,7 +16,7 @@ class _DateselectorState extends State<Dateselector> {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width ,
-      decoration: BoxDecoration(color: AppConfig.bgColor),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor),
       child: Padding(
         padding: EdgeInsets.all(5),
         child: Row(
@@ -25,7 +25,7 @@ class _DateselectorState extends State<Dateselector> {
             Container(
               width: 30,
               height: 30,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color:Color(0xFFE2E8F0) ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color:Theme.of(context).colorScheme.surface ),
               child: Icon(Icons.chevron_left),
             ),
 
@@ -60,7 +60,7 @@ class _DateselectorState extends State<Dateselector> {
               height: 30,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  color: Color(0xFFE2E8F0)),
+                  color: Theme.of(context).colorScheme.surface),
               child: Icon(Icons.chevron_right),
             ),
           ],
