@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/templates/components/button.dart';
+import 'package:trackmoney/templates/components/customFormFields.dart';
+import 'package:trackmoney/templates/components/spendingModal.dart';
 import 'package:trackmoney/templates/header.dart';
 
 class AjouterPage extends StatefulWidget {
@@ -10,7 +12,29 @@ class AjouterPage extends StatefulWidget {
 }
 
 class _AjouterPageState extends State<AjouterPage> {
+  final _formkey = GlobalKey<FormState>();
+  final List<String> items = [
+    'Immobilier',
+    'Nourriture',
+    'Transport',
+    'Loisir',
+    'Voyage',
+    'Autre'
+  ];
+  final List<String> accountItems = [
+    'Compte Espece',
+    'Compte Bancaire',
+    'Compte Mobile'
+  ];
+
+  final TextEditingController priceController = TextEditingController();
+  final TextEditingController categoryController = TextEditingController();
+  final TextEditingController spendingNameController = TextEditingController();
   String dropdownValue = '';
+  String accountController = '';
+  String spendingTypeController = '';
+  final List<String> spendingTypeItems = ['Dépense', 'Recette'];
+  final timestamp = DateTime.timestamp();
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +43,9 @@ class _AjouterPageState extends State<AjouterPage> {
         preferredSize: Size.fromHeight(60),
         child: AppHeader(title: 'Ajouter une Depense'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-        child:  SizedBox(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width - 40,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -30,65 +54,147 @@ class _AjouterPageState extends State<AjouterPage> {
                 "USD",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButton<String>(
-                        hint: Text(
-                          "Selectionnez la Categorie de Dépense",
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        value: dropdownValue.isEmpty ? null : dropdownValue,
-                        icon: const Icon(Icons.arrow_drop_down),
-                        isExpanded: true,
-                        dropdownColor: Theme.of(context).cardColor,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            dropdownValue = newValue!;
-                          });
-                        },
-                        items: [
-                          DropdownMenuItem<String>(
-                            value: 'Immobilier',
-                            child: Text("Immobilier"),
-                          ),
-                          DropdownMenuItem<String>(
-                            value: 'Nourriture',
-                            child: Text("Nourriture"),
-                          ),
-                        ],
-                      ),
+              Form(
+                key: _formkey,
+                child: Column(
+                  children: [
+                    CustomDropdownButtonFormField(
+                      onChanged: (value) {
+                        spendingTypeController = value!;
+                      },
+                      items: spendingTypeItems,
+                      errorText: 'Selectionner le type ',
+                      hint: 'Selectionner le type ',
+                      isRequired: true,
                     ),
-                  ),
-                  SizedBox(
-                    width: 8,
-                  ),
-                  CircularButton(
-                    icon: Icons.add,
-                    radius: 10,
-                    onpressed: () {
-                      showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return  Center(
-                              child: ElevatedButton(
-                                child: Text('Close'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            );
-                          });
-                    },
-                  )
-                ],
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            child: CustomDropdownButtonFormField(
+                          items: items,
+                          onChanged: (value) {
+                            dropdownValue = value!;
+                          },
+                          errorText: 'Veiller Selectionner une Categorie',
+                          hint: 'Veiller Selectionner une Categorie',
+                          isRequired: true,
+                        )),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        CircularButton(
+                          color: Theme.of(context).colorScheme.primary,
+                          icon: Icons.add,
+                          radius: 10,
+                          onpressed: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return SingleChildScrollView(
+                                    child: CustomSpendingBottomModal(
+                                      spendingNameController: spendingNameController,
+                                      categoryController: categoryController,
+                                      
+                                    )
+                                  );
+                                });
+                          },
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    CustomDropdownButtonFormField(
+                      onChanged: (value) {
+                        accountController = value!;
+                      },
+                      items: accountItems,
+                      errorText: 'Veiller Selectionner un Compte',
+                      hint: 'Veiller Selectionner un Compte',
+                      isRequired: true,
+                    ),
+                    
+                    SizedBox(
+                      height: 16,
+                    ),
+                    CustomTextFormField(
+                      controller: priceController,
+                      keyboardType: TextInputType.numberWithOptions(),
+                      labelText: 'Entrer le montant',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Ce champ est obligatoire';
+                        }
+                        if (!RegExp(r'^[0-9]*\.?[0-9]+$').hasMatch(value)) {
+                          return 'Veiller saisir un montant valide';
+                        }
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
+                          return 'Veiller saisir un montant positif';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary),
+                          child: Text(
+                            'Ajouter',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.surface),
+                          ),
+                          onPressed: () {
+                            if (_formkey.currentState!.validate()) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Processing Data')),
+                              );
+                              // afficher les données du formulaire dans un SnackBar
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                        title: Text('Success'),
+                                        content: Text(
+                                            'price: ${priceController.text}'), // afficher ce qui a été saisi par l'utilisateur
+                                        actions: [
+                                          TextButton(
+                                            child: Text('OK'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: Text('Cancel'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ]);
+                                  });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Error')),
+                              );
+                            }
+                          }),
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
