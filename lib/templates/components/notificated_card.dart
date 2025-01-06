@@ -6,29 +6,35 @@ class NotificatedCard extends StatefulWidget {
       this.icon,
       required this.title,
       required this.titleSize,
-      required this.subtitle,
+      this.subtitle,
       this.subtitleSize,
+      this.trailing,
       this.backgroundColor,
       this.textColor,
       this.price,
       this.iconColor,
       this.image,
       this.iconBackgroundColor,
-      this.date
+      this.date,
+      this.onTap,
+      this.onLongPress
       }
     );
   final IconData? icon;
   final Color? iconColor;
   final Color? iconBackgroundColor;
   final String title;
+  final Widget? trailing;
   final double titleSize;
-  final String subtitle;
+  final String? subtitle;
   final double? subtitleSize;
   final Color? backgroundColor;
   final Color? textColor;
   final double? price;
   final Image? image;
   final int? date;
+  final void Function()? onTap;
+  final void Function()? onLongPress;
   @override
   State<NotificatedCard> createState() => _NotificatedCardState();
 }
@@ -36,10 +42,8 @@ class NotificatedCard extends StatefulWidget {
 class _NotificatedCardState extends State<NotificatedCard> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: () {
-          // Handle card tap
-        },
+    return InkWell(
+        onTap:widget.onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Card(
@@ -50,10 +54,10 @@ class _NotificatedCardState extends State<NotificatedCard> {
             shadowColor: Colors.grey.withOpacity(0.5),
             elevation: 2,
             child: Container(
-              width: MediaQuery.of(context).size.width - 40,
+              width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                 if (widget.icon != null)
                   Container(
                     width: 50,
@@ -71,29 +75,35 @@ class _NotificatedCardState extends State<NotificatedCard> {
                 SizedBox(
                   width: 10,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: TextStyle(
-                        fontSize: widget.titleSize,
-                        fontWeight: FontWeight.w600,
-                        color: widget.textColor ?? Theme.of(context).colorScheme.secondary,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        // overflow: TextOverflow.ellipsis,
+                        // softWrap: true,
+                        style: TextStyle(
+                          fontSize: widget.titleSize,
+                          fontWeight: FontWeight.w600,
+                          color: widget.textColor ?? Theme.of(context).colorScheme.secondary,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      widget.subtitle,
-                      style: TextStyle(
-                        fontSize: widget.subtitleSize ?? 14,
-                        color: widget.textColor ?? Color(0xFF727272),
+                      SizedBox(
+                        height: 5,
                       ),
-                    ),
-                  ],
+                      if(widget.subtitle != null)
+                      Text(
+                        widget.subtitle!,
+                        style: TextStyle(
+                          fontSize: widget.subtitleSize ?? 14,
+                          color: widget.textColor ?? Color(0xFF727272),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                if(widget.price !=null)
                 Spacer(),
                 Column(
                   children: [
@@ -108,6 +118,11 @@ class _NotificatedCardState extends State<NotificatedCard> {
                     if (widget.date != null)
                       Text("${widget.date}")
                   ],
+                ),
+                if (widget.trailing!= null)
+                Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: widget.trailing,
                 )
               ]),
             ),
