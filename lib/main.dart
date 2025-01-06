@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/pages/auth/auth.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/utils/app_config.dart';  
 
-void main() {
+void main() async{
+  await Hive.initFlutter(); // Initialisation de Hive
+  Hive.registerAdapter(NotificationModelAdapter()); // Enregistrer l'adaptateur
+  await Hive.openBox<NotificationModel>('notifications'); // ouvrir la boite
   runApp(ChangeNotifierProvider(create:(context) => ThemeProvider(),child: const MyApp()));
 }
 
