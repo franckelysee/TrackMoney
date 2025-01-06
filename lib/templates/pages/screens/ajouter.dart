@@ -26,15 +26,16 @@ class _AjouterPageState extends State<AjouterPage> {
     'Compte Bancaire',
     'Compte Mobile'
   ];
+  final List<String> spendingTypeItems = ['Dépense', 'Recette'];
 
   final TextEditingController priceController = TextEditingController();
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController spendingNameController = TextEditingController();
-  String dropdownValue = '';
+  String selectedCategory = 'Immobilier';
   String accountController = '';
   String spendingTypeController = '';
-  final List<String> spendingTypeItems = ['Dépense', 'Recette'];
   final timestamp = DateTime.timestamp();
+  bool showCategoryField = true;
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +60,13 @@ class _AjouterPageState extends State<AjouterPage> {
                 child: Column(
                   children: [
                     CustomDropdownButtonFormField(
+                      
                       onChanged: (value) {
                         spendingTypeController = value!;
+                        // mettre a jour la visibilité du champ categorie
+                        setState(() {
+                          showCategoryField =spendingTypeController == 'Dépense';
+                        });
                       },
                       items: spendingTypeItems,
                       errorText: 'Selectionner le type ',
@@ -70,40 +76,67 @@ class _AjouterPageState extends State<AjouterPage> {
                     SizedBox(
                       height: 10,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    if(showCategoryField) // Afficher le champ seulement si nécessaire
+                    Column(
                       children: [
-                        Expanded(
-                            child: CustomDropdownButtonFormField(
-                          items: items,
-                          onChanged: (value) {
-                            dropdownValue = value!;
+                         CustomTextFormField(
+                          controller: spendingNameController,
+                          labelText: 'Entrer le nom de la dépense',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Ce champ est obligatoire';
+                            }
+                            return null;
                           },
-                          errorText: 'Veiller Selectionner une Categorie',
-                          hint: 'Veiller Selectionner une Categorie',
-                          isRequired: true,
-                        )),
+                         ),
                         SizedBox(
-                          width: 8,
+                          height: 10,
                         ),
-                        CircularButton(
-                          color: Theme.of(context).colorScheme.primary,
-                          icon: Icons.add,
-                          radius: 10,
-                          onpressed: () {
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return SingleChildScrollView(
-                                    child: CustomSpendingBottomModal(
-                                      spendingNameController: spendingNameController,
-                                      categoryController: categoryController,
-                                      
-                                    )
-                                  );
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: CustomDropdownButtonFormField(
+                              initialValue: selectedCategory.isNotEmpty ? selectedCategory.toString() : null,
+                              items: items,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value!;
                                 });
-                          },
-                        )
+                              },
+                              errorText: 'Veiller Selectionner une Categorie de dépense',
+                              hint: 'Selectionner la Categorie de dépense',
+                              isRequired: true,
+                            )),
+                            SizedBox(
+                              width: 8,
+                            ),
+                            CircularButton(
+                              color: Theme.of(context).colorScheme.primary,
+                              icon: Icons.add,
+                              radius: 10,
+                              onpressed: () {
+                                showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return SingleChildScrollView(
+                                        child: CustomSpendingBottomModal(
+                                          spendingNameController: spendingNameController,
+                                          categoryController: categoryController,
+                                          onCategoryAdded: (newCategory){
+                                            setState(() {
+                                              items.add(newCategory);
+                                              selectedCategory = newCategory;
+                                            });
+                                          },
+                                          
+                                        )
+                                      );
+                                    });
+                              },
+                            )
+                          ],
+                        ),
                       ],
                     ),
                     SizedBox(
@@ -115,7 +148,7 @@ class _AjouterPageState extends State<AjouterPage> {
                       },
                       items: accountItems,
                       errorText: 'Veiller Selectionner un Compte',
-                      hint: 'Veiller Selectionner un Compte',
+                      hint: 'Selectionner un Compte',
                       isRequired: true,
                     ),
                     

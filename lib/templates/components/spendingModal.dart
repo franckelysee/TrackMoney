@@ -6,11 +6,13 @@ import 'package:trackmoney/templates/components/customFormFields.dart';
 class CustomSpendingBottomModal extends StatefulWidget {
   final TextEditingController categoryController;
   final TextEditingController spendingNameController;
+ final Function(String) onCategoryAdded; // Callback pour notifier le parent
 
   const CustomSpendingBottomModal({
     super.key,
     required this.categoryController,
     required this.spendingNameController,
+    required this.onCategoryAdded,
   });
   @override
   State<CustomSpendingBottomModal> createState() =>
@@ -107,10 +109,15 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Processing Data')),
                     );
-                    Navigator.pop(context);
                     // Optionnel: Afficher les données du formulaire dans un SnackBar
                     final spendingName = widget.spendingNameController.text;
                     final category = widget.categoryController.text;
+                    final newCategory = widget.categoryController.text;
+
+                    // appeller la fonction callback avec la nouvelle categorie
+                    widget.onCategoryAdded(newCategory);
+                    
+                    Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                           content: Text(

@@ -115,6 +115,7 @@ class CustomTextFormField extends StatelessWidget {
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle:  TextStyle(fontSize: 12),
         hintText: hintText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
