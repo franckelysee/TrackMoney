@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/models/divise_model.dart';
+import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/devise_component.dart';
+import 'package:trackmoney/templates/home.dart';
 import 'package:trackmoney/utils/app_config.dart';
 
 class DeviseSelector extends StatefulWidget {
@@ -12,7 +14,6 @@ class DeviseSelector extends StatefulWidget {
 }
 
 class _DeviseSelectorState extends State<DeviseSelector> {
-  
   int selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,8 @@ class _DeviseSelectorState extends State<DeviseSelector> {
               color: AppConfig.primaryColor,
               textColor: Colors.white,
               onPressed: () {
-                Navigator.pushNamed(context, "/home");
+                Navigator.pushAndRemoveUntil(context, CreateROute(HomePage()),
+                    (Route<dynamic> route) => false);
               }),
           const SizedBox(
             height: 20,

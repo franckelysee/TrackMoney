@@ -32,7 +32,16 @@ class _CustomDropdownButtonFormFieldState
     super.initState();
     selectedValue = widget.initialValue;
   }
-
+  @override
+  void didUpdateWidget(covariant CustomDropdownButtonFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue) {
+      setState(() {
+        selectedValue = widget.initialValue;
+      });
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return  SizedBox(
