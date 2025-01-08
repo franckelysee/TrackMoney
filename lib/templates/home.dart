@@ -24,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   late AjouterPage ajouterPage;
   late CategoryPage categoriePage;
   late NotificationPage notificationPage;
+
   @override
   void initState() {
     comptePage = ComptePage();
@@ -40,7 +41,8 @@ class _HomePageState extends State<HomePage> {
     ];
     super.initState();
   }
-
+  
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: CurvedNavigationBar(

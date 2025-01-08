@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/category_model.dart';
+import 'package:trackmoney/templates/components/color_selector.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
+import 'package:trackmoney/templates/components/icon_selector.dart';
 
 
 
 class CustomSpendingBottomModal extends StatefulWidget {
   final TextEditingController categoryController;
-  final TextEditingController spendingNameController;
  final Function(String) onCategoryAdded; // Callback pour notifier le parent
 
   const CustomSpendingBottomModal({
     super.key,
     required this.categoryController,
-    required this.spendingNameController,
     required this.onCategoryAdded,
   });
   @override
@@ -21,6 +23,11 @@ class CustomSpendingBottomModal extends StatefulWidget {
 
 class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
   final modalFormKey = GlobalKey<FormState>();
+  IconData? selectedIcon;
+  Color? selectedColor;
+  int? iconCode;
+  int? colorCode;
+  String? categoryName;
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +40,21 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Icon with GestureDetector
-            Container(
+            SizedBox(
               width: 150,
               height: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              child: GestureDetector(
-                onTap: () {
-                  // Handle card tap
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary ,
+                ),
+                onPressed: ()async {
+                  final icon = await IconSelector().showIconSelector(context);
+                  if (icon != null) {
+                    setState(() {
+                      selectedIcon = icon;
+                      iconCode = selectedIcon!.codePoint;
+                    });
+                  }
                 },
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -54,6 +66,7 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                     ),
                     Text(
                       "Ajouter une Icon",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -65,19 +78,38 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
             ),
             SizedBox(height: 16),
 
-            // Spending Name TextFormField
-            CustomTextFormField(
-              controller: widget.spendingNameController,
-              labelText: 'Entrer le nom de la dépense eg:Burger',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Ce champ est obligatoire';
-                }
-                return null;
-              },
-            ),
+            if (selectedIcon != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    color: selectedColor??Theme.of(context).colorScheme.primary,
+                    child: Icon(
+                      selectedIcon,
+                      size: 50,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final color = await ColorSelector().showColorSelector(context);
+                      if (color != null) {
+                        setState(() {
+                          selectedColor = color;
+                          colorCode = selectedColor!.value;
+                        });
+                      }
+                    }, 
+                    label: Text('Edit Color'),
+                    icon: Icon(Icons.edit,),
+                  )
+                ],
+              ),
             SizedBox(height: 16),
-
             // Category TextFormField
             CustomTextFormField(
               controller: widget.categoryController,
@@ -109,15 +141,23 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Processing Data')),
                     );
-                    final newCategory = widget.categoryController.text;
-                    widget.onCategoryAdded(newCategory);
+                    categoryName= widget.categoryController.text;
+                    widget.onCategoryAdded(categoryName!);
                     widget.categoryController.clear();
-                    widget.spendingNameController.clear();
 
+                    // Ajouter la catégorie a la base de données
+                    var category = CategoryModel(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      name: categoryName!,
+                      color: colorCode!,
+                      iconCode: iconCode!,
+                    );
+                    Database.addCategory(category);
+                  
                     Navigator.pop(context); // Fermer le modal après succès
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Catégorie "$newCategory" ajoutée avec succès !'),
+                        content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
                       ),
                     );
                   } else {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:trackmoney/utils/app_config.dart';
 
 class MyButton extends StatelessWidget {

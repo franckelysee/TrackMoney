@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackmoney/templates/components/chart.dart';
-import 'package:trackmoney/templates/components/dateSelector.dart';
+import 'package:trackmoney/templates/components/date_selector.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/header.dart';
 
@@ -66,7 +66,7 @@ class _AnalysePageState extends State<AnalysePage> {
             const SizedBox(height: 10),
 
             // Sélecteur de date
-            const Dateselector(),
+            const DateSelector(),
             const SizedBox(height: 10),
 
             // Sections des onglets

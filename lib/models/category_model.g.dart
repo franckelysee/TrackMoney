@@ -1,49 +1,43 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'transaction_model.dart';
+part of 'category_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
+class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 3;
 
   @override
-  TransactionModel read(BinaryReader reader) {
+  CategoryModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return TransactionModel(
-      id: fields[0] as String,
-      type: fields[1] as String,
-      name: fields[2] as String,
-      categoryId: fields[3] as String?,
-      accountId: fields[4] as String,
-      amount: fields[5] as double,
-      date: fields[6] as DateTime,
+    return CategoryModel(
+      id: fields[0] as dynamic,
+      name: fields[1] as dynamic,
+      color: fields[2] as dynamic,
+      iconCode: fields[3] as dynamic,
+      date: fields[4] as dynamic,
     );
   }
 
   @override
-  void write(BinaryWriter writer, TransactionModel obj) {
+  void write(BinaryWriter writer, CategoryModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.type)
-      ..writeByte(2)
       ..write(obj.name)
+      ..writeByte(2)
+      ..write(obj.color)
       ..writeByte(3)
-      ..write(obj.categoryId)
+      ..write(obj.iconCode)
       ..writeByte(4)
-      ..write(obj.accountId)
-      ..writeByte(5)
-      ..write(obj.amount)
-      ..writeByte(6)
       ..write(obj.date);
   }
 
@@ -53,7 +47,7 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TransactionModelAdapter &&
+      other is CategoryModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

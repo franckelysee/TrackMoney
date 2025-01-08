@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/category_card.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
-import 'package:trackmoney/templates/components/spendingModal.dart';
+import 'package:trackmoney/templates/components/spending_Modal.dart';
 import 'package:trackmoney/templates/header.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -19,7 +21,17 @@ class _CategoryPageState extends State<CategoryPage> {
       TextEditingController();
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController spendingNameController = TextEditingController();
+  List<CategoryModel> categories = [];
 
+  @override
+  void initState() {
+    super.initState();
+    loadCategories();
+  }
+  void loadCategories() async {
+    categories = await Database.getAllCategories();
+    setState(() {});
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +64,6 @@ class _CategoryPageState extends State<CategoryPage> {
                         builder: (BuildContext context) {
                           return SingleChildScrollView(
                             child: CustomSpendingBottomModal(
-                              spendingNameController: spendingNameController,
                               categoryController: categoryController,
                               onCategoryAdded: (newCategory) {
                                 // Implémentez la logique d'ajout ici
@@ -72,7 +83,12 @@ class _CategoryPageState extends State<CategoryPage> {
                 width: double.infinity,
                 color: Theme.of(context).cardColor,
                 padding: const EdgeInsets.all(8),
-                child: Column(
+                child: 
+                (categories.isEmpty)?
+                Center(
+                  child: Text('Aucune catégorie trouvée'),
+                ) :
+                Column(
                   children: [
                     const Text(
                       'Categories du mois',
@@ -83,13 +99,13 @@ class _CategoryPageState extends State<CategoryPage> {
                       height: 200,
                       child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: 5,
+                          itemCount: categories.length,
                           itemBuilder: (context, index) {
                             return CategoryCard(
                                 icon: Icons.home,
-                                category: 'Loyer',
+                                category: categories[index].name,
                                 onTap: () {
-                                  print('object');
+                                  // Implementez la logique de navigation ici
                                 },
                                 price: 658.00);
                           }),
@@ -103,15 +119,16 @@ class _CategoryPageState extends State<CategoryPage> {
                     Expanded(
                       
                       child: ListView.builder(
-                        itemCount: 10, // Nombre d'éléments dans la liste
+                        itemCount: categories.length, // Nombre d'éléments dans la liste
                         itemBuilder: (context, index) =>NotificatedCard(
-                            icon: Icons.home,
-                            title: 'Loyer',
+                            icon: categories[index].icon,
+                            iconBackgroundColor: categories[index].colorValue,
+                            title: categories[index].name,
                             titleSize: 25,
                             subtitle: 'Location',
 
                             onTap: () {
-                              print('Item $index tapé');
+                              // Implementez la logique de navigation ici
                             },
                             trailing: Container(
                               width: 40,

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:trackmoney/utils/app_config.dart';
 
 
-class Dateselector extends StatefulWidget {
-  const Dateselector({super.key});
+class DateSelector extends StatefulWidget {
+  const DateSelector({super.key});
 
   @override
-  State<Dateselector> createState() => _DateselectorState();
+  State<DateSelector> createState() => _DateSelectorState();
 }
 
-class _DateselectorState extends State<Dateselector> {
+class _DateSelectorState extends State<DateSelector> {
   DateTime selectedDate = DateTime.now();
 
   @override

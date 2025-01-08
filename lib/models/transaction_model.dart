@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'transaction_model.g.dart'; // Généré par build_runner pour Hive
 
-@HiveType(typeId: 0) // Spécifiez un type ID unique pour Hive
+@HiveType(typeId: 1) // Spécifiez un type ID unique pour Hive
 class TransactionModel extends HiveObject {
   @HiveField(0)
   String id;

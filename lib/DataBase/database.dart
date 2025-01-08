@@ -1,5 +1,7 @@
 // database.dart
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:trackmoney/models/account_model.dart';
+import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 
@@ -10,9 +12,17 @@ class Database {
     Hive.registerAdapter(NotificationModelAdapter()); // Enregistrer l'adaptateur
     await Hive.openBox<NotificationModel>('notifications'); // Ouvrir la boîte de notifications
 
-    // transaction (add)
+    // transaction (ajouter page)
     Hive.registerAdapter(TransactionModelAdapter());
     await Hive.openBox<TransactionModel>('transactions'); // Ouvrir la boîte de transactions
+
+    // category (categorypage)
+    Hive.registerAdapter(CategoryModelAdapter());
+    await Hive.openBox<CategoryModel>('categories'); // Ouvrir la boîte de categories
+
+    // compte (comptepage)
+    Hive.registerAdapter(AccountModelAdapter());
+    await Hive.openBox<AccountModel>('accounts'); // Ouvrir la boîte de comptes
   }
 
   // Vérifier si c'est la première ouverture de l'application
@@ -39,5 +49,47 @@ class Database {
   static Future<List<TransactionModel>> getAllTransactions() async {
     final box = await Hive.openBox<TransactionModel>('transactions');
     return box.values.toList();
+  }
+
+  // Supprimer une transaction
+  static Future<void> deleteTransaction(int id) async {
+    final box = await Hive.openBox<TransactionModel>('transactions');
+    await box.delete(id);
+  }
+
+  // Ajouter une catégorie
+  static Future<void> addCategory(CategoryModel category) async {
+    
+    final box = await Hive.openBox<CategoryModel>('categories');
+    await box.put(category.id, category);
+  }
+
+  // Récupérer toutes les catégories
+  static Future<List<CategoryModel>> getAllCategories() async {
+    final box = await Hive.openBox<CategoryModel>('categories');
+    return box.values.toList();
+  }
+
+  // Supprimer une catégorie
+  static Future<void> deleteCategory(int id) async {
+    final box = await Hive.openBox<CategoryModel>('categories');
+    await box.delete(id);
+  }
+
+
+  // Ajouter un compte
+  static Future<void> addAccount(AccountModel account) async {
+    final box = await Hive.openBox<AccountModel>('accounts');
+    await box.put(account.id, account);
+  }
+  // Récupérer tous les comptes
+  static Future<List<AccountModel>> getAllAccounts() async {
+    final box = await Hive.openBox<AccountModel>('accounts');
+    return box.values.toList();
+  }
+  // Supprimer un compte
+  static Future<void> deleteAccount(int id) async {
+    final box = await Hive.openBox<AccountModel>('accounts');
+    await box.delete(id);
   }
 }

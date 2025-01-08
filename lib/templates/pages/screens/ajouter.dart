@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
-import 'package:trackmoney/templates/components/spendingModal.dart';
+import 'package:trackmoney/templates/components/spending_Modal.dart';
 import 'package:trackmoney/templates/header.dart';
 
 class AjouterPage extends StatefulWidget {
@@ -146,8 +146,6 @@ class _AjouterPageState extends State<AjouterPage> {
                                     builder: (BuildContext context) {
                                       return SingleChildScrollView(
                                         child: CustomSpendingBottomModal(
-                                          spendingNameController:
-                                              spendingNameController,
                                           categoryController:
                                               categoryController,
                                           onCategoryAdded: (newCategory) {
