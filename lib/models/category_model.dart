@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -62,6 +63,5 @@ class CategoryModel extends HiveObject {
   // Méthode pour convertir un int en Color
   static Color intToColor(int color) => Color(color);
 
- 
 
 }

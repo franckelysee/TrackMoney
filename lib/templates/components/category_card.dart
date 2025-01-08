@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 class CategoryCard extends StatefulWidget {
   const CategoryCard(
       {super.key,
-      required this.icon,
+      this.icon,
       required this.category,
       this.description,
       required this.onTap,
-      required this.price})
+      this.price,
+      this.backgroundColor = Colors.blue})
       ;
 
-  final IconData icon;
+  final IconData? icon;
   final String category;
   final String? description;
   final Function() onTap;
-  final double price;
-  final Color backgroundColor = Colors.blue;
+  final double? price;
+  final Color? backgroundColor ;
 
   @override
   State<CategoryCard> createState() => _CategoryCardState();
@@ -43,12 +44,12 @@ class _CategoryCardState extends State<CategoryCard> {
             Text(widget.category, style: TextStyle(fontSize: 18,color: Colors.white,)),
             SizedBox(height: 5),
             Text(widget.description?? '', style: TextStyle(fontSize: 14,color: Colors.white,)),
-            SizedBox(height: 5),
-            Row(
-              children: [
-                Text('\$${widget.price.toStringAsFixed(2)}', style: TextStyle(fontSize: 18,color: Colors.white,)),
-              ],
-            ),
+            // SizedBox(height: 5),
+            // Row(
+            //   children: [
+            //     Text('\$${widget.price!.toStringAsFixed(2)}', style: TextStyle(fontSize: 18,color: Colors.white,)),
+            //   ],
+            // ),
           ],
         ),
       ),

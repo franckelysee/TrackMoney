@@ -1,4 +1,6 @@
 // database.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
@@ -9,16 +11,20 @@ class Database {
   // Initialisation de Hive
   static Future<void> initHive() async {
     await Hive.initFlutter(); // Initialisation de Hive avec Flutter
-    Hive.registerAdapter(NotificationModelAdapter()); // Enregistrer l'adaptateur
-    await Hive.openBox<NotificationModel>('notifications'); // Ouvrir la boîte de notifications
+    Hive.registerAdapter(
+        NotificationModelAdapter()); // Enregistrer l'adaptateur
+    await Hive.openBox<NotificationModel>(
+        'notifications'); // Ouvrir la boîte de notifications
 
     // transaction (ajouter page)
     Hive.registerAdapter(TransactionModelAdapter());
-    await Hive.openBox<TransactionModel>('transactions'); // Ouvrir la boîte de transactions
+    await Hive.openBox<TransactionModel>(
+        'transactions'); // Ouvrir la boîte de transactions
 
     // category (categorypage)
     Hive.registerAdapter(CategoryModelAdapter());
-    await Hive.openBox<CategoryModel>('categories'); // Ouvrir la boîte de categories
+    await Hive.openBox<CategoryModel>(
+        'categories'); // Ouvrir la boîte de categories
 
     // compte (comptepage)
     Hive.registerAdapter(AccountModelAdapter());
@@ -28,7 +34,8 @@ class Database {
   // Vérifier si c'est la première ouverture de l'application
   static Future<bool> isFirstLaunch() async {
     final box = await Hive.openBox('appSettings');
-    return box.get('isFirstLaunch', defaultValue: true); // Si c'est la première ouverture
+    return box.get('isFirstLaunch',
+        defaultValue: true); // Si c'est la première ouverture
   }
 
   // Mettre à jour l'indicateur de la première ouverture
@@ -36,7 +43,6 @@ class Database {
     final box = await Hive.openBox('appSettings');
     await box.put('isFirstLaunch', isFirstLaunch);
   }
-
 
   // Ajouter une Transaction
 
@@ -59,7 +65,6 @@ class Database {
 
   // Ajouter une catégorie
   static Future<void> addCategory(CategoryModel category) async {
-    
     final box = await Hive.openBox<CategoryModel>('categories');
     await box.put(category.id, category);
   }
@@ -76,17 +81,18 @@ class Database {
     await box.delete(id);
   }
 
-
   // Ajouter un compte
   static Future<void> addAccount(AccountModel account) async {
     final box = await Hive.openBox<AccountModel>('accounts');
     await box.put(account.id, account);
   }
+
   // Récupérer tous les comptes
   static Future<List<AccountModel>> getAllAccounts() async {
     final box = await Hive.openBox<AccountModel>('accounts');
     return box.values.toList();
   }
+
   // Supprimer un compte
   static Future<void> deleteAccount(int id) async {
     final box = await Hive.openBox<AccountModel>('accounts');

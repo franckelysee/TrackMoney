@@ -30,6 +30,7 @@ class IconSelector {
     Icons.tv,
     Icons.theaters,
     Icons.girl,
+    Icons.gamepad,
   ];
   Future<IconData?> showIconSelector(BuildContext context) async{
     return showModalBottomSheet<IconData>(

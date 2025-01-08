@@ -5,12 +5,9 @@ import 'package:trackmoney/templates/components/color_selector.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/icon_selector.dart';
 
-
-
 class CustomSpendingBottomModal extends StatefulWidget {
   final TextEditingController categoryController;
- final Function(String) onCategoryAdded; // Callback pour notifier le parent
-
+  final Function(String) onCategoryAdded; // Callback pour notifier le parent
   const CustomSpendingBottomModal({
     super.key,
     required this.categoryController,
@@ -29,6 +26,37 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
   int? colorCode;
   String? categoryName;
 
+  void saveCategory() {
+    if (modalFormKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Processing Data')),
+      );
+      categoryName = widget.categoryController.text;
+      widget.onCategoryAdded(categoryName!);
+      widget.categoryController.clear();
+
+      // Ajouter la catégorie a la base de données
+      var category = CategoryModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: categoryName!,
+        color: colorCode!,
+        iconCode: iconCode!,
+      );
+      Database.addCategory(category);
+
+      Navigator.pop(context); // Fermer le modal après succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur dans le formulaire')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -45,9 +73,9 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
               height: 150,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary ,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
-                onPressed: ()async {
+                onPressed: () async {
                   final icon = await IconSelector().showIconSelector(context);
                   if (icon != null) {
                     setState(() {
@@ -86,7 +114,8 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                   Container(
                     width: 70,
                     height: 70,
-                    color: selectedColor??Theme.of(context).colorScheme.primary,
+                    color:
+                        selectedColor ?? Theme.of(context).colorScheme.primary,
                     child: Icon(
                       selectedIcon,
                       size: 50,
@@ -96,16 +125,19 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                   SizedBox(width: 8),
                   TextButton.icon(
                     onPressed: () async {
-                      final color = await ColorSelector().showColorSelector(context);
+                      final color =
+                          await ColorSelector().showColorSelector(context);
                       if (color != null) {
                         setState(() {
                           selectedColor = color;
                           colorCode = selectedColor!.value;
                         });
                       }
-                    }, 
+                    },
                     label: Text('Edit Color'),
-                    icon: Icon(Icons.edit,),
+                    icon: Icon(
+                      Icons.edit,
+                    ),
                   )
                 ],
               ),
@@ -130,43 +162,13 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
+                onPressed:saveCategory,
                 child: Text(
                   'Ajouter',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
-                onPressed: () {
-                  if (modalFormKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Processing Data')),
-                    );
-                    categoryName= widget.categoryController.text;
-                    widget.onCategoryAdded(categoryName!);
-                    widget.categoryController.clear();
-
-                    // Ajouter la catégorie a la base de données
-                    var category = CategoryModel(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      name: categoryName!,
-                      color: colorCode!,
-                      iconCode: iconCode!,
-                    );
-                    Database.addCategory(category);
-                  
-                    Navigator.pop(context); // Fermer le modal après succès
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Erreur dans le formulaire')),
-                    );
-                  }
-                },
               ),
             ),
           ],
