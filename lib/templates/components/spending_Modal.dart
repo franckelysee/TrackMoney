@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/color_selector.dart';
@@ -25,15 +26,19 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
   int? iconCode;
   int? colorCode;
   String? categoryName;
+  List<CategoryModel> categories = [];
 
-  void saveCategory() {
+  void loadCategories() async {
+    categories = await Database.getAllCategories();
+    setState(() {});
+  }
+
+  void saveCategorys() {
     if (modalFormKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Processing Data')),
       );
       categoryName = widget.categoryController.text;
-      widget.onCategoryAdded(categoryName!);
-      widget.categoryController.clear();
 
       // Ajouter la catégorie a la base de données
       var category = CategoryModel(
@@ -44,12 +49,74 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
       );
       Database.addCategory(category);
 
+      widget.onCategoryAdded(categoryName!);
+      widget.categoryController.clear();
+
       Navigator.pop(context); // Fermer le modal après succès
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
         ),
       );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur dans le formulaire')),
+      );
+    }
+  }
+
+  void saveCategory() {
+    if (modalFormKey.currentState!.validate()) {
+      final categoryName = widget.categoryController.text.trim();
+      bool already = false;
+      // Vérifier si une catégorie avec ce nom existe déjà
+      final box = Hive.box<CategoryModel>('categories');
+      categories = box.values.toList();
+      for (var category in categories) {
+        if (category.name.toLowerCase() == categoryName.toLowerCase()) {
+          
+          already = true;
+          break;
+        }
+      }
+      if (already){
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cette catégorie existe déjà !')),
+          );
+      }else{
+        if(iconCode ==null){
+          IconData icn =Icons.add;
+          setState(() {
+            iconCode = icn.codePoint;
+          });
+        }
+        if(colorCode == null){
+          Color clr = Colors.blue;
+          setState(() {
+            colorCode = clr.value;
+          });
+        }
+        final newCategory = CategoryModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: categoryName,
+          color: colorCode!,
+          iconCode: iconCode!,
+        );
+        // Ajouter la catégorie à Hive
+        Database.addCategory(newCategory);
+        widget.onCategoryAdded(categoryName);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
+          ),
+        );
+      }
+      
+
+      // Réinitialiser les champs et fermer le modal
+      widget.categoryController.clear();
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erreur dans le formulaire')),
@@ -162,7 +229,7 @@ class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
-                onPressed:saveCategory,
+                onPressed: saveCategory,
                 child: Text(
                   'Ajouter',
                   style: TextStyle(

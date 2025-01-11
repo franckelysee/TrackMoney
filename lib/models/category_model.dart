@@ -64,4 +64,5 @@ class CategoryModel extends HiveObject {
   static Color intToColor(int color) => Color(color);
 
 
+
 }

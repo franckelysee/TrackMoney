@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/spending_Modal.dart';
@@ -13,14 +16,7 @@ class AjouterPage extends StatefulWidget {
 
 class _AjouterPageState extends State<AjouterPage> {
   final _formkey = GlobalKey<FormState>();
-  List<String> items = [
-    'Immobilier',
-    'Nourriture',
-    'Transport',
-    'Loisir',
-    'Voyage',
-    'Autre'
-  ];
+  List<String> items = [];
   final List<String> accountItems = [
     'Compte Espece',
     'Compte Bancaire',
@@ -32,6 +28,7 @@ class _AjouterPageState extends State<AjouterPage> {
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController spendingNameController = TextEditingController();
   String selectedCategory = '';
+  String selectedCategoryid = '';
   String accountController = '';
   String spendingTypeController = '';
   final timestamp = DateTime.timestamp();
@@ -53,9 +50,10 @@ class _AjouterPageState extends State<AjouterPage> {
     });
   }
 
-  void refreshCategory() {
+  void refreshCategory() async {
     setState(() {
-      selectedCategory = items[items.length -1];
+      final box = Hive.box<CategoryModel>('categories').values.toList();
+      items = box.map((category) => category.name).toList();
     });
   }
 
@@ -118,20 +116,43 @@ class _AjouterPageState extends State<AjouterPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                  child: CustomDropdownButtonFormField(
-                                initialValue: selectedCategory.isNotEmpty
-                                    ? selectedCategory
-                                    : null,
-                                items: items,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedCategory = value!;
-                                  });
+                                  child: ValueListenableBuilder(
+                                valueListenable:
+                                    Hive.box<CategoryModel>('categories')
+                                        .listenable(),
+                                builder: (context, Box<CategoryModel> box, _) {
+                                  final categories = box.values.toList();
+                                  // Tri des catégories par ordre alphabétique
+                                  categories
+                                      .sort((a, b) => a.name.compareTo(b.name));
+                                  // cree une liste des noms de catégories
+                                  final categoryNames = categories
+                                      .map((category) => category.name)
+                                      .toList();
+                                  items = categoryNames;
+                                  return CustomDropdownButtonFormField(
+                                    initialValue: selectedCategory.isNotEmpty
+                                        ? selectedCategory
+                                        : null,
+                                    items: items,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedCategory = value!;
+                                        selectedCategoryid = categories
+                                            .firstWhere((category) =>
+                                                category.name ==
+                                                selectedCategory)
+                                            .id
+                                            .toString();
+                                      });
+                                    },
+                                    errorText:
+                                        'Veiller Selectionner une Categorie de dépense',
+                                    hint:
+                                        'Selectionner la Categorie de dépense',
+                                    isRequired: true,
+                                  );
                                 },
-                                errorText:
-                                    'Veiller Selectionner une Categorie de dépense',
-                                hint: 'Selectionner la Categorie de dépense',
-                                isRequired: true,
                               )),
                               SizedBox(
                                 width: 8,
@@ -142,31 +163,21 @@ class _AjouterPageState extends State<AjouterPage> {
                                 radius: 10,
                                 onpressed: () {
                                   showModalBottomSheet(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return SingleChildScrollView(
-                                        child: CustomSpendingBottomModal(
-                                          categoryController:
-                                              categoryController,
-                                          onCategoryAdded: (newCategory) {
-                                            setState(() {
-                                              // Ajout de la nouvelle catégorie uniquement si elle n'existe pas déjà
-                                              if (!items.contains(
-                                                  newCategory)) {
-                                                items = List.from(items)
-                                                  ..add(newCategory);
-                                              }
-                                              // Assurez-vous de mettre à jour la catégorie sélectionnée avec la nouvelle valeur
-                                              selectedCategory =
-                                                  newCategory;
-                                              // Rafraîchissez la catégorie sélectionnée
-                                              refreshCategory();
-                                            });
-                                          }
-                                        )
-                                      );
-                                    }
-                                  );
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return SingleChildScrollView(
+                                          child: CustomSpendingBottomModal(
+                                            categoryController: categoryController,
+                                            onCategoryAdded: (newCategory) {
+                                              setState(() {
+                                                refreshCategory();
+                                                selectedCategory =
+                                                    newCategory;
+                                              });
+                                            }
+                                          )
+                                        );
+                                      });
                                 },
                               )
                             ],

@@ -23,7 +23,8 @@ class _AppHeaderState extends State<AppHeader> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(widget.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-          if (widget.subtitle != null) Text(widget.subtitle!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),),
+          if (widget.subtitle != null) 
+          Text(widget.subtitle!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),),
         ]
       ),
       actions: [
