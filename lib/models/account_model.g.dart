@@ -20,7 +20,7 @@ class AccountModelAdapter extends TypeAdapter<AccountModel> {
       id: fields[0] as int?,
       name: fields[1] as String?,
       type: fields[2] as String?,
-      balance: fields[3] as int?,
+      balance: fields[3] as double?,
     );
   }
 

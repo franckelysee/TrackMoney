@@ -15,7 +15,7 @@ ThemeData darkMode = ThemeData(
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
       surface: Color(0xFF0e0e0e),
-      primary: Color(0xFF6E73C4),
+      primary: Color(0xFF6E73C4), 
       secondary: Color(0xFFF8F8F8)),
   cardColor: Color(0xff272727),
   useMaterial3: true,

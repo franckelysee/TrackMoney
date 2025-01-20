@@ -14,7 +14,7 @@ class AccountModel extends HiveObject{
   @HiveField(2)
   String? type;
   @HiveField(3)
-  int? balance;
+  double? balance;
 
   AccountModel({required this.id, required this.name, required this.type, required this.balance});
 }

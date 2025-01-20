@@ -4,7 +4,7 @@ import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
-import 'package:trackmoney/templates/components/spending_Modal.dart';
+import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
 
 class AjouterPage extends StatefulWidget {
@@ -54,6 +54,7 @@ class _AjouterPageState extends State<AjouterPage> {
     setState(() {
       final box = Hive.box<CategoryModel>('categories').values.toList();
       items = box.map((category) => category.name).toList();
+
     });
   }
 
@@ -166,13 +167,13 @@ class _AjouterPageState extends State<AjouterPage> {
                                       context: context,
                                       builder: (BuildContext context) {
                                         return SingleChildScrollView(
-                                          child: CustomSpendingBottomModal(
+                                          child: CustomCategoryModal(
                                             categoryController: categoryController,
                                             onCategoryAdded: (newCategory) {
                                               setState(() {
-                                                refreshCategory();
                                                 selectedCategory =
                                                     newCategory;
+                                                refreshCategory(); 
                                               });
                                             }
                                           )
@@ -237,6 +238,8 @@ class _AjouterPageState extends State<AjouterPage> {
                                 const SnackBar(
                                     content: Text('Processing Data')),
                               );
+                              var newCats = Hive.box<CategoryModel>('categories').values.toList();
+                              selectedCategoryid = newCats.firstWhere((category)=>category.name == selectedCategory).id.toString();
                               // afficher les données du formulaire dans un SnackBar
                               showDialog(
                                   context: context,

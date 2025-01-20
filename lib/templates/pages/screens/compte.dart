@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:trackmoney/templates/components/card.dart';
+import 'package:hive/hive.dart';
+import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/account_model.dart';
+import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
@@ -14,17 +17,25 @@ class ComptePage extends StatefulWidget {
 
 class _ComptePageState extends State<ComptePage> {
   static const tabAnimationDuration = Duration(milliseconds: 300);
-  
+  List<AccountModel>  comptes = [];
   @override
   void initState() {
     super.initState();
+    fetchAccounts();
+  }
+  void fetchAccounts() async {
+    // comptes = await Database.getAllAccounts();
+    final box = await Hive.openBox<AccountModel>('accounts');
+    comptes = box.values.toList();
+    setState(() {});
+    print('comptes $comptes');
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
-        child: AppHeader(title: 'Comptes', subtitle: '2 comptes personnels'),
+        child: AppHeader(title: 'Comptes', subtitle: '2 comptes personnels' ),
       ),
       body: DefaultTabController(
         animationDuration: tabAnimationDuration,
@@ -49,7 +60,7 @@ class _ComptePageState extends State<ComptePage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        CardComponent(amount: 1000, accountType: 'Compte bancaire',),
+                        CardComponent(amount: 1000, accountType: 'bancaire',),
                         SizedBox(height: 20,),
                         NotificatedCard(title: 'Budget du mois de Decembre', titleSize: 13, subtitle: 'Argent espece', subtitleSize: 13, price: 2478,),
                         SizedBox(height: 5,),

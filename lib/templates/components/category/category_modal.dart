@@ -6,20 +6,20 @@ import 'package:trackmoney/templates/components/color_selector.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/icon_selector.dart';
 
-class CustomSpendingBottomModal extends StatefulWidget {
+class CustomCategoryModal extends StatefulWidget {
   final TextEditingController categoryController;
   final Function(String) onCategoryAdded; // Callback pour notifier le parent
-  const CustomSpendingBottomModal({
+  const CustomCategoryModal({
     super.key,
     required this.categoryController,
     required this.onCategoryAdded,
   });
   @override
-  State<CustomSpendingBottomModal> createState() =>
-      _CustomSpendingBottomModalState();
+  State<CustomCategoryModal> createState() =>
+      _CustomCategoryModalState();
 }
 
-class _CustomSpendingBottomModalState extends State<CustomSpendingBottomModal> {
+class _CustomCategoryModalState extends State<CustomCategoryModal> {
   final modalFormKey = GlobalKey<FormState>();
   IconData? selectedIcon;
   Color? selectedColor;

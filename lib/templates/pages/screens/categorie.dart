@@ -3,10 +3,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
-import 'package:trackmoney/templates/components/category_card.dart';
+import 'package:trackmoney/templates/components/category/category_card.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
-import 'package:trackmoney/templates/components/spending_Modal.dart';
+import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -66,7 +66,7 @@ class _CategoryPageState extends State<CategoryPage> {
                         context: context,
                         builder: (BuildContext context) {
                           return SingleChildScrollView(
-                            child: CustomSpendingBottomModal(
+                            child: CustomCategoryModal(
                               categoryController: categoryController,
                               onCategoryAdded: (newCategory) {
                                 // Implémentez la logique d'ajout ici
