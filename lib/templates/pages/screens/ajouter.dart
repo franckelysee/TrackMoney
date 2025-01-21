@@ -3,10 +3,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
+import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:uuid/uuid.dart';
 
 class AjouterPage extends StatefulWidget {
   const AjouterPage({super.key});
@@ -54,15 +56,69 @@ class _AjouterPageState extends State<AjouterPage> {
     setState(() {
       final box = Hive.box<CategoryModel>('categories').values.toList();
       items = box.map((category) => category.name).toList();
-
     });
   }
-  
+
   void refreshAccounts() async {
     accounts = await Database.getAllAccounts();
-    setState(() {
-    });
+    setState(() {});
   }
+
+  void _addTransaction() async {
+    if (!_formkey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur de validation')),
+      );
+      return;
+    }
+      try {
+        var newCats = await Database.getAllCategories();
+        accounts = await Database.getAllAccounts();
+        setState(() {
+          selectedCategoryid = newCats
+              .firstWhere((category) => category.name == selectedCategory)
+              .id
+              .toString();
+        });
+        var type = spendingTypeController == 'Recette' ? 'recette' : 'depense';
+        var payment_name = spendingNameController.text;
+        var price = double.parse(priceController.text);
+        var account_id = accounts
+            .firstWhere((account) => account.type! == accountController)
+            .id
+            .toString();
+        var id = Uuid().v4();
+        var transaction = TransactionModel(
+            id: id,
+            type: type,
+            name: payment_name,
+            categoryId: selectedCategoryid,
+            accountId: account_id,
+            amount: price,
+            date: DateTime.now());
+
+        await Database.addTransaction(transaction);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transaction ajouté avec succès')),
+        );
+        // effacer le formulaire
+        _formkey.currentState!.reset();
+        priceController.clear();
+        categoryController.clear();
+        spendingNameController.clear();
+        selectedCategory = '';
+        accountController = '';
+        spendingTypeController = '';
+        
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'ajout  de la transaction: $e')),
+        );
+      }
+      
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -172,17 +228,16 @@ class _AjouterPageState extends State<AjouterPage> {
                                       context: context,
                                       builder: (BuildContext context) {
                                         return SingleChildScrollView(
-                                          child: CustomCategoryModal(
-                                            categoryController: categoryController,
-                                            onCategoryAdded: (newCategory) {
-                                              setState(() {
-                                                selectedCategory =
-                                                    newCategory;
-                                                refreshCategory(); 
-                                              });
-                                            }
-                                          )
-                                        );
+                                            child: CustomCategoryModal(
+                                                categoryController:
+                                                    categoryController,
+                                                onCategoryAdded: (newCategory) {
+                                                  setState(() {
+                                                    selectedCategory =
+                                                        newCategory;
+                                                    refreshCategory();
+                                                  });
+                                                }));
                                       });
                                 },
                               )
@@ -237,43 +292,7 @@ class _AjouterPageState extends State<AjouterPage> {
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.surface),
                           ),
-                          onPressed: () {
-                            if (_formkey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Processing Data')),
-                              );
-                              var newCats = Hive.box<CategoryModel>('categories').values.toList();
-                              selectedCategoryid = newCats.firstWhere((category)=>category.name == selectedCategory).id.toString();
-                              // afficher les données du formulaire dans un SnackBar
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                        title: Text('Success'),
-                                        content: Text(
-                                            'price: ${priceController.text}'), // afficher ce qui a été saisi par l'utilisateur
-                                        actions: [
-                                          TextButton(
-                                            child: Text('OK'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                          TextButton(
-                                            child: Text('Cancel'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ]);
-                                  });
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error')),
-                              );
-                            }
-                          }),
+                          onPressed: _addTransaction),
                     ),
                     SizedBox(
                       height: 16,

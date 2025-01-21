@@ -19,7 +19,7 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
     return TransactionModel(
       id: fields[0] as String,
       type: fields[1] as String,
-      name: fields[2] as String,
+      name: fields[2] as String?,
       categoryId: fields[3] as String?,
       accountId: fields[4] as String,
       amount: fields[5] as double,

@@ -11,7 +11,7 @@ class TransactionModel extends HiveObject {
   String type; // Dépense ou Recette
 
   @HiveField(2)
-  String name; // Nom de la transaction
+  String? name; // Nom de la transaction
 
   @HiveField(3)
   String? categoryId; // ID de la catégorie liée
@@ -28,7 +28,7 @@ class TransactionModel extends HiveObject {
   TransactionModel({
     required this.id,
     required this.type,
-    required this.name,
+    this.name,
     this.categoryId,
     required this.accountId,
     required this.amount,

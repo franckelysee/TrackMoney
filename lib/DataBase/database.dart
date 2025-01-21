@@ -98,4 +98,8 @@ class Database {
     final box = await Hive.openBox<AccountModel>('accounts');
     await box.delete(id);
   }
+
+
+  // Ajouter une transaction 
+  
 }
