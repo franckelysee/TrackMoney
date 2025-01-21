@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
@@ -17,11 +18,7 @@ class AjouterPage extends StatefulWidget {
 class _AjouterPageState extends State<AjouterPage> {
   final _formkey = GlobalKey<FormState>();
   List<String> items = [];
-  final List<String> accountItems = [
-    'Compte Espece',
-    'Compte Bancaire',
-    'Compte Mobile'
-  ];
+  List<AccountModel> accounts = [];
   final List<String> spendingTypeItems = ['Dépense', 'Recette'];
 
   final TextEditingController priceController = TextEditingController();
@@ -48,6 +45,9 @@ class _AjouterPageState extends State<AjouterPage> {
         categoryController.text = selectedCategory;
       }
     });
+
+    refreshCategory();
+    refreshAccounts();
   }
 
   void refreshCategory() async {
@@ -57,7 +57,12 @@ class _AjouterPageState extends State<AjouterPage> {
 
     });
   }
-
+  
+  void refreshAccounts() async {
+    accounts = await Database.getAllAccounts();
+    setState(() {
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,7 +197,7 @@ class _AjouterPageState extends State<AjouterPage> {
                       onChanged: (value) {
                         accountController = value!;
                       },
-                      items: accountItems,
+                      items: accounts.map((account) => account.type!).toList(),
                       errorText: 'Veiller Selectionner un Compte',
                       hint: 'Selectionner un Compte',
                       isRequired: true,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/templates/components/account/select_account_type.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/pages/screens/account_page.dart';
@@ -7,12 +8,13 @@ import 'package:trackmoney/utils/account_type_enum.dart';
 import 'package:trackmoney/utils/app_config.dart';
 
 class CardComponent extends StatefulWidget {
-  const CardComponent({super.key, this.color, required this.amount, required this.accountType, this.accountName, this.isCreating = false});
+  const CardComponent({super.key, this.color, required this.amount, required this.accountType, this.accountName, this.isCreating = false, this.onAccountLoad});
   final Color? color ;
   final double amount;
   final String accountType;
   final bool isCreating;
   final String? accountName;
+  final Function(dynamic)? onAccountLoad ;
   @override
   State<CardComponent> createState() => _CardComponentState();
 }
@@ -103,7 +105,29 @@ class _CardComponentState extends State<CardComponent> {
           ),
         ),
         if(!widget.isCreating)
-        CircularButton(
+        CircularAddAccountButton(
+          onAccountLoad: (value) {
+            widget.onAccountLoad!(value);
+          }
+        )
+      ],
+    );
+  }
+}
+
+
+class CircularAddAccountButton extends StatefulWidget {
+  const CircularAddAccountButton({super.key, this.onAccountLoad});
+  final Function(dynamic)? onAccountLoad ;
+
+  @override
+  State<CircularAddAccountButton> createState() => _CircularAddAccountButtonState();
+}
+
+class _CircularAddAccountButtonState extends State<CircularAddAccountButton> {
+  @override
+  Widget build(BuildContext context) {
+    return CircularButton(
           icon: Icons.add,
           onpressed: () {
             // Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
@@ -141,11 +165,15 @@ class _CardComponentState extends State<CardComponent> {
                   ),
                 );
               }
-            );
+            ).then((value){
+              try {
+                widget.onAccountLoad!(value);
+              } catch (e) {
+                
+              }
+            });
           
           },
-        )
-      ],
-    );
+        );
   }
 }

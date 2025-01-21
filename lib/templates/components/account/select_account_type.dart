@@ -57,7 +57,15 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
                   MaterialPageRoute(
                     builder: (context) => AccountPage(type: widget.acountType,),
                   ),
-                );
+                ).then((value){
+                  if (value) {
+                    // Refresh the AccountPage
+                    Navigator.pop(context,true);
+                    setState(() {
+                      // Your code to refresh the AccountPage goes here
+                    });
+                  }
+                });
               },
               color: Color(0xFFD9D9D9),
             )

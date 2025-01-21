@@ -8,7 +8,7 @@ part 'account_model.g.dart';
 @HiveType(typeId: 2)
 class AccountModel extends HiveObject{
   @HiveField(0)
-  int? id;
+  String? id;
   @HiveField(1)
   String? name;
   @HiveField(2)
