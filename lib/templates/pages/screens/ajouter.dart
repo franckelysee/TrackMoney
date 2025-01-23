@@ -4,10 +4,12 @@ import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/templates/home.dart';
 import 'package:uuid/uuid.dart';
 
 class AjouterPage extends StatefulWidget {
@@ -76,7 +78,9 @@ class _AjouterPageState extends State<AjouterPage> {
         accounts = await Database.getAllAccounts();
         setState(() {
           selectedCategoryid = newCats
-              .firstWhere((category) => category.name == selectedCategory)
+              .firstWhere(
+                (category) => category.name == selectedCategory
+              )
               .id
               .toString();
         });
@@ -92,11 +96,15 @@ class _AjouterPageState extends State<AjouterPage> {
             id: id,
             type: type,
             name: payment_name,
-            categoryId: selectedCategoryid,
+            categoryId: selectedCategoryid != '' ? selectedCategoryid:'',
             accountId: account_id,
             amount: price,
             date: DateTime.now());
 
+        var isbalance_updated = await updateBalance();
+        if (!isbalance_updated) {
+          return;
+        }
         await Database.addTransaction(transaction);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Transaction ajouté avec succès')),
@@ -109,6 +117,8 @@ class _AjouterPageState extends State<AjouterPage> {
         selectedCategory = '';
         accountController = '';
         spendingTypeController = '';
+        Navigator.pushAndRemoveUntil(context, CreateROute(HomePage()),
+                    (Route<dynamic> route) => false);
         
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +127,26 @@ class _AjouterPageState extends State<AjouterPage> {
       }
       
     
+  }
+
+  Future<bool> updateBalance() async {
+    final box = await Hive.openBox<AccountModel>('accounts');
+    final account = box.values.firstWhere((account) => account.type == accountController);
+    double newBalance ;
+    if (spendingTypeController == 'Dépense') {
+      newBalance = account.balance! - double.parse(priceController.text);
+    }else{
+      newBalance = account.balance! + double.parse(priceController.text);
+    }
+    if (newBalance < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Impossible, ce compte ne peut pas débiter cette somme, car son solde est inférieur.")),
+      );
+      return false;
+    }
+    account.balance = newBalance;
+    await Database.updateAccount(account);
+    return true;
   }
 
   @override
@@ -146,24 +176,22 @@ class _AjouterPageState extends State<AjouterPage> {
                         spendingTypeController = value!;
                         // mettre a jour la visibilité du champ categorie
                         setState(() {
-                          showCategoryField =
-                              spendingTypeController == 'Dépense';
                         });
                       },
                       items: spendingTypeItems,
                       errorText: 'Selectionner le type ',
-                      hint: 'Selectionner le type ',
+                      hint: 'Selectionner le type de transaction',
                       isRequired: true,
                     ),
                     SizedBox(
                       height: 10,
                     ),
-                    if (showCategoryField) // Afficher le champ seulement si nécessaire
+                    // Afficher le champ seulement si nécessaire
                       Column(
                         children: [
                           CustomTextFormField(
                             controller: spendingNameController,
-                            labelText: 'Entrer le nom de la dépense',
+                            labelText: 'Entrer le nom de la $spendingTypeController',
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Ce champ est obligatoire';

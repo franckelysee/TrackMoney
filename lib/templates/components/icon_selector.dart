@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class IconSelector {
   // ici c'est la liste des icon selectionnable par l'utilisateur pour distinguer la category de ses transaction
   final List<IconData> availableIcons = [
+    Icons.attach_money_sharp,
+    Icons.local_atm,
     Icons.account_balance_outlined,
     Icons.analytics_outlined,
     Icons.add_outlined,

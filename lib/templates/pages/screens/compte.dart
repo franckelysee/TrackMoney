@@ -3,10 +3,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
+import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/schemas/transaction_schema.dart';
 import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/account_type_enum.dart';
 
 class ComptePage extends StatefulWidget {
   const ComptePage({super.key});
@@ -18,20 +21,55 @@ class ComptePage extends StatefulWidget {
 class _ComptePageState extends State<ComptePage> {
   static const tabAnimationDuration = Duration(milliseconds: 300);
   List<AccountModel> comptes = [];
+  List<TransactionSchema> transactions_data = [];
   bool isLoading = true;
   @override
   void initState() {
     super.initState();
     fetchAccounts();
+    fetchTransactions();
   }
 
   void fetchAccounts() async {
     comptes = await Database.getAllAccounts();
+    await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
     setState(() {
       isLoading = false;
     });
   }
 
+  void fetchTransactions() async {
+    try {
+      var transactions = await Database.getAllTransactions();
+      var categories = await Database.getAllCategories();
+      setState(() {
+        var data = transactions.map((TransactionModel transaction){
+          var cat = categories.firstWhere((category){
+            return category.id == transaction.categoryId;
+          });
+          return TransactionSchema(
+            id: transaction.id,
+            name: transaction.name,
+            type: transaction.type,
+            amount: transaction.amount,
+            icon: cat.icon,
+            iconcolor: cat.colorValue,
+            category: cat.name,
+            date: transaction.date,
+            account_id: transaction.accountId
+          );
+        }).toList();
+        transactions_data = data;
+        transactions_data.sort((a, b) => b.date!.compareTo(a.date!));
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'obtention  des transactions: $e')),
+        );
+    }
+    
+
+  }
   Future<void> refreshAccounts() async {
     final updateAccounts = await Database.getAllAccounts();
     if (updateAccounts.isEmpty) {
@@ -41,6 +79,7 @@ class _ComptePageState extends State<ComptePage> {
     }
     setState(() {
       comptes = updateAccounts;
+      fetchTransactions();
     });
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
     setState(() {
@@ -161,31 +200,25 @@ class _ComptePageState extends State<ComptePage> {
                                         SizedBox(
                                           height: 5,
                                         ),
+                                        if(transactions_data.length > 0)
                                         Column(
                                           children: [
                                             Text("Aujourd'hui"),
-                                            NotificatedCard(
-                                              title: "Loyer",
-                                              titleSize: 20,
-                                              subtitle: "Immobilier",
-                                              icon: Icons.home,
-                                              price: -658,
-                                            ),
-                                            NotificatedCard(
-                                              title: "Burger",
-                                              titleSize: 20,
-                                              subtitle: "Nourriture",
-                                              icon: FontAwesomeIcons.burger,
-                                              iconBackgroundColor:
-                                                  Colors.yellow,
-                                              price: -18,
-                                            ),
-                                            NotificatedCard(
-                                              title: "Loyer",
-                                              titleSize: 20,
-                                              subtitle: "Immobilier",
-                                              icon: Icons.house_outlined,
-                                              price: -658,
+                                            Column(
+                                              children: List.generate(
+                                                transactions_data.length, 
+                                                (index){
+                                                  if (transactions_data[index].account_id != compte.id) return Container();
+                                                  return NotificatedCard(
+                                                    titleSize: 20,
+                                                    icon: transactions_data[index].icon,
+                                                    title: transactions_data[index].name!,
+                                                    subtitle: transactions_data[index].category!,
+                                                    price: transactions_data[index].type == "depense" ? - transactions_data[index].amount! : transactions_data[index].amount!,
+                                                    iconBackgroundColor: transactions_data[index].type == "depense" ? Colors.red : Colors.green,
+                                                  );
+                                                }
+                                              )
                                             ),
                                           ],
                                         )

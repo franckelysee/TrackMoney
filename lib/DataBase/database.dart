@@ -80,7 +80,7 @@ class Database {
     final box = await Hive.openBox<CategoryModel>('categories');
     await box.delete(id);
   }
-
+  // --------------------------------------------------------------
   // Ajouter un compte
   static Future<void> addAccount(AccountModel account) async {
     final box = await Hive.openBox<AccountModel>('accounts');
@@ -100,6 +100,10 @@ class Database {
   }
 
 
-  // Ajouter une transaction 
+  // modifier le prix du compte 
+  static Future<void> updateAccount(AccountModel account) async {
+    final box = await Hive.openBox<AccountModel>('accounts');
+    await box.put(account.id, account);
+  }
   
 }
