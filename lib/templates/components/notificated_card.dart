@@ -123,7 +123,15 @@ class _NotificatedCardState extends State<NotificatedCard> {
                 Padding(
                   padding: EdgeInsets.only(right: 10),
                   child: widget.trailing,
-                )
+                ),
+                // Container(
+                //   width: 8,
+                //   height: 8,
+                //   decoration: BoxDecoration(
+                //     color: Colors.red,
+                //     borderRadius: BorderRadius.circular(50)
+                //   ),
+                // )
               ]),
             ),
           ),

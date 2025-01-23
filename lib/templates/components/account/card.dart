@@ -104,12 +104,7 @@ class _CardComponentState extends State<CardComponent> {
             ],
           ),
         ),
-        if(!widget.isCreating)
-        CircularAddAccountButton(
-          onAccountLoad: (value) {
-            widget.onAccountLoad!(value);
-          }
-        )
+       
       ],
     );
   }
