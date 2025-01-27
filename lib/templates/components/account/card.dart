@@ -82,25 +82,39 @@ class _CardComponentState extends State<CardComponent> {
                 ],
               ),
               Spacer(),
-              if(!widget.isCreating)
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  "details",
-                  style: TextStyle(
-                    color: Color(0xFF4A6FCC),
-                    fontSize: 16,
+              Row(
+                children: [
+                  if(!widget.isCreating)
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      "details",
+                      style: TextStyle(
+                        color: Color(0xFF4A6FCC),
+                        fontSize: 16,
+                      ),
+                    ),
+                  )
+                  else
+                  Text(
+                    "${widget.accountName}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              )
-              else
-              Text(
-                "${widget.accountName}",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                  Spacer(),
+                  Text(
+                    "${widget.accountName}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ]
               ),
+              
             ],
           ),
         ),

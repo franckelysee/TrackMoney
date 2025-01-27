@@ -32,7 +32,8 @@ class _ComptePageState extends State<ComptePage> {
 
   void fetchAccounts() async {
     comptes = await Database.getAllAccounts();
-    await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
+    await Future.delayed(
+        const Duration(milliseconds: 300)); // Simulate network delay
     setState(() {
       isLoading = false;
     });
@@ -43,33 +44,32 @@ class _ComptePageState extends State<ComptePage> {
       var transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
       setState(() {
-        var data = transactions.map((TransactionModel transaction){
-          var cat = categories.firstWhere((category){
+        var data = transactions.map((TransactionModel transaction) {
+          var cat = categories.firstWhere((category) {
             return category.id == transaction.categoryId;
           });
           return TransactionSchema(
-            id: transaction.id,
-            name: transaction.name,
-            type: transaction.type,
-            amount: transaction.amount,
-            icon: cat.icon,
-            iconcolor: cat.colorValue,
-            category: cat.name,
-            date: transaction.date,
-            account_id: transaction.accountId
-          );
+              id: transaction.id,
+              name: transaction.name,
+              type: transaction.type,
+              amount: transaction.amount,
+              icon: cat.icon,
+              iconcolor: cat.colorValue,
+              category: cat.name,
+              date: transaction.date,
+              account_id: transaction.accountId);
         }).toList();
         transactions_data = data;
         transactions_data.sort((a, b) => b.date!.compareTo(a.date!));
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'obtention  des transactions: $e')),
-        );
+        SnackBar(
+            content: Text('Erreur lors de l\'obtention  des transactions: $e')),
+      );
     }
-    
-
   }
+
   Future<void> refreshAccounts() async {
     final updateAccounts = await Database.getAllAccounts();
     if (updateAccounts.isEmpty) {
@@ -81,9 +81,20 @@ class _ComptePageState extends State<ComptePage> {
       comptes = updateAccounts;
       fetchTransactions();
     });
-    await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
+    await Future.delayed(
+        const Duration(milliseconds: 300)); // Simulate network delay
     setState(() {
       isLoading = false;
+    });
+  }
+
+  Future<void> transactionCounteredByType(String type) async {
+    int count = 0;
+    var transactionstype = comptes.where((account) {
+      return account.type == type;
+    }).toList();
+    setState(() {
+      count = transactionstype.length;
     });
   }
 
@@ -113,14 +124,16 @@ class _ComptePageState extends State<ComptePage> {
                           FontAwesomeIcons.wallet,
                           size: 50,
                         ),
-                        Text('Ajoutez Votre Premier Portefeille ', style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor
-                        ),),
+                        Text(
+                          'Ajoutez Votre Premier Portefeille ',
+                          style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor),
+                        ),
                         SizedBox(height: 20),
                         CircularAddAccountButton(
-                          onAccountLoad: (value){
+                          onAccountLoad: (value) {
                             refreshAccounts();
                           },
                         ),
@@ -129,26 +142,25 @@ class _ComptePageState extends State<ComptePage> {
                   ),
                 )
               : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      child: Row( 
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          CircularAddAccountButton(
-                            onAccountLoad: (value){
-                              refreshAccounts();
-                            },
-                          ),
-                          SizedBox(width: 10),
-                          Text("Ajouter autre Porteifeille"),
-                        ]
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              CircularAddAccountButton(
+                                onAccountLoad: (value) {
+                                  refreshAccounts();
+                                },
+                              ),
+                              SizedBox(width: 10),
+                              Text("Ajouter autre Porteifeille"),
+                            ]),
                       ),
-                    ),
-                    SizedBox(
-                      height: 700,
-                      child: DefaultTabController(
+                      SizedBox(
+                        height: 700,
+                        child: DefaultTabController(
                           animationDuration: tabAnimationDuration,
                           length: comptes.length,
                           child: Column(
@@ -175,7 +187,8 @@ class _ComptePageState extends State<ComptePage> {
                                                 CardComponent(
                                                   amount: compte.balance!,
                                                   accountType: compte.type!,
-                                                  onAccountLoad: (value){
+                                                  accountName: compte.name!,
+                                                  onAccountLoad: (value) {
                                                     refreshAccounts();
                                                   },
                                                 ),
@@ -183,7 +196,8 @@ class _ComptePageState extends State<ComptePage> {
                                                   height: 20,
                                                 ),
                                                 NotificatedCard(
-                                                  title: 'Budget du mois de Decembre',
+                                                  title:
+                                                      'Budget du mois de Decembre',
                                                   titleSize: 13,
                                                   subtitle: 'Argent espece',
                                                   subtitleSize: 13,
@@ -208,21 +222,25 @@ class _ComptePageState extends State<ComptePage> {
                                                     Row(
                                                       children: [
                                                         TransactionCard(
-                                                            icon:
-                                                                Icons.download_outlined,
+                                                            icon: Icons
+                                                                .download_outlined,
                                                             title: "Entrées",
                                                             transactionCount: 1,
                                                             price: 8025,
-                                                            priceColor: Colors.green),
+                                                            priceColor:
+                                                                Colors.green),
                                                         Spacer(),
                                                         TransactionCard(
-                                                            icon: Icons.logout_outlined,
+                                                            icon: Icons
+                                                                .logout_outlined,
                                                             iconBackgroundColor:
                                                                 Colors.red,
                                                             title: "Sorties",
-                                                            transactionCount: 39,
+                                                            transactionCount:
+                                                                39,
                                                             price: 658,
-                                                            priceColor: Colors.red)
+                                                            priceColor:
+                                                                Colors.red)
                                                       ],
                                                     )
                                                   ],
@@ -230,28 +248,58 @@ class _ComptePageState extends State<ComptePage> {
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                if(transactions_data.length > 0)
-                                                Column(
-                                                  children: [
-                                                    Text("Aujourd'hui"),
-                                                    Column(
-                                                      children: List.generate(
-                                                        transactions_data.length, 
-                                                        (index){
-                                                          if (transactions_data[index].account_id != compte.id) return Container();
-                                                          return NotificatedCard(
-                                                            titleSize: 20,
-                                                            icon: transactions_data[index].icon,
-                                                            title: transactions_data[index].name!,
-                                                            subtitle: transactions_data[index].category!,
-                                                            price: transactions_data[index].type == "depense" ? - transactions_data[index].amount! : transactions_data[index].amount!,
-                                                            iconBackgroundColor: transactions_data[index].type == "depense" ? Colors.red : Colors.green,
-                                                          );
-                                                        }
-                                                      )
-                                                    ),
-                                                  ],
-                                                )
+                                                if (transactions_data.length >
+                                                    0)
+                                                  Column(
+                                                    children: [
+                                                      Text("Aujourd'hui"),
+                                                      Column(
+                                                          children: List.generate(
+                                                              transactions_data
+                                                                  .length,
+                                                              (index) {
+                                                        if (transactions_data[
+                                                                    index]
+                                                                .account_id !=
+                                                            compte.id)
+                                                          return Container();
+                                                        return NotificatedCard(
+                                                          titleSize: 20,
+                                                          icon:
+                                                              transactions_data[
+                                                                      index]
+                                                                  .icon,
+                                                          title:
+                                                              transactions_data[
+                                                                      index]
+                                                                  .name!,
+                                                          subtitle:
+                                                              transactions_data[
+                                                                      index]
+                                                                  .category!,
+                                                          price:
+                                                              transactions_data[
+                                                                              index]
+                                                                          .type ==
+                                                                      "depense"
+                                                                  ? -transactions_data[
+                                                                          index]
+                                                                      .amount!
+                                                                  : transactions_data[
+                                                                          index]
+                                                                      .amount!,
+                                                          iconBackgroundColor:
+                                                              transactions_data[
+                                                                              index]
+                                                                          .type ==
+                                                                      "depense"
+                                                                  ? Colors.red
+                                                                  : Colors
+                                                                      .green,
+                                                        );
+                                                      })),
+                                                    ],
+                                                  )
                                               ],
                                             ),
                                           ))
@@ -261,10 +309,10 @@ class _ComptePageState extends State<ComptePage> {
                             ],
                           ),
                         ),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
     );
   }
 }
