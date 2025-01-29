@@ -114,7 +114,7 @@ class _AjouterPageState extends State<AjouterPage> {
         );
         // notification
         var notification = NotificationModel(
-            id: Uuid().v4(),
+            notificationId: Uuid().v4(),
             title: "Nouvelle transaction",
             content: "Une nouvelle transaction a été ajoutée",
             type: NotificationTypeEnum.INFORMATION,

@@ -7,7 +7,7 @@ part 'notification_model.g.dart';
 @HiveType(typeId: 0)
 class NotificationModel extends HiveObject{
   @HiveField(0)
-  final String id;
+  final String notificationId;
   @HiveField(1)
   final String title;
   @HiveField(2)
@@ -16,22 +16,20 @@ class NotificationModel extends HiveObject{
   final String? userId;
   @HiveField(4)
   final String? receiverId;
-  @HiveField(6)
-  final String? notificationId;
-  @HiveField(7)
+  @HiveField(5)
   final String content;
-  @HiveField(8)
+  @HiveField(6)
   final String? status;
-  @HiveField(9)
+  @HiveField(7)
   final String type;
-  @HiveField(10)
+  @HiveField(8)
   bool isRead;
-  @HiveField(11)
+  @HiveField(9)
   bool isArchived ;
 
 
   NotificationModel({
-    required this.id,
+    required this.notificationId,
     required this.title,
     required this.content,
     required this.type,
@@ -40,7 +38,6 @@ class NotificationModel extends HiveObject{
     this.timestamp,
     this.userId,
     this.receiverId,
-    this.notificationId,
     this.status,
   });
 

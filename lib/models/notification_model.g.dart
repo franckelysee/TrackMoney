@@ -17,44 +17,42 @@ class NotificationModelAdapter extends TypeAdapter<NotificationModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return NotificationModel(
-      id: fields[0] as String,
+      notificationId: fields[0] as String,
       title: fields[1] as String,
-      content: fields[7] as String,
-      type: fields[9] as String,
-      isRead: fields[10] as bool,
-      isArchived: fields[11] as bool,
+      content: fields[5] as String,
+      type: fields[7] as String,
+      isRead: fields[8] as bool,
+      isArchived: fields[9] as bool,
       timestamp: fields[2] as String?,
       userId: fields[3] as String?,
       receiverId: fields[4] as String?,
-      notificationId: fields[6] as String?,
-      status: fields[8] as String?,
+      status: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, NotificationModel obj) {
     writer
-      ..writeByte(11)
-      ..writeByte(0)
-      ..write(obj.title)
-      ..writeByte(1)
-      ..write(obj.timestamp)
-      ..writeByte(2)
-      ..write(obj.userId)
-      ..writeByte(3)
-      ..write(obj.receiverId)
-      ..writeByte(4)
-      ..writeByte(5)
-      ..write(obj.notificationId)
-      ..writeByte(6)
-      ..write(obj.content)
-      ..writeByte(7)
-      ..write(obj.status)
-      ..writeByte(8)
-      ..write(obj.type)
-      ..writeByte(9)
-      ..write(obj.isRead)
       ..writeByte(10)
+      ..writeByte(0)
+      ..write(obj.notificationId)
+      ..writeByte(1)
+      ..write(obj.title)
+      ..writeByte(2)
+      ..write(obj.timestamp)
+      ..writeByte(3)
+      ..write(obj.userId)
+      ..writeByte(4)
+      ..write(obj.receiverId)
+      ..writeByte(5)
+      ..write(obj.content)
+      ..writeByte(6)
+      ..write(obj.status)
+      ..writeByte(7)
+      ..write(obj.type)
+      ..writeByte(8)
+      ..write(obj.isRead)
+      ..writeByte(9)
       ..write(obj.isArchived);
   }
 

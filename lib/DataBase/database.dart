@@ -109,7 +109,7 @@ class Database {
   // add notification 
   static Future<void> addNotification(NotificationModel notification) async {
     final box = await Hive.openBox<NotificationModel>('notifications');
-    await box.put(notification.id, notification);
+    await box.put(notification.notificationId, notification);
   }
 
   // get all notifications

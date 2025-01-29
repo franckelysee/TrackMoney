@@ -59,7 +59,7 @@ class _NotificationPageState extends State<NotificationPage> {
   void deleteNotification(String id) {
     Database.deleteNotification(id);
     setState(() {
-      notifications = notifications.where((n) => n.id!= id).toList();
+      notifications = notifications.where((n) => n.notificationId!= id).toList();
     });
   }
   
@@ -245,7 +245,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         archiveNotification(index);
                       } else if (direction == DismissDirection.endToStart) {
                         // Supprimer la notification
-                        deleteNotification(notification.id);
+                        deleteNotification(notification.notificationId);
                       }
                     },
                     child: NotificatedCard(
@@ -268,7 +268,7 @@ class _NotificationPageState extends State<NotificationPage> {
                           } else if (action == 'archive') {
                             archiveNotification(index);
                           } else if (action == 'delete') {
-                            deleteNotification(notification.id);
+                            deleteNotification(notification.notificationId);
                           }
                         },
                         itemBuilder: (context) {
