@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
+import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/button.dart';
@@ -10,6 +11,7 @@ import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
 import 'package:trackmoney/templates/home.dart';
+import 'package:trackmoney/utils/notification_type_enum.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 import 'package:uuid/uuid.dart';
 
@@ -110,7 +112,20 @@ class _AjouterPageState extends State<AjouterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Transaction ajouté avec succès')),
         );
-        // effacer le formulaire
+        // notification
+        var notification = NotificationModel(
+            id: Uuid().v4(),
+            title: "Nouvelle transaction",
+            content: "Une nouvelle transaction a été ajoutée",
+            type: NotificationTypeEnum.INFORMATION,
+            isRead: false,
+            isArchived: false,
+          );
+
+        // add notification to database
+        await Database.addNotification(notification);
+
+
         _formkey.currentState!.reset();
         priceController.clear();
         categoryController.clear();

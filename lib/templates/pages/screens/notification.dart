@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/notification_type_enum.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -12,21 +14,28 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  late Box<NotificationModel> notificationBox;
+  List<NotificationModel> notifications = [];
+  List<String> notificationTypes = NotificationTypeEnum().values;
+  String selectedType = NotificationTypeEnum.TOUTES;
+  
 
+  bool showUnreadOnly = false;
   @override
   void initState() {
     super.initState();
-    notificationBox = Hive.box<NotificationModel>('notifications');
+    fetchNotifications();
   }
 
-  void addNotification(NotificationModel notification)  {
-    notificationBox.add(notification);
+  Future<void> fetchNotifications() async{
+    notifications = await Database.getAllNotifications();
     setState(() {});
   }
 
-  
-  List<NotificationModel> get newnotifications => notificationBox.values.toList();
+  // refresh notification 
+  void refreshNotifications() async {
+    notifications = await Database.getAllNotifications();
+    setState(() {});
+  }
 
   void markAsRead(int index) {
     // final notification = notificationBox.getAt(index);
@@ -47,51 +56,13 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   // Supprimer une notification
-  void deleteNotification(int index) {
+  void deleteNotification(String id) {
+    Database.deleteNotification(id);
     setState(() {
-      notifications.removeAt(index);
+      notifications = notifications.where((n) => n.id!= id).toList();
     });
   }
-  // Types de notifications
-  List<String> notificationTypes = [
-    'Toutes',
-    'Alerte',
-    'Rappel',
-    'Information'
-  ];
-  String selectedType = 'Toutes';
-  // Exemple de données de notifications avec type et état (lue/archivée)
-  List<NotificationModel> notifications = [
-    NotificationModel(
-        title: 'Budget dépassé',
-        content: 'Alerte: Vous avez dépassé votre budget de Nourriture.',
-        type: 'Alerte',
-        isRead: false,
-        isArchived: false),
-    NotificationModel(
-        title: "Paiement d'abonnement",
-        content:
-            'Rappel: Le paiement de votre abonnement est d�� dans 3 jours.',
-        type: 'Rappel',
-        isRead: false,
-        isArchived: false),
-    NotificationModel(
-      title: 'Solde bancaire mis à jour',
-      content: 'Info: Votre solde bancaire a été mis à jour.',
-      type: 'Information',
-      isRead: true,
-      isArchived: false,
-    ),
-    NotificationModel(
-      title: 'Transaction suspecte détectée',
-      content: 'Alerte: Transaction suspecte détectée sur votre compte.',
-      type: 'Alerte',
-      isRead: false,
-      isArchived: false,
-    ),
-  ];
-
-  bool showUnreadOnly = false;
+  
   // Filtrer les notifications en fonction du type sélectionné
   List<NotificationModel> get filteredNotifications {
     if (showUnreadOnly){
@@ -274,7 +245,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         archiveNotification(index);
                       } else if (direction == DismissDirection.endToStart) {
                         // Supprimer la notification
-                        deleteNotification(index);
+                        deleteNotification(notification.id);
                       }
                     },
                     child: NotificatedCard(
@@ -297,7 +268,7 @@ class _NotificationPageState extends State<NotificationPage> {
                           } else if (action == 'archive') {
                             archiveNotification(index);
                           } else if (action == 'delete') {
-                            deleteNotification(index);
+                            deleteNotification(notification.id);
                           }
                         },
                         itemBuilder: (context) {

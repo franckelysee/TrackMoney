@@ -1,4 +1,5 @@
 
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'notification_model.g.dart';
@@ -6,30 +7,31 @@ part 'notification_model.g.dart';
 @HiveType(typeId: 0)
 class NotificationModel extends HiveObject{
   @HiveField(0)
-  final String title;
+  final String id;
   @HiveField(1)
-  final String? timestamp;
+  final String title;
   @HiveField(2)
-  final String? userId;
+  final String? timestamp;
   @HiveField(3)
-  final String? receiverId;
+  final String? userId;
   @HiveField(4)
-  final String? icon;
-  @HiveField(5)
-  final String? notificationId;
+  final String? receiverId;
   @HiveField(6)
-  final String content;
+  final String? notificationId;
   @HiveField(7)
-  final String? status;
+  final String content;
   @HiveField(8)
-  final String type;
+  final String? status;
   @HiveField(9)
-  bool isRead;
+  final String type;
   @HiveField(10)
+  bool isRead;
+  @HiveField(11)
   bool isArchived ;
 
 
   NotificationModel({
+    required this.id,
     required this.title,
     required this.content,
     required this.type,
@@ -38,8 +40,8 @@ class NotificationModel extends HiveObject{
     this.timestamp,
     this.userId,
     this.receiverId,
-    this.icon,
     this.notificationId,
     this.status,
   });
+
 }

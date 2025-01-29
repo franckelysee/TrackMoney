@@ -105,5 +105,24 @@ class Database {
     final box = await Hive.openBox<AccountModel>('accounts');
     await box.put(account.id, account);
   }
+
+  // add notification 
+  static Future<void> addNotification(NotificationModel notification) async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    await box.put(notification.id, notification);
+  }
+
+  // get all notifications
+  static Future<List<NotificationModel>> getAllNotifications() async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    return box.values.toList();
+  }
+
+  // delete notification
+  static Future<void> deleteNotification(String id) async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    await box.delete(id);
+  }
+
   
 }

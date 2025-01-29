@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
             currentTabIndex = index;
           });
         },
-        items: const [
+        items:  [
           Icon(
             Icons.account_balance_outlined,
             color: Colors.white,
@@ -72,9 +72,23 @@ class _HomePageState extends State<HomePage> {
             Icons.category_outlined,
             color: Colors.white,
           ),
-          Icon(
-            Icons.notifications_active_outlined,
-            color: Colors.white,
+          Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Icon(
+                Icons.notifications_active_outlined,
+                color: Colors.white,
+              ),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color:  Colors.red,
+                ),
+                child: Text("12",style: TextStyle(fontSize: 8, color: Colors.white), textAlign: TextAlign.center,),
+              )
+            ],
           )
         ],
       ),
