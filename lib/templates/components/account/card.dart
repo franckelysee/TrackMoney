@@ -104,6 +104,7 @@ class _CardComponentState extends State<CardComponent> {
                     ),
                   ),
                   Spacer(),
+                  if(!widget.isCreating)
                   Text(
                     "${widget.accountName}",
                     style: TextStyle(

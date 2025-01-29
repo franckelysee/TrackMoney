@@ -10,6 +10,7 @@ import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
 import 'package:trackmoney/templates/home.dart';
+import 'package:trackmoney/utils/transaction_types_enum.dart';
 import 'package:uuid/uuid.dart';
 
 class AjouterPage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _AjouterPageState extends State<AjouterPage> {
               .id
               .toString();
         });
-        var type = spendingTypeController == 'Recette' ? 'recette' : 'depense';
+        var type = spendingTypeController == 'Recette' ? TransactionTypesEnum.recette : TransactionTypesEnum.depense;
         var payment_name = spendingNameController.text;
         var price = double.parse(priceController.text);
         var account_id = accounts

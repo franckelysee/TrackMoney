@@ -10,6 +10,7 @@ import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
+import 'package:trackmoney/utils/transaction_types_enum.dart';
 
 class ComptePage extends StatefulWidget {
   const ComptePage({super.key});
@@ -21,7 +22,16 @@ class ComptePage extends StatefulWidget {
 class _ComptePageState extends State<ComptePage> {
   static const tabAnimationDuration = Duration(milliseconds: 300);
   List<AccountModel> comptes = [];
-  List<TransactionSchema> transactions_data = [];
+  List<TransactionModel> transactions = [];
+  List<TransactionSchema> transactionsData = [];
+  Map<String, dynamic> transactionInStats = {
+    'count': 0,
+    'amount': 0.0,
+  };
+  Map<String, dynamic> transactionOutStats = {
+    'count': 0,
+    'amount': 0.0,
+  };
   bool isLoading = true;
   @override
   void initState() {
@@ -41,7 +51,7 @@ class _ComptePageState extends State<ComptePage> {
 
   void fetchTransactions() async {
     try {
-      var transactions = await Database.getAllTransactions();
+      transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
       setState(() {
         var data = transactions.map((TransactionModel transaction) {
@@ -59,8 +69,8 @@ class _ComptePageState extends State<ComptePage> {
               date: transaction.date,
               account_id: transaction.accountId);
         }).toList();
-        transactions_data = data;
-        transactions_data.sort((a, b) => b.date!.compareTo(a.date!));
+        transactionsData = data;
+        transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,17 +96,11 @@ class _ComptePageState extends State<ComptePage> {
     setState(() {
       isLoading = false;
     });
+
   }
 
-  Future<void> transactionCounteredByType(String type) async {
-    int count = 0;
-    var transactionstype = comptes.where((account) {
-      return account.type == type;
-    }).toList();
-    setState(() {
-      count = transactionstype.length;
-    });
-  }
+ 
+
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +179,18 @@ class _ComptePageState extends State<ComptePage> {
                               Expanded(
                                 child: TabBarView(
                                   children: comptes
-                                      .map((compte) => SingleChildScrollView(
+                                      .map((compte){ 
+                                        setState(() {
+                                          transactionInStats = {
+                                            'count': transactions.where((transaction) => transaction.type == TransactionTypesEnum.recette && transaction.accountId == compte.id).length,
+                                            'amount': transactions.where((transaction) => transaction.type == TransactionTypesEnum.recette && transaction.accountId == compte.id).fold(0.0, (acc, transaction) => acc + transaction.amount),
+                                          };
+                                          transactionOutStats = {
+                                            'count': transactions.where((transaction) => transaction.type == TransactionTypesEnum.depense && transaction.accountId == compte.id).length,
+                                            'amount': transactions.where((transaction) => transaction.type == TransactionTypesEnum.depense && transaction.accountId == compte.id).fold(0.0, (acc, transaction) => acc + transaction.amount),
+                                          };
+                                        });
+                                        return SingleChildScrollView(
                                             padding: EdgeInsets.symmetric(
                                                 vertical: 20, horizontal: 20),
                                             child: Column(
@@ -225,8 +240,8 @@ class _ComptePageState extends State<ComptePage> {
                                                             icon: Icons
                                                                 .download_outlined,
                                                             title: "Entrées",
-                                                            transactionCount: 1,
-                                                            price: 8025,
+                                                            transactionCount: transactionInStats['count'],
+                                                            price: transactionInStats['amount'],
                                                             priceColor:
                                                                 Colors.green),
                                                         Spacer(),
@@ -236,9 +251,8 @@ class _ComptePageState extends State<ComptePage> {
                                                             iconBackgroundColor:
                                                                 Colors.red,
                                                             title: "Sorties",
-                                                            transactionCount:
-                                                                39,
-                                                            price: 658,
+                                                            transactionCount:transactionOutStats['count'],
+                                                            price: transactionOutStats['amount'],
                                                             priceColor:
                                                                 Colors.red)
                                                       ],
@@ -248,62 +262,60 @@ class _ComptePageState extends State<ComptePage> {
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                if (transactions_data.length >
-                                                    0)
+                                                if (transactionsData.isNotEmpty)
                                                   Column(
                                                     children: [
                                                       Text("Aujourd'hui"),
                                                       Column(
-                                                          children: List.generate(
-                                                              transactions_data
-                                                                  .length,
-                                                              (index) {
-                                                        if (transactions_data[
-                                                                    index]
-                                                                .account_id !=
-                                                            compte.id)
-                                                          return Container();
-                                                        return NotificatedCard(
-                                                          titleSize: 20,
-                                                          icon:
-                                                              transactions_data[
-                                                                      index]
-                                                                  .icon,
-                                                          title:
-                                                              transactions_data[
-                                                                      index]
-                                                                  .name!,
-                                                          subtitle:
-                                                              transactions_data[
-                                                                      index]
-                                                                  .category!,
-                                                          price:
-                                                              transactions_data[
-                                                                              index]
-                                                                          .type ==
-                                                                      "depense"
-                                                                  ? -transactions_data[
-                                                                          index]
-                                                                      .amount!
-                                                                  : transactions_data[
-                                                                          index]
-                                                                      .amount!,
-                                                          iconBackgroundColor:
-                                                              transactions_data[
-                                                                              index]
-                                                                          .type ==
-                                                                      "depense"
-                                                                  ? Colors.red
-                                                                  : Colors
-                                                                      .green,
+                                                        children: List.generate(transactionsData.length,(index) {
+                                                          if (transactionsData[index].account_id != compte.id){
+                                                            return Container();
+                                                          }
+                                                          return NotificatedCard(
+                                                            titleSize: 20,
+                                                            icon:
+                                                                transactionsData[
+                                                                        index]
+                                                                    .icon,
+                                                            title:
+                                                                transactionsData[
+                                                                        index]
+                                                                    .name!,
+                                                            subtitle:
+                                                                transactionsData[
+                                                                        index]
+                                                                    .category!,
+                                                            price:
+                                                                transactionsData[
+                                                                                index]
+                                                                            .type ==
+                                                                        "depense"
+                                                                    ? -transactionsData[
+                                                                            index]
+                                                                        .amount!
+                                                                    : transactionsData[
+                                                                            index]
+                                                                        .amount!,
+                                                            iconBackgroundColor:
+                                                                transactionsData[
+                                                                                index]
+                                                                            .type ==
+                                                                        "depense"
+                                                                    ? Colors.red
+                                                                    : Colors
+                                                                        .green,
                                                         );
-                                                      })),
+                                                        }
+                                                      )),
                                                     ],
                                                   )
                                               ],
                                             ),
-                                          ))
+                                          );
+                                          }
+                                        )
                                       .toList(),
+                                      
                                 ),
                               ),
                             ],
