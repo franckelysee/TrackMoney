@@ -17,9 +17,7 @@ class NotificatedCard extends StatefulWidget {
       this.iconBackgroundColor,
       this.date,
       this.onTap,
-      this.onLongPress
-      }
-    );
+      this.onLongPress});
   final IconData? icon;
   final Color? iconColor;
   final Color? iconBackgroundColor;
@@ -32,7 +30,7 @@ class NotificatedCard extends StatefulWidget {
   final Color? textColor;
   final double? price;
   final Image? image;
-  final int? date;
+  final DateTime? date;
   final void Function()? onTap;
   final void Function()? onLongPress;
   @override
@@ -43,7 +41,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap:widget.onTap,
+        onTap: widget.onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Card(
@@ -57,7 +55,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child:
-                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                 if (widget.icon != null)
                   Container(
                     width: 50,
@@ -65,7 +63,8 @@ class _NotificatedCardState extends State<NotificatedCard> {
                     decoration: BoxDecoration(
                       color: widget.iconBackgroundColor ?? Color(0xFF3273EC),
                       borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: Theme.of(context).cardColor, width: 1),
+                      border: Border.all(
+                          color: Theme.of(context).cardColor, width: 1),
                     ),
                     child: Icon(
                       widget.icon,
@@ -86,25 +85,25 @@ class _NotificatedCardState extends State<NotificatedCard> {
                         style: TextStyle(
                           fontSize: widget.titleSize,
                           fontWeight: FontWeight.w600,
-                          color: widget.textColor ?? Theme.of(context).colorScheme.secondary,
+                          color: widget.textColor ??
+                              Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       SizedBox(
                         height: 5,
                       ),
-                      if(widget.subtitle != null)
-                      Text(
-                        widget.subtitle!,
-                        style: TextStyle(
-                          fontSize: widget.subtitleSize ?? 14,
-                          color: widget.textColor ?? Color(0xFF727272),
+                      if (widget.subtitle != null)
+                        Text(
+                          widget.subtitle!,
+                          style: TextStyle(
+                            fontSize: widget.subtitleSize ?? 14,
+                            color: widget.textColor ?? Color(0xFF727272),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
-                if(widget.price !=null)
-                Spacer(),
+                if (widget.price != null) Spacer(),
                 Column(
                   children: [
                     if (widget.price != null)
@@ -116,14 +115,17 @@ class _NotificatedCardState extends State<NotificatedCard> {
                         ),
                       ),
                     if (widget.date != null)
-                      Text("${widget.date}")
+                      Text(
+                        "${widget.date!.year}-${widget.date!.month}-${widget.date!.day}; ${widget.date!.hour}:${widget.date!.minute}",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      )
                   ],
                 ),
-                if (widget.trailing!= null)
-                Padding(
-                  padding: EdgeInsets.only(right: 10),
-                  child: widget.trailing,
-                ),
+                if (widget.trailing != null)
+                  Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: widget.trailing,
+                  ),
                 // Container(
                 //   width: 8,
                 //   height: 8,

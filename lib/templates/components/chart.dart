@@ -206,56 +206,56 @@ class _LineChartSample2State extends State<LineChartSample2> {
     Colors.deepPurpleAccent,
     Colors.indigo,
   ];
-  
+
   bool showAvg = false;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Theme.of(context).cardColor,
+        color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
         shadowColor: Colors.grey.withOpacity(0.5),
         elevation: 2,
-      child: Stack(
-        children: <Widget>[
-          AspectRatio(
-            aspectRatio: 1.70,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                right: 18,
-                left: 12,
-                top: 24,
-                bottom: 12,
-              ),
-              child: LineChart(
-                showAvg ? avgData() : mainData(),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 60,
-            height: 34,
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  showAvg = !showAvg;
-                });
-              },
-              child: Text(
-                'avg',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: showAvg ? Colors.white.withOpacity(0.5) : Colors.white,
+        child: Stack(
+          children: <Widget>[
+            AspectRatio(
+              aspectRatio: 1.70,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 18,
+                  left: 12,
+                  top: 24,
+                  bottom: 12,
+                ),
+                child: LineChart(
+                  showAvg ? avgData() : mainData(),
                 ),
               ),
             ),
-          ),
-        ],
-      
-      )
-    );
+            SizedBox(
+              width: 60,
+              height: 34,
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    showAvg = !showAvg;
+                  });
+                },
+                child: Text(
+                  'avg',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: showAvg
+                        ? Colors.blue.withOpacity(0.5)
+                        : Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 
   Widget bottomTitleWidgets(double value, TitleMeta meta) {
@@ -406,19 +406,22 @@ class _LineChartSample2State extends State<LineChartSample2> {
           sideTitles: SideTitles(showTitles: false),
         ),
         bottomTitles: AxisTitles(
-          axisNameWidget:  Row(
+          axisNameWidget: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Row(
                 children: [
-                  Container(width: 10,height: 10, color: Colors.deepPurpleAccent),
+                  Container(
+                      width: 10, height: 10, color: Colors.deepPurpleAccent),
                   SizedBox(
                     width: 3,
                   ),
                   Text("Depenses"),
                 ],
               ),
-              SizedBox(width: 10,),
+              SizedBox(
+                width: 10,
+              ),
               Row(
                 children: [
                   Container(
@@ -426,14 +429,14 @@ class _LineChartSample2State extends State<LineChartSample2> {
                     height: 10,
                     color: Colors.cyanAccent,
                   ),
-                  SizedBox(width: 3,),
+                  SizedBox(
+                    width: 3,
+                  ),
                   Text("Revenus"),
                 ],
               )
-
             ],
           ),
-            
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 30,
@@ -486,7 +489,6 @@ class _LineChartSample2State extends State<LineChartSample2> {
             ),
           ),
         ),
-        
         LineChartBarData(
           spots: const [
             FlSpot(0, 7),
@@ -518,7 +520,6 @@ class _LineChartSample2State extends State<LineChartSample2> {
             ),
           ),
         ),
-      
       ],
     );
   }

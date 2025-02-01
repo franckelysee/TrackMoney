@@ -96,11 +96,7 @@ class _ComptePageState extends State<ComptePage> {
     setState(() {
       isLoading = false;
     });
-
   }
-
- 
-
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +130,7 @@ class _ComptePageState extends State<ComptePage> {
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).primaryColor),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 20),
                         CircularAddAccountButton(
@@ -178,144 +175,175 @@ class _ComptePageState extends State<ComptePage> {
                               ),
                               Expanded(
                                 child: TabBarView(
-                                  children: comptes
-                                      .map((compte){ 
-                                        setState(() {
-                                          transactionInStats = {
-                                            'count': transactions.where((transaction) => transaction.type == TransactionTypesEnum.recette && transaction.accountId == compte.id).length,
-                                            'amount': transactions.where((transaction) => transaction.type == TransactionTypesEnum.recette && transaction.accountId == compte.id).fold(0.0, (acc, transaction) => acc + transaction.amount),
-                                          };
-                                          transactionOutStats = {
-                                            'count': transactions.where((transaction) => transaction.type == TransactionTypesEnum.depense && transaction.accountId == compte.id).length,
-                                            'amount': transactions.where((transaction) => transaction.type == TransactionTypesEnum.depense && transaction.accountId == compte.id).fold(0.0, (acc, transaction) => acc + transaction.amount),
-                                          };
-                                        });
-                                        return SingleChildScrollView(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 20, horizontal: 20),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
+                                  children: comptes.map((compte) {
+                                    setState(() {
+                                      transactionInStats = {
+                                        'count': transactions
+                                            .where((transaction) =>
+                                                transaction.type ==
+                                                    TransactionTypesEnum
+                                                        .recette &&
+                                                transaction.accountId ==
+                                                    compte.id)
+                                            .length,
+                                        'amount': transactions
+                                            .where((transaction) =>
+                                                transaction.type ==
+                                                    TransactionTypesEnum
+                                                        .recette &&
+                                                transaction.accountId ==
+                                                    compte.id)
+                                            .fold(
+                                                0.0,
+                                                (acc, transaction) =>
+                                                    acc + transaction.amount),
+                                      };
+                                      transactionOutStats = {
+                                        'count': transactions
+                                            .where((transaction) =>
+                                                transaction.type ==
+                                                    TransactionTypesEnum
+                                                        .depense &&
+                                                transaction.accountId ==
+                                                    compte.id)
+                                            .length,
+                                        'amount': transactions
+                                            .where((transaction) =>
+                                                transaction.type ==
+                                                    TransactionTypesEnum
+                                                        .depense &&
+                                                transaction.accountId ==
+                                                    compte.id)
+                                            .fold(
+                                                0.0,
+                                                (acc, transaction) =>
+                                                    acc + transaction.amount),
+                                      };
+                                    });
+                                    return SingleChildScrollView(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 20, horizontal: 20),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          CardComponent(
+                                            amount: compte.balance!,
+                                            accountType: compte.type!,
+                                            accountName: compte.name!,
+                                            onAccountLoad: (value) {
+                                              refreshAccounts();
+                                            },
+                                          ),
+                                          SizedBox(
+                                            height: 20,
+                                          ),
+                                          NotificatedCard(
+                                            title: 'Budget du mois de Decembre',
+                                            titleSize: 13,
+                                            subtitle: 'Argent espece',
+                                            subtitleSize: 13,
+                                            price: 2478,
+                                          ),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          NotificatedCard(
+                                              title:
+                                                  "Créer un objectif d'épargne",
+                                              titleSize: 16,
+                                              subtitle:
+                                                  "Fixez un objectif d'épargne",
+                                              subtitleSize: 13),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          Column(
+                                            children: [
+                                              Text("Cash"),
+                                              Row(
+                                                children: [
+                                                  TransactionCard(
+                                                      icon: Icons
+                                                          .download_outlined,
+                                                      title: "Entrées",
+                                                      transactionCount:
+                                                          transactionInStats[
+                                                              'count'],
+                                                      price: transactionInStats[
+                                                          'amount'],
+                                                      priceColor: Colors.green),
+                                                  Spacer(),
+                                                  TransactionCard(
+                                                      icon:
+                                                          Icons.logout_outlined,
+                                                      iconBackgroundColor:
+                                                          Colors.red,
+                                                      title: "Sorties",
+                                                      transactionCount:
+                                                          transactionOutStats[
+                                                              'count'],
+                                                      price:
+                                                          transactionOutStats[
+                                                              'amount'],
+                                                      priceColor: Colors.red)
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          if (transactionsData.isNotEmpty)
+                                            Column(
                                               children: [
-                                                CardComponent(
-                                                  amount: compte.balance!,
-                                                  accountType: compte.type!,
-                                                  accountName: compte.name!,
-                                                  onAccountLoad: (value) {
-                                                    refreshAccounts();
-                                                  },
-                                                ),
-                                                SizedBox(
-                                                  height: 20,
-                                                ),
-                                                NotificatedCard(
-                                                  title:
-                                                      'Budget du mois de Decembre',
-                                                  titleSize: 13,
-                                                  subtitle: 'Argent espece',
-                                                  subtitleSize: 13,
-                                                  price: 2478,
-                                                ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                NotificatedCard(
-                                                    title:
-                                                        "Créer un objectif d'épargne",
-                                                    titleSize: 16,
-                                                    subtitle:
-                                                        "Fixez un objectif d'épargne",
-                                                    subtitleSize: 13),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
+                                                Text("Aujourd'hui"),
                                                 Column(
-                                                  children: [
-                                                    Text("Cash"),
-                                                    Row(
-                                                      children: [
-                                                        TransactionCard(
-                                                            icon: Icons
-                                                                .download_outlined,
-                                                            title: "Entrées",
-                                                            transactionCount: transactionInStats['count'],
-                                                            price: transactionInStats['amount'],
-                                                            priceColor:
-                                                                Colors.green),
-                                                        Spacer(),
-                                                        TransactionCard(
-                                                            icon: Icons
-                                                                .logout_outlined,
-                                                            iconBackgroundColor:
-                                                                Colors.red,
-                                                            title: "Sorties",
-                                                            transactionCount:transactionOutStats['count'],
-                                                            price: transactionOutStats['amount'],
-                                                            priceColor:
-                                                                Colors.red)
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                if (transactionsData.isNotEmpty)
-                                                  Column(
-                                                    children: [
-                                                      Text("Aujourd'hui"),
-                                                      Column(
-                                                        children: List.generate(transactionsData.length,(index) {
-                                                          if (transactionsData[index].account_id != compte.id){
-                                                            return Container();
-                                                          }
-                                                          return NotificatedCard(
-                                                            titleSize: 20,
-                                                            icon:
-                                                                transactionsData[
-                                                                        index]
-                                                                    .icon,
-                                                            title:
-                                                                transactionsData[
-                                                                        index]
-                                                                    .name!,
-                                                            subtitle:
-                                                                transactionsData[
-                                                                        index]
-                                                                    .category!,
-                                                            price:
-                                                                transactionsData[
-                                                                                index]
-                                                                            .type ==
-                                                                        "depense"
-                                                                    ? -transactionsData[
-                                                                            index]
-                                                                        .amount!
-                                                                    : transactionsData[
-                                                                            index]
-                                                                        .amount!,
-                                                            iconBackgroundColor:
-                                                                transactionsData[
-                                                                                index]
-                                                                            .type ==
-                                                                        "depense"
-                                                                    ? Colors.red
-                                                                    : Colors
-                                                                        .green,
-                                                        );
-                                                        }
-                                                      )),
-                                                    ],
-                                                  )
+                                                    children: List.generate(
+                                                        transactionsData.length,
+                                                        (index) {
+                                                  if (transactionsData[index]
+                                                          .account_id !=
+                                                      compte.id) {
+                                                    return Container();
+                                                  }
+                                                  return NotificatedCard(
+                                                    titleSize: 20,
+                                                    icon:
+                                                        transactionsData[index]
+                                                            .icon,
+                                                    title:
+                                                        transactionsData[index]
+                                                            .name!,
+                                                    subtitle:
+                                                        transactionsData[index]
+                                                            .category!,
+                                                    price:
+                                                        transactionsData[index]
+                                                                    .type ==
+                                                                "depense"
+                                                            ? -transactionsData[
+                                                                    index]
+                                                                .amount!
+                                                            : transactionsData[
+                                                                    index]
+                                                                .amount!,
+                                                    iconBackgroundColor:
+                                                        transactionsData[index]
+                                                                    .type ==
+                                                                "depense"
+                                                            ? Colors.red
+                                                            : Colors.green,
+                                                  );
+                                                })),
                                               ],
-                                            ),
-                                          );
-                                          }
-                                        )
-                                      .toList(),
-                                      
+                                            )
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ),
                             ],
