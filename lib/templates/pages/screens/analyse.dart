@@ -82,6 +82,26 @@ class _AnalysePageState extends State<AnalysePage> {
     }
   }
 
+  void updateTransaction(DateTime date) async {
+    is_loading = true;
+    setState(() {
+      transactionsData = transactionsData.where((transaction) {
+        print("day : ${date.day} -- transac day : ${transaction.date!.day}");
+
+        if (transaction.date!.month == date.month &&
+            transaction.date!.day == date.day) {
+          return true;
+        } else {
+          return false;
+        }
+      }).toList();
+    });
+    await Future.delayed(const Duration(milliseconds: 300));
+    setState(() {
+      is_loading = false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +132,8 @@ class _AnalysePageState extends State<AnalysePage> {
                       setState(() {
                         selectedDate = value;
                       });
+                      updateTransaction(selectedDate);
+                      print("selectedDate: $selectedDate");
                     },
                   ),
                   const SizedBox(height: 10),

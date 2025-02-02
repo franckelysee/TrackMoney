@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-
 class DateSelector extends StatefulWidget {
   final Function(DateTime) onDateSeclected;
-  const DateSelector({super.key,required this.onDateSeclected});
+  const DateSelector({super.key, required this.onDateSeclected});
 
   @override
   State<DateSelector> createState() => _DateSelectorState();
@@ -15,7 +14,7 @@ class _DateSelectorState extends State<DateSelector> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width ,
+      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(color: Theme.of(context).cardColor),
       child: Padding(
         padding: EdgeInsets.all(5),
@@ -25,10 +24,11 @@ class _DateSelectorState extends State<DateSelector> {
             Container(
               width: 30,
               height: 30,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color:Theme.of(context).colorScheme.surface ),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: Theme.of(context).colorScheme.surface),
               child: Icon(Icons.chevron_left),
             ),
-
             TextButton(
               onPressed: () async {
                 final DateTime? dateTime = await showDatePicker(
@@ -39,23 +39,34 @@ class _DateSelectorState extends State<DateSelector> {
                 if (dateTime != null) {
                   setState(() {
                     selectedDate = dateTime;
-                    widget.onDateSeclected(selectedDate);
                   });
+                  widget.onDateSeclected(selectedDate);
                 }
               },
-              child: Row(
+              child: Column(
                 children: [
-                  Icon(Icons.calendar_month),
+                  Text(
+                      "${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}"),
                   SizedBox(
-                    width: 1,
+                    width: 5,
                   ),
-                  Text("${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}"),
-                  SizedBox(width: 5,),
-                  Icon(Icons.arrow_drop_down)
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_month),
+                      SizedBox(
+                        width: 1,
+                      ),
+                      Text(
+                          "${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}"),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Icon(Icons.arrow_drop_down)
+                    ],
+                  ),
                 ],
               ),
             ),
-
             Container(
               width: 30,
               height: 30,
@@ -67,7 +78,6 @@ class _DateSelectorState extends State<DateSelector> {
           ],
         ),
       ),
-
     );
   }
 }
