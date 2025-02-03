@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
@@ -9,7 +9,6 @@ import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
-import 'package:trackmoney/utils/account_type_enum.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
 class ComptePage extends StatefulWidget {
@@ -110,38 +109,7 @@ class _ComptePageState extends State<ComptePage> {
               child: CircularProgressIndicator(),
             )
           : comptes.isEmpty
-              ? Center(
-                  child: Container(
-                    height: 500,
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.wallet,
-                          size: 50,
-                        ),
-                        Text(
-                          'Ajoutez Votre Premier Portefeille ',
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 20),
-                        CircularAddAccountButton(
-                          onAccountLoad: (value) {
-                            refreshAccounts();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                )
+              ? _buildEmptyState()
               : SingleChildScrollView(
                   child: Column(
                     children: [
@@ -160,7 +128,7 @@ class _ComptePageState extends State<ComptePage> {
                             ]),
                       ),
                       SizedBox(
-                        height: 700,
+                        height: 800,
                         child: DefaultTabController(
                           animationDuration: tabAnimationDuration,
                           length: comptes.length,
@@ -262,7 +230,12 @@ class _ComptePageState extends State<ComptePage> {
                                           ),
                                           Column(
                                             children: [
-                                              Text("Cash"),
+                                              Text(
+                                                "Transactions du mois de ${DateFormat("MMMM").format(DateTime.now())}",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 16),
+                                              ),
                                               Row(
                                                 children: [
                                                   TransactionCard(
@@ -296,50 +269,8 @@ class _ComptePageState extends State<ComptePage> {
                                           SizedBox(
                                             height: 5,
                                           ),
-                                          if (transactionsData.isNotEmpty)
-                                            Column(
-                                              children: [
-                                                Text("Aujourd'hui"),
-                                                Column(
-                                                    children: List.generate(
-                                                        transactionsData.length,
-                                                        (index) {
-                                                  if (transactionsData[index]
-                                                          .account_id !=
-                                                      compte.id) {
-                                                    return Container();
-                                                  }
-                                                  return NotificatedCard(
-                                                    titleSize: 20,
-                                                    icon:
-                                                        transactionsData[index]
-                                                            .icon,
-                                                    title:
-                                                        transactionsData[index]
-                                                            .name!,
-                                                    subtitle:
-                                                        transactionsData[index]
-                                                            .category!,
-                                                    price:
-                                                        transactionsData[index]
-                                                                    .type ==
-                                                                "depense"
-                                                            ? -transactionsData[
-                                                                    index]
-                                                                .amount!
-                                                            : transactionsData[
-                                                                    index]
-                                                                .amount!,
-                                                    iconBackgroundColor:
-                                                        transactionsData[index]
-                                                                    .type ==
-                                                                "depense"
-                                                            ? Colors.red
-                                                            : Colors.green,
-                                                  );
-                                                })),
-                                              ],
-                                            )
+                                          if (transactionsData.length > 0)
+                                            _buildTransactionSummary(compte)
                                         ],
                                       ),
                                     );
@@ -353,6 +284,67 @@ class _ComptePageState extends State<ComptePage> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Container(
+        height: 500,
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              FontAwesomeIcons.wallet,
+              size: 50,
+            ),
+            Text(
+              'Ajoutez Votre Premier Portefeille ',
+              style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            CircularAddAccountButton(
+              onAccountLoad: (value) {
+                refreshAccounts();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionSummary(AccountModel compte) {
+    return Column(
+      children: [
+        Text("Aujourd'hui"),
+        Column(
+            children: List.generate(transactionsData.length, (index) {
+          if (transactionsData[index].account_id != compte.id) {
+            return Container();
+          }
+          return NotificatedCard(
+            titleSize: 20,
+            icon: transactionsData[index].icon,
+            title: transactionsData[index].name!,
+            subtitle: transactionsData[index].category!,
+            price: transactionsData[index].type == "depense"
+                ? -transactionsData[index].amount!
+                : transactionsData[index].amount!,
+            iconBackgroundColor: transactionsData[index].type == "depense"
+                ? Colors.red
+                : Colors.green,
+          );
+        })),
+      ],
     );
   }
 }

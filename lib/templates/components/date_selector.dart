@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DateSelector extends StatefulWidget {
-  final Function(DateTime) onDateSeclected;
-  const DateSelector({super.key, required this.onDateSeclected});
+  final Function(DateTime) onDateSelected;
+  const DateSelector({super.key, required this.onDateSelected});
 
   @override
   State<DateSelector> createState() => _DateSelectorState();
@@ -17,7 +17,7 @@ class _DateSelectorState extends State<DateSelector> {
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(color: Theme.of(context).cardColor),
       child: Padding(
-        padding: EdgeInsets.all(5),
+        padding: const EdgeInsets.all(5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -25,45 +25,38 @@ class _DateSelectorState extends State<DateSelector> {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Theme.of(context).colorScheme.surface),
-              child: Icon(Icons.chevron_left),
+                borderRadius: BorderRadius.circular(50),
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              child: const Icon(Icons.chevron_left),
             ),
             TextButton(
               onPressed: () async {
                 final DateTime? dateTime = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(3000));
+                  context: context,
+                  initialDate: selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(3000),
+                );
                 if (dateTime != null) {
                   setState(() {
                     selectedDate = dateTime;
                   });
-                  widget.onDateSeclected(selectedDate);
+                  widget.onDateSelected(selectedDate);
                 }
               },
-              child: Column(
+              child:Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  const Icon(Icons.calendar_month),
+                  const SizedBox(width: 5),
+                  // ✅ Date correctement mise à jour
                   Text(
-                      "${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}"),
-                  SizedBox(
-                    width: 5,
+                    "${selectedDate.year} - ${selectedDate.month.toString().padLeft(2, '0')} - ${selectedDate.day.toString().padLeft(2, '0')}",
+                    key: ValueKey(selectedDate), // Force le rafraîchissement
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_month),
-                      SizedBox(
-                        width: 1,
-                      ),
-                      Text(
-                          "${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}"),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(Icons.arrow_drop_down)
-                    ],
-                  ),
+                  const SizedBox(width: 5),
+                  const Icon(Icons.arrow_drop_down),
                 ],
               ),
             ),
@@ -71,9 +64,10 @@ class _DateSelectorState extends State<DateSelector> {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Theme.of(context).colorScheme.surface),
-              child: Icon(Icons.chevron_right),
+                borderRadius: BorderRadius.circular(50),
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              child: const Icon(Icons.chevron_right),
             ),
           ],
         ),

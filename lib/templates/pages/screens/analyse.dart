@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/schemas/transaction_schema.dart';
@@ -20,6 +21,7 @@ class _AnalysePageState extends State<AnalysePage> {
   // Constantes pour éviter les répétitions
   static const tabAnimationDuration = Duration(milliseconds: 300);
   bool is_loading = true;
+  bool is_loading_transac = true;
   List<TransactionModel> transactions = [];
   List<TransactionSchema> transactionsData = [];
   late DateTime selectedDate;
@@ -49,6 +51,7 @@ class _AnalysePageState extends State<AnalysePage> {
 
   void fetchTransactions() async {
     try {
+      print("fetchTransactions");
       transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
       setState(() {
@@ -69,10 +72,12 @@ class _AnalysePageState extends State<AnalysePage> {
         }).toList();
         transactionsData = data;
         transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+        print("transactions data !!!: $transactionsData");
       });
       await Future.delayed(const Duration(milliseconds: 300));
       setState(() {
         is_loading = false;
+        is_loading_transac = false;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,26 +86,54 @@ class _AnalysePageState extends State<AnalysePage> {
       );
     }
   }
-
+  Future <List<TransactionSchema>> getAllTransactions() async {
+    transactions = await Database.getAllTransactions();
+    var categories = await Database.getAllCategories();
+    setState(() {
+        var data = transactions.map((TransactionModel transaction) {
+          var cat = categories.firstWhere((category) {
+            return category.id == transaction.categoryId;
+          });
+          return TransactionSchema(
+              id: transaction.id,
+              name: transaction.name,
+              type: transaction.type,
+              amount: transaction.amount,
+              icon: cat.icon,
+              iconcolor: cat.colorValue,
+              category: cat.name,
+              date: transaction.date,
+              account_id: transaction.accountId);
+        }).toList();
+        transactionsData = data;
+        transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+      });
+      return transactionsData;
+  }
   void updateTransaction(DateTime date) async {
-    is_loading = true;
     setState(() {
-      transactionsData = transactionsData.where((transaction) {
-        print("day : ${date.day} -- transac day : ${transaction.date!.day}");
-
-        if (transaction.date!.month == date.month &&
-            transaction.date!.day == date.day) {
-          return true;
-        } else {
-          return false;
-        }
-      }).toList();
+      is_loading_transac = true;
     });
+
+    var alltransactions = await getAllTransactions();
+    // 🔹 Appliquer le filtre sur la copie des données d'origine
+    List<TransactionSchema> filteredTransactions = [];
+    for (var transaction in alltransactions) {
+      if (transaction.date!.month == date.month &&
+          transaction.date!.day == date.day && transaction.date!.year == date.year) {
+        filteredTransactions.add(transaction);
+      }
+    }
+
+    // 🔹 Attendre un court délai pour afficher un chargement fluide
     await Future.delayed(const Duration(milliseconds: 300));
+
     setState(() {
-      is_loading = false;
+      transactionsData = filteredTransactions;
+      is_loading_transac = false;
     });
   }
+
 
   @override
   void initState() {
@@ -128,12 +161,11 @@ class _AnalysePageState extends State<AnalysePage> {
 
                   // Sélecteur de date
                   DateSelector(
-                    onDateSeclected: (value) {
+                    onDateSelected: (value) {
                       setState(() {
                         selectedDate = value;
+                        updateTransaction(selectedDate);
                       });
-                      updateTransaction(selectedDate);
-                      print("selectedDate: $selectedDate");
                     },
                   ),
                   const SizedBox(height: 10),
@@ -159,9 +191,12 @@ class _AnalysePageState extends State<AnalysePage> {
                           Expanded(
                             child: TabBarView(
                               children: [
-                                _buildTransactionList(
-                                    TransactionTypesEnum.recette),
-                                _buildTransactionList(
+                                is_loading_transac ? 
+                                const Center(child: CircularProgressIndicator()) 
+                                : _buildTransactionList(TransactionTypesEnum.recette),
+                                is_loading_transac ? 
+                                const Center(child: CircularProgressIndicator()) 
+                                :_buildTransactionList(
                                     TransactionTypesEnum.depense),
                               ],
                             ),
