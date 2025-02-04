@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/templates/home.dart';
@@ -14,9 +13,10 @@ void main() async {
   bool isFirstLauch = await Database.isFirstLaunch();
 
   runApp(ChangeNotifierProvider(
-      create: (context) => ThemeProvider(), 
-      child:  MyApp(isFirstLaunch: isFirstLauch,)
-    ));
+      create: (context) => ThemeProvider(),
+      child: MyApp(
+        isFirstLaunch: isFirstLauch,
+      )));
 }
 
 class MyApp extends StatelessWidget {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
@@ -23,6 +24,7 @@ class _ComptePageState extends State<ComptePage> {
   List<AccountModel> comptes = [];
   List<TransactionModel> transactions = [];
   List<TransactionSchema> transactionsData = [];
+  List<TransactionSchema> todayTransactions = [];
   Map<String, dynamic> transactionInStats = {
     'count': 0,
     'amount': 0.0,
@@ -32,6 +34,7 @@ class _ComptePageState extends State<ComptePage> {
     'amount': 0.0,
   };
   bool isLoading = true;
+  DateFormat dateFormat = new DateFormat("MMMM");
   @override
   void initState() {
     super.initState();
@@ -95,6 +98,35 @@ class _ComptePageState extends State<ComptePage> {
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<void> _getTodayTransactions() async {
+    var today = new DateTime.now();
+    var dataTransactions = await Database.getAllTransactions();
+    var dataCategories = await Database.getAllCategories();
+    List<TransactionSchema> newTransactions = [];
+    setState(() {
+      for (var transaction in dataTransactions) {
+        if (transaction.date.day == today.day &&
+            transaction.date.month == today.month &&
+            transaction.date.year == today.year) {
+          var cat = dataCategories.firstWhere((category) {
+            return category.id == transaction.categoryId;
+          });
+          newTransactions.add(TransactionSchema(
+              id: transaction.id,
+              name: transaction.name,
+              type: transaction.type,
+              amount: transaction.amount,
+              icon: cat.icon,
+              iconcolor: cat.colorValue,
+              category: cat.name,
+              date: transaction.date,
+              account_id: transaction.accountId));
+        }
+      }
+    });
+    todayTransactions = newTransactions;
   }
 
   @override
@@ -231,7 +263,7 @@ class _ComptePageState extends State<ComptePage> {
                                           Column(
                                             children: [
                                               Text(
-                                                "Transactions du mois de ${DateFormat("MMMM").format(DateTime.now())}",
+                                                "Transactions du mois de ${dateFormat.format(DateTime.now())}",
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 16),
@@ -323,28 +355,48 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Widget _buildTransactionSummary(AccountModel compte) {
+    _getTodayTransactions();
     return Column(
       children: [
-        Text("Aujourd'hui"),
-        Column(
-            children: List.generate(transactionsData.length, (index) {
-          if (transactionsData[index].account_id != compte.id) {
-            return Container();
-          }
-          return NotificatedCard(
-            titleSize: 20,
-            icon: transactionsData[index].icon,
-            title: transactionsData[index].name!,
-            subtitle: transactionsData[index].category!,
-            price: transactionsData[index].type == "depense"
-                ? -transactionsData[index].amount!
-                : transactionsData[index].amount!,
-            iconBackgroundColor: transactionsData[index].type == "depense"
-                ? Colors.red
-                : Colors.green,
-          );
-        })),
+        if (todayTransactions.length > 0)
+          Column(
+            children: [
+              Text("Aujourd'hui"),
+              Column(
+                children: _buildTransactionItemsList(todayTransactions, compte),
+              ),
+            ],
+          ),
+        if (transactionsData.length > 0)
+          Column(
+            children: [
+              Text("Toutes les Transactions"),
+              Column(
+                children: _buildTransactionItemsList(transactionsData, compte),
+              ),
+            ],
+          )
       ],
     );
   }
+}
+
+List<Widget> _buildTransactionItemsList(
+    List<TransactionSchema> transactions, AccountModel compte) {
+  return List.generate(transactions.length, (index) {
+    if (transactions[index].account_id != compte.id) {
+      return Container();
+    }
+    return NotificatedCard(
+      titleSize: 20,
+      icon: transactions[index].icon,
+      title: transactions[index].name!,
+      subtitle: transactions[index].category!,
+      price: transactions[index].type == "depense"
+          ? -transactions[index].amount!
+          : transactions[index].amount!,
+      iconBackgroundColor:
+          transactions[index].type == "depense" ? Colors.red : Colors.green,
+    );
+  });
 }
