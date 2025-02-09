@@ -11,7 +11,7 @@ class NotificationModel extends HiveObject{
   @HiveField(1)
   final String title;
   @HiveField(2)
-  final String? timestamp;
+  final DateTime? date;
   @HiveField(3)
   final String? userId;
   @HiveField(4)
@@ -35,7 +35,7 @@ class NotificationModel extends HiveObject{
     required this.type,
     required this.isRead,
     required this.isArchived,
-    this.timestamp,
+    this.date,
     this.userId,
     this.receiverId,
     this.status,

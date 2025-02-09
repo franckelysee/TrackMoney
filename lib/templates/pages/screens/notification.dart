@@ -36,23 +36,31 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> fetchNotifications() async {
     notifications = await Database.getAllNotifications();
+    notifications.sort((a, b) => b.date!.compareTo(a.date!));
     setState(() {});
   }
 
-  void refreshNotifications() async {
-    notifications = await Database.getAllNotifications();
-    setState(() {});
-  }
-
-  void markAsRead(int index) {
+  void markAsRead(String id) {
+    Database.markNotification(id);
     setState(() {
-      notifications[index].isRead = true;
+      for (var notification in notifications) {
+        if (notification.notificationId == id) {
+          notification.isRead = true;
+        }
+      }
+      // notifications[index].isRead = true;
     });
   }
 
-  void archiveNotification(int index) {
+  void archiveNotification(String id) {
+    Database.archiveNotification(id);
     setState(() {
-      notifications[index].isArchived = true;
+      for (var notification in notifications) {
+        if (notification.notificationId == id) {
+          notification.isArchived = true;
+        }
+      }
+      // notifications[index].isRead = true;
     });
   }
 
@@ -65,7 +73,8 @@ class _NotificationPageState extends State<NotificationPage> {
 
   List<NotificationModel> get filteredNotifications {
     return notifications.where((notification) {
-      bool typeMatches = selectedType == 'Toutes' || notification.type == selectedType;
+      bool typeMatches =
+          selectedType == 'Toutes' || notification.type == selectedType;
       bool unreadMatches = !showUnreadOnly || !notification.isRead;
       return typeMatches && unreadMatches && !notification.isArchived;
     }).toList();
@@ -160,11 +169,13 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget _buildNotificationItem(NotificationModel notification, int index) {
     return Dismissible(
       key: UniqueKey(),
-      background: _buildDismissBackground(Colors.green, Icons.archive, 'Archiver', Alignment.centerLeft),
-      secondaryBackground: _buildDismissBackground(Colors.red, Icons.delete, 'Supprimer', Alignment.centerRight),
+      background: _buildDismissBackground(
+          Colors.green, Icons.archive, 'Archiver', Alignment.centerLeft),
+      secondaryBackground: _buildDismissBackground(
+          Colors.red, Icons.delete, 'Supprimer', Alignment.centerRight),
       onDismissed: (direction) {
         if (direction == DismissDirection.startToEnd) {
-          archiveNotification(index);
+          archiveNotification(notification.notificationId);
         } else {
           deleteNotification(notification.notificationId);
         }
@@ -173,30 +184,36 @@ class _NotificationPageState extends State<NotificationPage> {
         title: notification.title ?? '',
         subtitle: notification.content ?? '',
         titleSize: 20,
-        textColor: notification.isRead ? Colors.grey : Theme.of(context).colorScheme.secondary,
+        textColor: notification.isRead
+            ? Colors.grey
+            : Theme.of(context).colorScheme.secondary,
         icon: _getNotificationIcon(notification.type),
         iconBackgroundColor: Theme.of(context).cardColor,
-        iconColor: notification.isRead ? Colors.grey : _getNotificationIconColor(notification.type),
-        trailing: _buildPopupMenu(notification, index),
+        iconColor: notification.isRead
+            ? Colors.grey
+            : _getNotificationIconColor(notification.type),
+        trailing: _buildPopupMenu(notification),
         onTap: () {
-          if (!notification.isRead) markAsRead(index);
+          if (!notification.isRead) markAsRead(notification.notificationId);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Notification cliquée: ${notification.content}')),
+            SnackBar(
+                content: Text('Notification cliquée: ${notification.content}')),
           );
         },
       ),
     );
   }
 
-  
   IconData _getNotificationIcon(String type) {
     return notificationTypeToIconData[type] ?? Icons.notifications_active;
   }
+
   Color _getNotificationIconColor(String type) {
     return notificationTypeToIconColor[type] ?? Colors.green;
   }
 
-  Widget _buildDismissBackground(Color color, IconData icon, String label, Alignment alignment) {
+  Widget _buildDismissBackground(
+      Color color, IconData icon, String label, Alignment alignment) {
     return Container(
       color: color,
       alignment: alignment,
@@ -206,22 +223,26 @@ class _NotificationPageState extends State<NotificationPage> {
         children: [
           Icon(icon, color: Colors.white),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  Widget _buildPopupMenu(NotificationModel notification, int index) {
+  Widget _buildPopupMenu(NotificationModel notification) {
     return PopupMenuButton<String>(
       color: Theme.of(context).cardColor,
       onSelected: (action) {
-        if (action == 'read') markAsRead(index);
-        if (action == 'archive') archiveNotification(index);
+        if (action == 'read') markAsRead(notification.notificationId);
+        if (action == 'archive') archiveNotification(notification.notificationId);
         if (action == 'delete') deleteNotification(notification.notificationId);
       },
       itemBuilder: (context) => [
-        PopupMenuItem(value: 'read', child: Text(notification.isRead ? 'Déjà lu' : 'Marquer comme lu')),
+        PopupMenuItem(
+            value: 'read',
+            child: Text(notification.isRead ? 'Déjà lu' : 'Marquer comme lu')),
         const PopupMenuItem(value: 'archive', child: Text('Archiver')),
         const PopupMenuItem(value: 'delete', child: Text('Supprimer')),
       ],

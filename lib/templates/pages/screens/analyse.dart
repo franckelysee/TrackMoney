@@ -51,7 +51,6 @@ class _AnalysePageState extends State<AnalysePage> {
 
   void fetchTransactions() async {
     try {
-      print("fetchTransactions");
       transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
       setState(() {
@@ -72,7 +71,6 @@ class _AnalysePageState extends State<AnalysePage> {
         }).toList();
         transactionsData = data;
         transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
-        print("transactions data !!!: $transactionsData");
       });
       await Future.delayed(const Duration(milliseconds: 300));
       setState(() {

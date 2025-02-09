@@ -80,6 +80,7 @@ class Database {
     final box = await Hive.openBox<CategoryModel>('categories');
     await box.delete(id);
   }
+
   // --------------------------------------------------------------
   // Ajouter un compte
   static Future<void> addAccount(AccountModel account) async {
@@ -99,14 +100,13 @@ class Database {
     await box.delete(id);
   }
 
-
-  // modifier le prix du compte 
+  // modifier le prix du compte
   static Future<void> updateAccount(AccountModel account) async {
     final box = await Hive.openBox<AccountModel>('accounts');
     await box.put(account.id, account);
   }
 
-  // add notification 
+  // add notification
   static Future<void> addNotification(NotificationModel notification) async {
     final box = await Hive.openBox<NotificationModel>('notifications');
     await box.put(notification.notificationId, notification);
@@ -124,5 +124,19 @@ class Database {
     await box.delete(id);
   }
 
-  
+  // mark the notification as read
+  static Future<void> markNotification(String id) async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    var notification = await box.get(id);
+    notification!.isRead = true;
+    await box.put(id, notification);
+  }
+
+  // mark the notification as read
+  static Future<void> archiveNotification(String id) async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    var notification = await box.get(id);
+    notification!.isArchived = true;
+    await box.put(id, notification);
+  }
 }

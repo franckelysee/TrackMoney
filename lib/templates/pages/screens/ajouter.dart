@@ -120,6 +120,7 @@ class _AjouterPageState extends State<AjouterPage> {
             type: NotificationTypeEnum.INFORMATION,
             isRead: false,
             isArchived: false,
+            date: DateTime.now()
           );
 
         // add notification to database

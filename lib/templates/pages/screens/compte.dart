@@ -40,6 +40,7 @@ class _ComptePageState extends State<ComptePage> {
     super.initState();
     fetchAccounts();
     fetchTransactions();
+    _getTodayTransactions();
   }
 
   void fetchAccounts() async {
@@ -53,24 +54,30 @@ class _ComptePageState extends State<ComptePage> {
 
   void fetchTransactions() async {
     try {
+      var date = new DateTime.now();
       transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
+      List<TransactionSchema> data = [];
       setState(() {
-        var data = transactions.map((TransactionModel transaction) {
-          var cat = categories.firstWhere((category) {
-            return category.id == transaction.categoryId;
-          });
-          return TransactionSchema(
-              id: transaction.id,
-              name: transaction.name,
-              type: transaction.type,
-              amount: transaction.amount,
-              icon: cat.icon,
-              iconcolor: cat.colorValue,
-              category: cat.name,
-              date: transaction.date,
-              account_id: transaction.accountId);
-        }).toList();
+        for (var transaction in transactions) {
+          if (transaction.date.month == date.month &&
+              transaction.date.year == date.year) {
+            var cat = categories.firstWhere((category) {
+              return category.id == transaction.categoryId;
+            });
+            data.add(TransactionSchema(
+                id: transaction.id,
+                name: transaction.name,
+                type: transaction.type,
+                amount: transaction.amount,
+                icon: cat.icon,
+                iconcolor: cat.colorValue,
+                category: cat.name,
+                date: transaction.date,
+                account_id: transaction.accountId));
+          }
+        }
+
         transactionsData = data;
         transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
       });
@@ -127,6 +134,8 @@ class _ComptePageState extends State<ComptePage> {
       }
     });
     todayTransactions = newTransactions;
+    todayTransactions.sort((a, b) => b.date!.compareTo(a.date!));
+    return;
   }
 
   @override
@@ -160,7 +169,7 @@ class _ComptePageState extends State<ComptePage> {
                             ]),
                       ),
                       SizedBox(
-                        height: 800,
+                        height: 750,
                         child: DefaultTabController(
                           animationDuration: tabAnimationDuration,
                           length: comptes.length,
@@ -266,7 +275,7 @@ class _ComptePageState extends State<ComptePage> {
                                                 "Transactions du mois de ${dateFormat.format(DateTime.now())}",
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 16),
+                                                    fontSize: 20),
                                               ),
                                               Row(
                                                 children: [
@@ -355,13 +364,14 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Widget _buildTransactionSummary(AccountModel compte) {
-    _getTodayTransactions();
+    // _getTodayTransactions();
     return Column(
       children: [
         if (todayTransactions.length > 0)
           Column(
             children: [
-              Text("Aujourd'hui"),
+              Text("Aujourd'hui",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
               Column(
                 children: _buildTransactionItemsList(todayTransactions, compte),
               ),
@@ -370,7 +380,10 @@ class _ComptePageState extends State<ComptePage> {
         if (transactionsData.length > 0)
           Column(
             children: [
-              Text("Toutes les Transactions"),
+              Text(
+                "Transactions du mois",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
               Column(
                 children: _buildTransactionItemsList(transactionsData, compte),
               ),

@@ -23,7 +23,7 @@ class NotificationModelAdapter extends TypeAdapter<NotificationModel> {
       type: fields[7] as String,
       isRead: fields[8] as bool,
       isArchived: fields[9] as bool,
-      timestamp: fields[2] as String?,
+      date: fields[2] as DateTime?,
       userId: fields[3] as String?,
       receiverId: fields[4] as String?,
       status: fields[6] as String?,
@@ -39,7 +39,7 @@ class NotificationModelAdapter extends TypeAdapter<NotificationModel> {
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.timestamp)
+      ..write(obj.date)
       ..writeByte(3)
       ..write(obj.userId)
       ..writeByte(4)
