@@ -28,6 +28,8 @@ class _NotificationPageState extends State<NotificationPage> {
     NotificationTypeEnum.RAPPEL: Colors.orange,
     NotificationTypeEnum.ALERTE: Colors.red,
   };
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +39,11 @@ class _NotificationPageState extends State<NotificationPage> {
   Future<void> fetchNotifications() async {
     notifications = await Database.getAllNotifications();
     notifications.sort((a, b) => b.date!.compareTo(a.date!));
-    setState(() {});
+    await Future.delayed(
+        const Duration(milliseconds: 300)); // Simulate network delay
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void markAsRead(String id) {
@@ -87,22 +93,24 @@ class _NotificationPageState extends State<NotificationPage> {
         preferredSize: const Size.fromHeight(60),
         child: const AppHeader(title: 'Notifications'),
       ),
-      body: Column(
-        children: [
-          const Divider(),
-          _buildFilterSection(),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredNotifications.length,
-              itemBuilder: (context, index) {
-                var notification = filteredNotifications[index];
-                return _buildNotificationItem(notification, index);
-              },
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                const Divider(),
+                _buildFilterSection(),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredNotifications.length,
+                    itemBuilder: (context, index) {
+                      var notification = filteredNotifications[index];
+                      return _buildNotificationItem(notification, index);
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -236,7 +244,8 @@ class _NotificationPageState extends State<NotificationPage> {
       color: Theme.of(context).cardColor,
       onSelected: (action) {
         if (action == 'read') markAsRead(notification.notificationId);
-        if (action == 'archive') archiveNotification(notification.notificationId);
+        if (action == 'archive')
+          archiveNotification(notification.notificationId);
         if (action == 'delete') deleteNotification(notification.notificationId);
       },
       itemBuilder: (context) => [

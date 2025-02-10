@@ -23,7 +23,7 @@ class _CategoryPageState extends State<CategoryPage> {
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController spendingNameController = TextEditingController();
   List<CategoryModel> categories = [];
-
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -32,7 +32,11 @@ class _CategoryPageState extends State<CategoryPage> {
 
   void loadCategories() async {
     categories = await Database.getAllCategories();
-    setState(() {});
+    await Future.delayed(
+        const Duration(milliseconds: 300)); // Simulate network delay
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -41,64 +45,66 @@ class _CategoryPageState extends State<CategoryPage> {
       appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: const AppHeader(title: 'Categories')),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        child: Column(
-          children: [
-            Form(
-              key: _formsearchkey,
-              child: Row(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: CustomTextFormField(
-                      controller: searchCategoryController,
-                      labelText: 'Rechercher une catégorie',
-                      suffixIcon: Icons.search,
+                  Form(
+                    key: _formsearchkey,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: CustomTextFormField(
+                            controller: searchCategoryController,
+                            labelText: 'Rechercher une catégorie',
+                            suffixIcon: Icons.search,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CircularButton(
+                          color: Theme.of(context).colorScheme.primary,
+                          icon: Icons.add,
+                          radius: 10,
+                          onpressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return SingleChildScrollView(
+                                  child: CustomCategoryModal(
+                                    categoryController: categoryController,
+                                    onCategoryAdded: (newCategory) {
+                                      // Implémentez la logique d'ajout ici
+                                      setState(() {
+                                        loadCategories();
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  CircularButton(
-                    color: Theme.of(context).colorScheme.primary,
-                    icon: Icons.add,
-                    radius: 10,
-                    onpressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return SingleChildScrollView(
-                            child: CustomCategoryModal(
-                              categoryController: categoryController,
-                              onCategoryAdded: (newCategory) {
-                                // Implémentez la logique d'ajout ici
-                                setState(() {
-                                  loadCategories();
-                                });
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      color: Theme.of(context).cardColor,
+                      padding: const EdgeInsets.all(8),
+                      child: (categories.isEmpty)
+                          ? Center(
+                              child: Text('Aucune catégorie trouvée'),
+                            )
+                          : CategoryList(),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: Theme.of(context).cardColor,
-                padding: const EdgeInsets.all(8),
-                child: (categories.isEmpty)
-                    ? Center(
-                        child: Text('Aucune catégorie trouvée'),
-                      )
-                    : CategoryList(),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -150,13 +156,13 @@ class _CategoryListState extends State<CategoryList> {
                   itemCount: categories.length,
                   itemBuilder: (context, index) {
                     return CategoryCard(
-                        backgroundColor: categories[index].colorValue,
-                        icon: categories[index].icon,
-                        category: categories[index].name,
-                        onTap: () {
-                          // Implementez la logique de navigation ici
-                        },
-                        );
+                      backgroundColor: categories[index].colorValue,
+                      icon: categories[index].icon,
+                      category: categories[index].name,
+                      onTap: () {
+                        // Implementez la logique de navigation ici
+                      },
+                    );
                   }),
             ),
             const SizedBox(height: 10),

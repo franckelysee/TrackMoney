@@ -1,5 +1,6 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/templates/pages/screens/ajouter.dart';
 import 'package:trackmoney/templates/pages/screens/analyse.dart';
 import 'package:trackmoney/templates/pages/screens/categorie.dart';
@@ -24,7 +25,9 @@ class _HomePageState extends State<HomePage> {
   late AjouterPage ajouterPage;
   late CategoryPage categoriePage;
   late NotificationPage notificationPage;
-
+  int count =0;
+  bool isNotificationOpen = false;
+  int lastCount =0;
   @override
   void initState() {
     comptePage = ComptePage();
@@ -40,6 +43,27 @@ class _HomePageState extends State<HomePage> {
       notificationPage
     ];
     super.initState();
+    _getNotificationCount();
+  }
+
+  void _getNotificationCount() async {
+    count = await Database.getNotificationCount();
+    lastCount = count;
+    setState(() {});
+  }
+
+  void _updateCount() async {
+    count = await Database.getNotificationCount();
+    if (count!= lastCount) {
+      setState(() {
+        lastCount = count;
+      });
+    }else{
+
+    }
+    setState(() {
+      isNotificationOpen =!isNotificationOpen;
+    });
   }
   
   @override
@@ -53,6 +77,9 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           setState(() {
             currentTabIndex = index;
+            if (index == 4) {
+              isNotificationOpen = true;
+            }
           });
         },
         items:  [
@@ -86,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                   shape: BoxShape.circle,
                   color:  Colors.red,
                 ),
-                child: Text("12",style: TextStyle(fontSize: 8, color: Colors.white), textAlign: TextAlign.center,),
+                child: count != 0 ? Text(count.toString(),style: TextStyle(fontSize: 8, color: Colors.white), textAlign: TextAlign.center,) : Container(),
               )
             ],
           )

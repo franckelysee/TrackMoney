@@ -139,4 +139,10 @@ class Database {
     notification!.isArchived = true;
     await box.put(id, notification);
   }
+
+  // get notifications count
+  static Future<int> getNotificationCount() async {
+    final box = await Hive.openBox<NotificationModel>('notifications');
+    return box.values.where((notification) =>!notification.isRead &&!notification.isArchived).length;
+  }
 }

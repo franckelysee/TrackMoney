@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
+import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/pages/screens/compte.dart';
+import 'package:trackmoney/utils/notification_type_enum.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountPage extends StatefulWidget {
@@ -65,6 +67,21 @@ class _AccountPageState extends State<AccountPage> {
 
     try {
       await Database.addAccount(newAccount);
+      // notification
+      var notification = NotificationModel(
+          notificationId: Uuid().v4(),
+          title: "Portefeuille ajouté",
+          content: "Un nouveau portefeuille a été ajouté",
+          type: NotificationTypeEnum.INFORMATION,
+          isRead: false,
+          isArchived: false,
+          date: DateTime.now()
+        );
+
+      // add notification to database
+      await Database.addNotification(notification);
+
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Compte ajouté avec succès')),
       );
