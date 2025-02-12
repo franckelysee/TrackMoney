@@ -169,7 +169,7 @@ class _ComptePageState extends State<ComptePage> {
                             ]),
                       ),
                       SizedBox(
-                        height: 750,
+                        height: MediaQuery.of(context).size.height - 200,
                         child: DefaultTabController(
                           animationDuration: tabAnimationDuration,
                           length: comptes.length,

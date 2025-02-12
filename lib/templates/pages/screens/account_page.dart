@@ -155,12 +155,12 @@ class _AccountPageState extends State<AccountPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).colorScheme.primary,
                               ),
+                              onPressed: _addAccount,
                               child: Text(
                                 'Ajouter',
                                 style: TextStyle(
                                     color: Theme.of(context).colorScheme.surface),
                               ),
-                              onPressed: _addAccount,
                             ),
                           ),
                         ],

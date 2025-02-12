@@ -1,6 +1,4 @@
 // database.dart
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
@@ -138,11 +136,5 @@ class Database {
     var notification = await box.get(id);
     notification!.isArchived = true;
     await box.put(id, notification);
-  }
-
-  // get notifications count
-  static Future<int> getNotificationCount() async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    return box.values.where((notification) =>!notification.isRead &&!notification.isArchived).length;
   }
 }

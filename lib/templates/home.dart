@@ -1,6 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:trackmoney/DataBase/database.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/pages/screens/ajouter.dart';
 import 'package:trackmoney/templates/pages/screens/analyse.dart';
 import 'package:trackmoney/templates/pages/screens/categorie.dart';
@@ -25,9 +26,9 @@ class _HomePageState extends State<HomePage> {
   late AjouterPage ajouterPage;
   late CategoryPage categoriePage;
   late NotificationPage notificationPage;
-  int count =0;
+  bool listenNotification = false;
   bool isNotificationOpen = false;
-  int lastCount =0;
+  int lastCount = 0;
   @override
   void initState() {
     comptePage = ComptePage();
@@ -43,29 +44,31 @@ class _HomePageState extends State<HomePage> {
       notificationPage
     ];
     super.initState();
-    _getNotificationCount();
+    _checkNotifications();
   }
 
-  void _getNotificationCount() async {
-    count = await Database.getNotificationCount();
-    lastCount = count;
-    setState(() {});
-  }
+  void _checkNotifications({int? index}) {
+    var box = Hive.box<NotificationModel>('notifications');
+    // setState(() {
+    //   listenNotification =
+    //       false; // S'il y a des notifications, afficher le point rouge
+    // });
 
-  void _updateCount() async {
-    count = await Database.getNotificationCount();
-    if (count!= lastCount) {
+    // Écoute les changements dans la boîte Hive
+    box.listenable().addListener(() {
+      print("new notif");
       setState(() {
-        lastCount = count;
+        listenNotification = true;
+        isNotificationOpen = false;
       });
-    }else{
-
-    }
-    setState(() {
-      isNotificationOpen =!isNotificationOpen;
+      print(
+          "is notification open = $isNotificationOpen index = ${index.toString()}");
+      if (index == 4) {
+        isNotificationOpen = true;
+      }
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,8 +84,9 @@ class _HomePageState extends State<HomePage> {
               isNotificationOpen = true;
             }
           });
+          _checkNotifications(index: index);
         },
-        items:  [
+        items: [
           Icon(
             Icons.account_balance_outlined,
             color: Colors.white,
@@ -106,14 +110,38 @@ class _HomePageState extends State<HomePage> {
                 Icons.notifications_active_outlined,
                 color: Colors.white,
               ),
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color:  Colors.red,
-                ),
-                child: count != 0 ? Text(count.toString(),style: TextStyle(fontSize: 8, color: Colors.white), textAlign: TextAlign.center,) : Container(),
+              ValueListenableBuilder(
+                valueListenable:
+                    Hive.box<NotificationModel>('notifications').listenable(),
+                builder: (context, Box<NotificationModel> box, _) {
+                  bool hasNewNotifications = listenNotification;
+                  print(
+                      '$isNotificationOpen $hasNewNotifications $listenNotification');
+                  if (isNotificationOpen) {
+                    hasNewNotifications = false;
+                  }
+                  if (!hasNewNotifications) {
+                    listenNotification = false;
+                    return Container(
+                      width: 12,
+                      height: 12,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: null,
+                      ),
+                    );
+                  } else {
+                    // Si on ouvre la page de notifications, masquer le point rouge
+                    return Container(
+                      width: 12,
+                      height: 12,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                    );
+                  }
+                },
               )
             ],
           )

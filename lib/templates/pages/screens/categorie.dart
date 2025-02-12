@@ -142,29 +142,43 @@ class _CategoryListState extends State<CategoryList> {
           );
         }
         final categories = box.values.toList();
+        categories.sort((a, b) => a.name.compareTo(b.name));
+        var month = DateTime.now().month;
+        var categoriesMonth = categories.where((category) {
+          if (category.date.month == month) {
+            return true;
+          } else {
+            return false;
+          }
+        }).toList();
         return Column(
           children: [
-            const Text(
-              'Categories du mois',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    return CategoryCard(
-                      backgroundColor: categories[index].colorValue,
-                      icon: categories[index].icon,
-                      category: categories[index].name,
-                      onTap: () {
-                        // Implementez la logique de navigation ici
-                      },
-                    );
-                  }),
-            ),
+            if (categoriesMonth.length > 0)
+              Column(
+                children: [
+                  const Text(
+                    'Categories du mois',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categoriesMonth.length,
+                        itemBuilder: (context, index) {
+                          return CategoryCard(
+                            backgroundColor: categoriesMonth[index].colorValue,
+                            icon: categoriesMonth[index].icon,
+                            category: categoriesMonth[index].name,
+                            onTap: () {
+                              // Implementez la logique de navigation ici
+                            },
+                          );
+                        }),
+                  ),
+                ],
+              ),
             const SizedBox(height: 10),
             const Text(
               'Toutes les Catégories',

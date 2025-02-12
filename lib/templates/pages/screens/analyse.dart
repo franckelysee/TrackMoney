@@ -84,30 +84,32 @@ class _AnalysePageState extends State<AnalysePage> {
       );
     }
   }
-  Future <List<TransactionSchema>> getAllTransactions() async {
+
+  Future<List<TransactionSchema>> getAllTransactions() async {
     transactions = await Database.getAllTransactions();
     var categories = await Database.getAllCategories();
     setState(() {
-        var data = transactions.map((TransactionModel transaction) {
-          var cat = categories.firstWhere((category) {
-            return category.id == transaction.categoryId;
-          });
-          return TransactionSchema(
-              id: transaction.id,
-              name: transaction.name,
-              type: transaction.type,
-              amount: transaction.amount,
-              icon: cat.icon,
-              iconcolor: cat.colorValue,
-              category: cat.name,
-              date: transaction.date,
-              account_id: transaction.accountId);
-        }).toList();
-        transactionsData = data;
-        transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
-      });
-      return transactionsData;
+      var data = transactions.map((TransactionModel transaction) {
+        var cat = categories.firstWhere((category) {
+          return category.id == transaction.categoryId;
+        });
+        return TransactionSchema(
+            id: transaction.id,
+            name: transaction.name,
+            type: transaction.type,
+            amount: transaction.amount,
+            icon: cat.icon,
+            iconcolor: cat.colorValue,
+            category: cat.name,
+            date: transaction.date,
+            account_id: transaction.accountId);
+      }).toList();
+      transactionsData = data;
+      transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+    });
+    return transactionsData;
   }
+
   void updateTransaction(DateTime date) async {
     setState(() {
       is_loading_transac = true;
@@ -118,7 +120,8 @@ class _AnalysePageState extends State<AnalysePage> {
     List<TransactionSchema> filteredTransactions = [];
     for (var transaction in alltransactions) {
       if (transaction.date!.month == date.month &&
-          transaction.date!.day == date.day && transaction.date!.year == date.year) {
+          transaction.date!.day == date.day &&
+          transaction.date!.year == date.year) {
         filteredTransactions.add(transaction);
       }
     }
@@ -131,7 +134,6 @@ class _AnalysePageState extends State<AnalysePage> {
       is_loading_transac = false;
     });
   }
-
 
   @override
   void initState() {
@@ -170,7 +172,7 @@ class _AnalysePageState extends State<AnalysePage> {
 
                   // Sections des onglets
                   SizedBox(
-                    height: 300,
+                    height: MediaQuery.of(context).size.height - 400,
                     child: DefaultTabController(
                       length: 2,
                       animationDuration: tabAnimationDuration,
@@ -189,13 +191,16 @@ class _AnalysePageState extends State<AnalysePage> {
                           Expanded(
                             child: TabBarView(
                               children: [
-                                is_loading_transac ? 
-                                const Center(child: CircularProgressIndicator()) 
-                                : _buildTransactionList(TransactionTypesEnum.recette),
-                                is_loading_transac ? 
-                                const Center(child: CircularProgressIndicator()) 
-                                :_buildTransactionList(
-                                    TransactionTypesEnum.depense),
+                                is_loading_transac
+                                    ? const Center(
+                                        child: CircularProgressIndicator())
+                                    : _buildTransactionList(
+                                        TransactionTypesEnum.recette),
+                                is_loading_transac
+                                    ? const Center(
+                                        child: CircularProgressIndicator())
+                                    : _buildTransactionList(
+                                        TransactionTypesEnum.depense),
                               ],
                             ),
                           ),
