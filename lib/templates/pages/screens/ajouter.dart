@@ -11,7 +11,9 @@ import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
 import 'package:trackmoney/templates/home.dart';
+import 'package:trackmoney/templates/pages/screens/analyse.dart';
 import 'package:trackmoney/utils/notification_type_enum.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 import 'package:uuid/uuid.dart';
 
@@ -71,8 +73,10 @@ class _AjouterPageState extends State<AjouterPage> {
 
   void _addTransaction() async {
     if (!_formkey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur de validation')),
+      SnackbarNotifier.show(
+        context: context,
+        message: "Erreur de validation",
+        type: 'error',
       );
       return;
     }
@@ -88,9 +92,9 @@ class _AjouterPageState extends State<AjouterPage> {
       var type = spendingTypeController == 'Recette'
           ? TransactionTypesEnum.recette
           : TransactionTypesEnum.depense;
-      var payment_name = spendingNameController.text;
+      var paymentName = spendingNameController.text;
       var price = double.parse(priceController.text);
-      var account_id = accounts
+      var accountId = accounts
           .firstWhere((account) => account.type! == accountController)
           .id
           .toString();
@@ -98,20 +102,26 @@ class _AjouterPageState extends State<AjouterPage> {
       var transaction = TransactionModel(
           id: id,
           type: type,
-          name: payment_name,
+          name: paymentName,
           categoryId: selectedCategoryid != '' ? selectedCategoryid : '',
-          accountId: account_id,
+          accountId: accountId,
           amount: price,
           date: DateTime.now());
 
-      var isbalance_updated = await updateBalance();
-      if (!isbalance_updated) {
+      var isbalanceUpdated = await updateBalance();
+      if (!isbalanceUpdated) {
         return;
       }
       await Database.addTransaction(transaction);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transaction ajouté avec succès')),
-      );
+      SnackbarNotifier.show(
+          context: context,
+          message: "Transaction ajouté avec succès",
+          type: 'success',
+          actionLabel: 'open',
+          onAction: () {
+            Navigator.push(context, CreateROute(AnalysePage()));
+          });
+
       // notification
       var notification = NotificationModel(
           notificationId: Uuid().v4(),
@@ -136,10 +146,10 @@ class _AjouterPageState extends State<AjouterPage> {
       // Navigator.pushAndRemoveUntil(context, CreateROute(HomePage()),
       //             (Route<dynamic> route) => false);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Erreur lors de l\'ajout  de la transaction: $e')),
-      );
+      SnackbarNotifier.show(
+          context: context,
+          message: "Erreur lors de l'ajout  de la transaction: $e",
+          type: 'error');
     }
   }
 
@@ -327,15 +337,16 @@ class _AjouterPageState extends State<AjouterPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary),
-                          child: Text(
-                            'Ajouter',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.surface),
-                          ),
-                          onPressed: _addTransaction),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary),
+                        onPressed: _addTransaction,
+                        child: Text(
+                          'Ajouter',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.surface),
+                        ),
+                      ),
                     ),
                     SizedBox(
                       height: 16,

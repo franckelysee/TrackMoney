@@ -10,6 +10,7 @@ import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
 class ComptePage extends StatefulWidget {
@@ -82,9 +83,10 @@ class _ComptePageState extends State<ComptePage> {
         transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Erreur lors de l\'obtention  des transactions: $e')),
+      SnackbarNotifier.show(
+        context: context,
+        message: "'Erreur lors de l\'obtention  des transactions: $e",
+        type: 'error',
       );
     }
   }

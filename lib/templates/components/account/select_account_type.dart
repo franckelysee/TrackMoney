@@ -52,15 +52,22 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
               iconColor: Color(0xFF22C22D),
               onpressed: () {
                 // Navigate to Add Account screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AccountPage(type: widget.acountType,),
+                showModalBottomSheet(
+                  context: context,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ).then((value){
-                  if (value) {
+                  builder: (context) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    child: AccountPage(
+                      type: widget.acountType,
+                    ),
+                  ),
+                ).then((value) {
+                  if (value == true) {
                     // Refresh the AccountPage
-                    Navigator.pop(context,true);
+                    Navigator.pop(context, true);
                     setState(() {
                       // Your code to refresh the AccountPage goes here
                     });

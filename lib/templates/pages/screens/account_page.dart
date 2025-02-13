@@ -4,8 +4,8 @@ import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
-import 'package:trackmoney/templates/pages/screens/compte.dart';
 import 'package:trackmoney/utils/notification_type_enum.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountPage extends StatefulWidget {
@@ -48,9 +48,11 @@ class _AccountPageState extends State<AccountPage> {
 
   void _addAccount() async {
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur de validation')),
-      );
+      SnackbarNotifier.show(
+          context: context,
+          message: "Erreur de validation...",
+          type: 'error',
+          actionLabel: 'cancel');
       return;
     }
 
@@ -75,21 +77,23 @@ class _AccountPageState extends State<AccountPage> {
           type: NotificationTypeEnum.INFORMATION,
           isRead: false,
           isArchived: false,
-          date: DateTime.now()
-        );
+          date: DateTime.now());
 
       // add notification to database
       await Database.addNotification(notification);
 
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compte ajouté avec succès')),
-      );
-      Navigator.pop(context,true); // Retour à la page précédente
+      SnackbarNotifier.show(
+          context: context,
+          message: "Compte ajouté avec success",
+          type: 'success',
+          actionLabel: 'cancel');
+      Navigator.pop(context, true); // Retour à la page précédente
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de l\'ajout : $e')),
-      );
+      SnackbarNotifier.show(
+          context: context,
+          message: "Erreur lors de l\'ajout : $e",
+          type: 'error',
+          actionLabel: 'cancel');
     } finally {
       setState(() {
         activeIndicator = false;
@@ -126,8 +130,9 @@ class _AccountPageState extends State<AccountPage> {
                             controller: nameController,
                             labelText: "Nom du portefeuille",
                             hintText: "Nom du portefeuille",
-                            validator: (value) =>
-                                value!.isEmpty ? "Veuillez renseigner ce champ" : null,
+                            validator: (value) => value!.isEmpty
+                                ? "Veuillez renseigner ce champ"
+                                : null,
                           ),
                           const SizedBox(height: 20),
                           CustomTextFormField(
@@ -139,7 +144,8 @@ class _AccountPageState extends State<AccountPage> {
                               if (value == null || value.isEmpty) {
                                 return 'Ce champ est obligatoire';
                               }
-                              if (!RegExp(r'^[0-9]*\.?[0-9]+$').hasMatch(value)) {
+                              if (!RegExp(r'^[0-9]*\.?[0-9]+$')
+                                  .hasMatch(value)) {
                                 return 'Veuillez saisir un montant valide';
                               }
                               if (double.tryParse(value)! <= 0) {
@@ -153,13 +159,15 @@ class _AccountPageState extends State<AccountPage> {
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                               ),
                               onPressed: _addAccount,
                               child: Text(
                                 'Ajouter',
                                 style: TextStyle(
-                                    color: Theme.of(context).colorScheme.surface),
+                                    color:
+                                        Theme.of(context).colorScheme.surface),
                               ),
                             ),
                           ),

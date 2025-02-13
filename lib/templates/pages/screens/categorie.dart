@@ -8,6 +8,7 @@ import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -52,11 +53,11 @@ class _CategoryPageState extends State<CategoryPage> {
 
         // Affichage des résultats
         if (searchCategories.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Aucune catégorie trouvée'),
-            ),
-          );
+          SnackbarNotifier.show(
+              context: context,
+              message: "Aucune categorie trouvée...",
+              type: 'error',
+              actionLabel: 'cancel');
         } else {
           showModalBottomSheet(
             context: context,
@@ -70,7 +71,6 @@ class _CategoryPageState extends State<CategoryPage> {
           );
         }
       });
-      print("Formulaire validé : category: ${searchCategoryController.text},");
     }
   }
 
@@ -96,7 +96,7 @@ class _CategoryPageState extends State<CategoryPage> {
                             labelText: 'Rechercher une catégorie',
                             suffixIcon: Icons.search,
                             validator: (value) {
-                              if (value!.isEmpty || value == null) {
+                              if (value!.isEmpty) {
                                 return 'Veuillez entrer la catégorie que vous cherchez';
                               }
                               return null;

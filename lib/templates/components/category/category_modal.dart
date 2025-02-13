@@ -7,6 +7,7 @@ import 'package:trackmoney/templates/components/color_selector.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/icon_selector.dart';
 import 'package:trackmoney/utils/notification_type_enum.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:uuid/uuid.dart';
 
 class CustomCategoryModal extends StatefulWidget {
@@ -152,9 +153,10 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur dans le formulaire : $e')),
-      );
+      SnackbarNotifier.show(
+          context: context,
+          message: "Erreur dans le formulaire : $e",
+          type: 'error');
     }
   }
 
