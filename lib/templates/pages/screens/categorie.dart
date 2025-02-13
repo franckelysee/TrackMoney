@@ -39,6 +39,41 @@ class _CategoryPageState extends State<CategoryPage> {
     });
   }
 
+  void _submitForm() {
+    if (_formsearchkey.currentState!.validate()) {
+      // Action après validation (ex: connexion)
+      List<CategoryModel> searchCategories = [];
+      setState(() {
+        searchCategories = categories
+            .where((category) => category.name
+                .toLowerCase()
+                .contains(searchCategoryController.text.toLowerCase()))
+            .toList();
+
+        // Affichage des résultats
+        if (searchCategories.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Aucune catégorie trouvée'),
+            ),
+          );
+        } else {
+          showModalBottomSheet(
+            context: context,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            builder: (context) => Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: buildSearchCategoriesList(searchCategories)),
+          );
+        }
+      });
+      print("Formulaire validé : category: ${searchCategoryController.text},");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,6 +95,15 @@ class _CategoryPageState extends State<CategoryPage> {
                             controller: searchCategoryController,
                             labelText: 'Rechercher une catégorie',
                             suffixIcon: Icons.search,
+                            validator: (value) {
+                              if (value!.isEmpty || value == null) {
+                                return 'Veuillez entrer la catégorie que vous cherchez';
+                              }
+                              return null;
+                            },
+                            onFieldSubmitted: (_) {
+                              _submitForm();
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -95,11 +139,7 @@ class _CategoryPageState extends State<CategoryPage> {
                       width: double.infinity,
                       color: Theme.of(context).cardColor,
                       padding: const EdgeInsets.all(8),
-                      child: (categories.isEmpty)
-                          ? Center(
-                              child: Text('Aucune catégorie trouvée'),
-                            )
-                          : CategoryList(),
+                      child: CategoryList(),
                     ),
                   ),
                 ],
@@ -107,19 +147,40 @@ class _CategoryPageState extends State<CategoryPage> {
             ),
     );
   }
-}
 
-class SearchBar extends StatefulWidget {
-  const SearchBar({super.key});
-
-  @override
-  State<SearchBar> createState() => _SearchBarState();
-}
-
-class _SearchBarState extends State<SearchBar> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
+  Widget buildSearchCategoriesList(List<CategoryModel> categories) {
+    return Column(
+      children: [
+        const Text(
+          'Toutes les Catégories Correspondentes',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Expanded(
+          child: ListView.builder(
+            itemCount: categories.length, // Nombre d'éléments dans la liste
+            itemBuilder: (context, index) => NotificatedCard(
+              icon: categories[index].icon,
+              iconBackgroundColor: categories[index].colorValue,
+              title: categories[index].name,
+              titleSize: 25,
+              onTap: () {
+                // Implementez la logique de navigation ici
+              },
+              trailing: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[300],
+                ),
+                child: Icon(Icons.chevron_right),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -142,7 +203,8 @@ class _CategoryListState extends State<CategoryList> {
           );
         }
         final categories = box.values.toList();
-        categories.sort((a, b) => a.name.compareTo(b.name));
+        categories.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
         var month = DateTime.now().month;
         var categoriesMonth = categories.where((category) {
           if (category.date.month == month) {

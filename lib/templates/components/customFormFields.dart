@@ -32,6 +32,7 @@ class _CustomDropdownButtonFormFieldState
     super.initState();
     selectedValue = widget.initialValue;
   }
+
   @override
   void didUpdateWidget(covariant CustomDropdownButtonFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -41,10 +42,10 @@ class _CustomDropdownButtonFormFieldState
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    return  SizedBox(
+    return SizedBox(
       child: DropdownButtonFormField<String>(
         validator: (value) {
           if (widget.isRequired && (value == null || value.isEmpty)) {
@@ -98,21 +99,21 @@ class CustomTextFormField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
+  final Function(String)? onFieldSubmitted;
+  final FocusNode? focusNode;
 
-  final FocusNode? focusNode ;
-
-  const CustomTextFormField({
-    super.key,
-    this.labelText,
-    this.hintText,
-    this.prefixIcon,
-    this.suffixIcon,
-    this.isPassword = false,
-    this.controller,
-    this.validator,
-    this.keyboardType = TextInputType.text,
-    this.focusNode
-  });
+  const CustomTextFormField(
+      {super.key,
+      this.labelText,
+      this.hintText,
+      this.prefixIcon,
+      this.suffixIcon,
+      this.isPassword = false,
+      this.controller,
+      this.validator,
+      this.keyboardType = TextInputType.text,
+      this.onFieldSubmitted,
+      this.focusNode});
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +125,7 @@ class CustomTextFormField extends StatelessWidget {
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle:  TextStyle(fontSize: 12),
+        labelStyle: TextStyle(fontSize: 12),
         hintText: hintText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
@@ -140,7 +141,7 @@ class CustomTextFormField extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
+      onFieldSubmitted: onFieldSubmitted,
     );
   }
 }
-
