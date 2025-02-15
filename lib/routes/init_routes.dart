@@ -4,15 +4,15 @@ import 'package:trackmoney/templates/home.dart';
 import 'package:trackmoney/templates/pages/auth/auth.dart';
 import 'package:trackmoney/templates/pages/screens/devise.dart';
 
-
-
-
 Route onGenerateRoute(RouteSettings settings) {
   switch (settings.name) {
     case '/auth':
       return MaterialPageRoute(builder: (context) => const AuthPage());
     case '/Devise':
-      return MaterialPageRoute(builder: (context) => DeviseSelector(devises: devises,));
+      return MaterialPageRoute(
+          builder: (context) => DeviseSelector(
+                devises: devises,
+              ));
     case '/home':
       return MaterialPageRoute(builder: (context) => const HomePage());
     default:
@@ -20,7 +20,7 @@ Route onGenerateRoute(RouteSettings settings) {
   }
 }
 
-Route CreateROute(Widget page) {
+Route createRoute(Widget page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

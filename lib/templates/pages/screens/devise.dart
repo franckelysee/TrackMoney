@@ -84,7 +84,7 @@ class _DeviseSelectorState extends State<DeviseSelector> {
               color: AppConfig.primaryColor,
               textColor: Colors.white,
               onPressed: () {
-                Navigator.pushAndRemoveUntil(context, CreateROute(HomePage()),
+                Navigator.pushAndRemoveUntil(context, createRoute(HomePage()),
                     (Route<dynamic> route) => false);
               }),
           const SizedBox(

@@ -119,7 +119,7 @@ class _AjouterPageState extends State<AjouterPage> {
           type: 'success',
           actionLabel: 'open',
           onAction: () {
-            Navigator.push(context, CreateROute(AnalysePage()));
+            Navigator.push(context, createRoute(AnalysePage()));
           });
 
       // notification

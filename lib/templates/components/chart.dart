@@ -1,5 +1,11 @@
+import 'dart:ffi';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/utils/transaction_types_enum.dart';
+import 'package:intl/intl.dart'; // Pour récupérer l'année actuelle
 
 class LineChartSample7 extends StatelessWidget {
   LineChartSample7({
@@ -208,6 +214,104 @@ class _LineChartSample2State extends State<LineChartSample2> {
   ];
 
   bool showAvg = false;
+  List<TransactionModel> transactionsPerMonth = [];
+  List<TransactionModel> transactionsPerMonthDepense = [];
+  List<TransactionModel> transactionsPerMonthRevenu = [];
+  double maxtransactionValue = 0.0;
+
+  List<Map<String, dynamic>> transactions = [
+    {"day": 1, "revenu": 200, "depense": 100},
+    {"day": 2, "revenu": 300, "depense": 200},
+    {"day": 3, "revenu": 150, "depense": 180},
+    {"day": 4, "revenu": 100, "depense": 250},
+    {"day": 5, "revenu": 400, "depense": 300},
+    {"day": 6, "revenu": 500, "depense": 350},
+    {"day": 7, "revenu": 600, "depense": 400},
+  ];
+  List<Map<String, dynamic>> transactionsData = [];
+
+  void getTransactions() async {
+    transactionsPerMonth = await Database.getAllTransactions();
+    transactionsData = await getMonthlySummary();
+    setState(() {
+      maxtransactionValue = getMaxTransactionValue();
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getMonthlySummary() async {
+    final List<TransactionModel> transactions =
+        await Database.getAllTransactions();
+
+    // Obtenir l'année actuelle
+    int currentYear = DateTime.now().year;
+
+    // Initialiser un Map pour stocker les sommes
+    Map<int, Map<String, dynamic>> monthlyData = {};
+
+    // Initialiser chaque mois avec 0
+    for (int i = 1; i <= 12; i++) {
+      monthlyData[i] = {"month": i, "revenu": 0, "depense": 0};
+    }
+
+    // Parcourir toutes les transactions
+    for (var transaction in transactions) {
+      DateTime date = transaction.date; // Supposons que tu as un champ date
+      if (date.year == currentYear) {
+        int month = date.month;
+
+        if (transaction.type == TransactionTypesEnum.recette) {
+          monthlyData[month]!["revenu"] += transaction.amount;
+        } else if (transaction.type == TransactionTypesEnum.depense) {
+          monthlyData[month]!["depense"] += transaction.amount;
+        }
+      }
+    }
+
+    // Transformer en liste
+    print("monthlyData ${monthlyData.values.toList()}");
+    return monthlyData.values.toList();
+  }
+
+  List<FlSpot> getRevenuData() {
+    return transactionsData
+        .map((transaction) => FlSpot(
+            transaction["month"].toDouble(), transaction["revenu"].toDouble()))
+        .toList();
+    // return transactions
+    //     .map((t) => FlSpot(t["day"].toDouble(), t["revenu"] / 100))
+    //     .toList();
+  }
+
+  List<FlSpot> getDepenseData() {
+    return transactionsData
+        .map((transaction) => FlSpot(
+            transaction["month"].toDouble(), transaction["depense"].toDouble()))
+        .toList();
+    // return transactions
+    //     .map((t) => FlSpot(t["day"].toDouble(), t["depense"] / 100))
+    //     .toList();
+  }
+
+  double getMaxTransactionValue() {
+    print("transactiondata = $transactionsData");
+    // return 100;
+    double maxRevenu = transactionsData
+        .map((e) => e["revenu"])
+        .reduce((a, b) => a > b ? a : b);
+    double maxDepense = transactionsData
+        .map((e) => e["depense"])
+        .reduce((a, b) => a > b ? a : b);
+
+    return (maxRevenu > maxDepense ? maxRevenu : maxDepense);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getTransactions();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -265,73 +369,73 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
     Widget text;
     switch (value.toInt()) {
-      case 0:
+      case 1:
         text = const Text(
           'Jan',
           style: style,
         );
         break;
-      case 1:
+      case 2:
         text = const Text(
           'Feb',
           style: style,
         );
         break;
-      case 2:
+      case 3:
         text = const Text(
           'Mar',
           style: style,
         );
         break;
-      case 3:
+      case 4:
         text = const Text(
           'Apr',
           style: style,
         );
         break;
-      case 4:
+      case 5:
         text = const Text(
           'May',
           style: style,
         );
         break;
-      case 5:
+      case 6:
         text = const Text(
           'Jun',
           style: style,
         );
         break;
-      case 6:
+      case 7:
         text = const Text(
           'Jul',
           style: style,
         );
         break;
-      case 7:
+      case 8:
         text = const Text(
           'Aug',
           style: style,
         );
         break;
-      case 8:
+      case 9:
         text = const Text(
           'Sep',
           style: style,
         );
         break;
-      case 9:
+      case 10:
         text = const Text(
           'Oct',
           style: style,
         );
         break;
-      case 10:
+      case 11:
         text = const Text(
           'Nov',
           style: style,
         );
         break;
-      case 11:
+      case 12:
         text = const Text(
           'Dec',
           style: style,
@@ -347,7 +451,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
   }
 
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
+  Widget leftTitleWidgetss(double value, TitleMeta meta) {
     const style = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 10,
@@ -376,7 +480,29 @@ class _LineChartSample2State extends State<LineChartSample2> {
     return Text(text, style: style, textAlign: TextAlign.left);
   }
 
-  LineChartData mainData() {
+  Widget leftTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 10,
+    );
+
+    // Trouver la valeur maximale pour ajuster l'échelle
+    double maxValue = getMaxTransactionValue(); // Fonction à définir
+
+    // Définir des intervalles dynamiques
+    double step = maxValue / 1000; // 5 intervalles
+    String text;
+
+    if (value == 0) {
+      return Container();
+    }
+
+    text = '${(value * step / 1000).toStringAsFixed(0)}K';
+
+    return Text(text, style: style, textAlign: TextAlign.left);
+  }
+
+  LineChartData mainDatas() {
     return LineChartData(
       gridData: FlGridData(
         show: true,
@@ -511,6 +637,101 @@ class _LineChartSample2State extends State<LineChartSample2> {
           dotData: const FlDotData(
             show: true,
           ),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: purpleGradientColors
+                  .map((color) => color.withOpacity(0.3))
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  LineChartData mainData() {
+    return LineChartData(
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: true,
+        horizontalInterval: 1,
+        verticalInterval: 1,
+        getDrawingHorizontalLine: (value) {
+          return const FlLine(
+            color: Color.fromARGB(137, 187, 187, 187),
+            strokeWidth: 1,
+          );
+        },
+        getDrawingVerticalLine: (value) {
+          return const FlLine(
+            color: Color.fromARGB(137, 187, 187, 187),
+            strokeWidth: 1,
+          );
+        },
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        bottomTitles: AxisTitles(
+          axisNameWidget: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Container(
+                      width: 10, height: 10, color: Colors.deepPurpleAccent),
+                  SizedBox(width: 3),
+                  Text("Dépenses"),
+                ],
+              ),
+              SizedBox(width: 10),
+              Row(
+                children: [
+                  Container(width: 10, height: 10, color: Colors.cyanAccent),
+                  SizedBox(width: 3),
+                  Text("Revenus"),
+                ],
+              )
+            ],
+          ),
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            interval: 1,
+            getTitlesWidget: bottomTitleWidgets,
+          ),
+        ),
+      ),
+      borderData: FlBorderData(show: false),
+      minX: 1,
+      maxX: 12, // Affichage pour tout le mois
+      minY: 0,
+      maxY: maxtransactionValue, // Ajustable selon les données
+      lineBarsData: [
+        LineChartBarData(
+          spots: getRevenuData(),
+          isCurved: true,
+          gradient: LinearGradient(colors: gradientColors),
+          barWidth: 2,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(show: true),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: gradientColors
+                  .map((color) => color.withOpacity(0.3))
+                  .toList(),
+            ),
+          ),
+        ),
+        LineChartBarData(
+          spots: getDepenseData(),
+          isCurved: true,
+          gradient: LinearGradient(colors: purpleGradientColors),
+          barWidth: 2,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(show: true),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
