@@ -268,7 +268,6 @@ class _LineChartSample2State extends State<LineChartSample2> {
     }
 
     // Transformer en liste
-    print("monthlyData ${monthlyData.values.toList()}");
     return monthlyData.values.toList();
   }
 
@@ -277,9 +276,6 @@ class _LineChartSample2State extends State<LineChartSample2> {
         .map((transaction) => FlSpot(
             transaction["month"].toDouble(), transaction["revenu"].toDouble()))
         .toList();
-    // return transactions
-    //     .map((t) => FlSpot(t["day"].toDouble(), t["revenu"] / 100))
-    //     .toList();
   }
 
   List<FlSpot> getDepenseData() {
@@ -287,19 +283,14 @@ class _LineChartSample2State extends State<LineChartSample2> {
         .map((transaction) => FlSpot(
             transaction["month"].toDouble(), transaction["depense"].toDouble()))
         .toList();
-    // return transactions
-    //     .map((t) => FlSpot(t["day"].toDouble(), t["depense"] / 100))
-    //     .toList();
   }
 
   double getMaxTransactionValue() {
-    print("transactiondata = $transactionsData");
-    // return 100;
     double maxRevenu = transactionsData
-        .map((e) => e["revenu"])
+        .map((e) => e["revenu"].toDouble())
         .reduce((a, b) => a > b ? a : b);
     double maxDepense = transactionsData
-        .map((e) => e["depense"])
+        .map((e) => e["depense"].toDouble())
         .reduce((a, b) => a > b ? a : b);
 
     return (maxRevenu > maxDepense ? maxRevenu : maxDepense);
@@ -451,227 +442,35 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
   }
 
-  Widget leftTitleWidgetss(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 10,
-    );
-    String text;
-    switch (value.toInt()) {
-      case 1:
-        text = '50K';
-        break;
-      case 3:
-        text = '150k';
-        break;
-      case 5:
-        text = '250k';
-        break;
-      case 7:
-        text = '350k';
-        break;
-      case 9:
-        text = '450k';
-        break;
-      default:
-        return Container();
-    }
-
-    return Text(text, style: style, textAlign: TextAlign.left);
-  }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 10,
-    );
-
-    // Trouver la valeur maximale pour ajuster l'échelle
-    double maxValue = getMaxTransactionValue(); // Fonction à définir
-
-    // Définir des intervalles dynamiques
-    double step = maxValue / 1000; // 5 intervalles
-    String text;
-
-    if (value == 0) {
-      return Container();
-    }
-
-    text = '${(value * step / 1000).toStringAsFixed(0)}K';
-
-    return Text(text, style: style, textAlign: TextAlign.left);
-  }
-
-  LineChartData mainDatas() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 1,
-        getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(137, 187, 187, 187),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(137, 187, 187, 187),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(
-          axisNameWidget: Text(""),
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        bottomTitles: AxisTitles(
-          axisNameWidget: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Container(
-                      width: 10, height: 10, color: Colors.deepPurpleAccent),
-                  SizedBox(
-                    width: 3,
-                  ),
-                  Text("Depenses"),
-                ],
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    color: Colors.cyanAccent,
-                  ),
-                  SizedBox(
-                    width: 3,
-                  ),
-                  Text("Revenus"),
-                ],
-              )
-            ],
-          ),
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 30,
-          ),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: false,
-      ),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 10,
-      lineBarsData: [
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 3),
-            FlSpot(2.6, 2),
-            FlSpot(4.9, 5),
-            FlSpot(6.8, 3.1),
-            FlSpot(8, 4),
-            FlSpot(9.5, 3),
-            FlSpot(11, 4),
-          ],
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: gradientColors,
-          ),
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: true,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 7),
-            FlSpot(1, 3),
-            FlSpot(2, 4),
-            FlSpot(3, 2),
-            FlSpot(4, 3),
-            FlSpot(5, 4),
-            FlSpot(6, 5),
-            FlSpot(7, 3),
-            FlSpot(8, 1),
-            FlSpot(9, 8),
-            FlSpot(10, 1),
-            FlSpot(11, 3),
-          ],
-          isCurved: true,
-          color: Colors.deepPurpleAccent,
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: true,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: purpleGradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   LineChartData mainData() {
     return LineChartData(
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
+        drawHorizontalLine: true,
         horizontalInterval: 1,
-        verticalInterval: 1,
+        verticalInterval: 10,
         getDrawingHorizontalLine: (value) {
           return const FlLine(
-            color: Color.fromARGB(137, 187, 187, 187),
+            color: Color.fromARGB(226, 187, 187, 187),
             strokeWidth: 1,
           );
         },
         getDrawingVerticalLine: (value) {
           return const FlLine(
-            color: Color.fromARGB(137, 187, 187, 187),
+            color: Color.fromARGB(226, 187, 187, 187),
             strokeWidth: 1,
           );
         },
       ),
       titlesData: FlTitlesData(
         show: true,
+        topTitles: const AxisTitles(
+          axisNameWidget: Text(""),
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        leftTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: true, reservedSize: 32)),
         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           axisNameWidget: Row(
@@ -779,7 +578,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            getTitlesWidget: leftTitleWidgets,
+            // getTitlesWidget: leftTitleWidgets,
             reservedSize: 42,
             interval: 1,
           ),
