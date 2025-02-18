@@ -27,7 +27,7 @@ class _AjouterPageState extends State<AjouterPage> {
   final _formkey = GlobalKey<FormState>();
   List<String> items = [];
   List<AccountModel> accounts = [];
-  final List<String> spendingTypeItems = ['Dépense', 'Recette'];
+  final List<String> spendingTypeItems = ['Dépense', 'Revenu'];
 
   final TextEditingController priceController = TextEditingController();
   final TextEditingController categoryController = TextEditingController();
@@ -88,8 +88,8 @@ class _AjouterPageState extends State<AjouterPage> {
             .id
             .toString();
       });
-      var type = spendingTypeController == 'Recette'
-          ? TransactionTypesEnum.recette
+      var type = spendingTypeController == 'Revenu'
+          ? TransactionTypesEnum.revenu
           : TransactionTypesEnum.depense;
       var paymentName = spendingNameController.text;
       var price = double.parse(priceController.text);
@@ -198,6 +198,7 @@ class _AjouterPageState extends State<AjouterPage> {
                 child: Column(
                   children: [
                     CustomDropdownButtonFormField(
+                      initialValue: spendingTypeController.isNotEmpty?spendingTypeController: null ,
                       onChanged: (value) {
                         spendingTypeController = value!;
                         // mettre a jour la visibilité du champ categorie
@@ -301,6 +302,7 @@ class _AjouterPageState extends State<AjouterPage> {
                       height: 16,
                     ),
                     CustomDropdownButtonFormField(
+                      initialValue: accountController.isNotEmpty? accountController:null,
                       onChanged: (value) {
                         accountController = value!;
                       },
@@ -328,6 +330,9 @@ class _AjouterPageState extends State<AjouterPage> {
                           return 'Veiller saisir un montant positif';
                         }
                         return null;
+                      },
+                      onFieldSubmitted: (_){
+                        _addTransaction();
                       },
                     ),
                     SizedBox(

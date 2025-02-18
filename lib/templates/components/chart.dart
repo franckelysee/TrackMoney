@@ -257,7 +257,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
       if (date.year == currentYear) {
         int month = date.month;
 
-        if (transaction.type == TransactionTypesEnum.recette) {
+        if (transaction.type == TransactionTypesEnum.revenu) {
           monthlyData[month]!["revenu"] += transaction.amount;
         } else if (transaction.type == TransactionTypesEnum.depense) {
           monthlyData[month]!["depense"] += transaction.amount;
@@ -468,7 +468,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
           sideTitles: SideTitles(showTitles: false),
         ),
         leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 32)),
+            sideTitles: SideTitles(showTitles: true, reservedSize: 45)),
         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           axisNameWidget: Row(

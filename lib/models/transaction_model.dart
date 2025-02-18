@@ -8,7 +8,7 @@ class TransactionModel extends HiveObject {
   String id;
 
   @HiveField(1)
-  String type; // Dépense ou Recette
+  String type; // Dépense ou revenu
 
   @HiveField(2)
   String? name; // Nom de la transaction

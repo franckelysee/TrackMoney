@@ -192,7 +192,7 @@ class _ComptePageState extends State<ComptePage> {
                                             .where((transaction) =>
                                                 transaction.type ==
                                                     TransactionTypesEnum
-                                                        .recette &&
+                                                        .revenu &&
                                                 transaction.accountId ==
                                                     compte.id)
                                             .length,
@@ -200,7 +200,7 @@ class _ComptePageState extends State<ComptePage> {
                                             .where((transaction) =>
                                                 transaction.type ==
                                                     TransactionTypesEnum
-                                                        .recette &&
+                                                        .revenu &&
                                                 transaction.accountId ==
                                                     compte.id)
                                             .fold(

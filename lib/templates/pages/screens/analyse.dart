@@ -193,7 +193,7 @@ class _AnalysePageState extends State<AnalysePage> {
                                     ? const Center(
                                         child: CircularProgressIndicator())
                                     : _buildTransactionList(
-                                        TransactionTypesEnum.recette),
+                                        TransactionTypesEnum.revenu),
                                 is_loading_transac
                                     ? const Center(
                                         child: CircularProgressIndicator())

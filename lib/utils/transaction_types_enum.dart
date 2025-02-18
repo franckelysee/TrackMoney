@@ -1,6 +1,6 @@
 class TransactionTypesEnum{
   static String depense = 'depense';
-  static String recette = 'recette';
+  static String revenu = 'revenu';
 
-  get values => [depense, recette];
+  get values => [depense, revenu];
 }

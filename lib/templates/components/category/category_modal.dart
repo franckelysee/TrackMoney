@@ -35,56 +35,6 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
     categories = await Database.getAllCategories();
     setState(() {});
   }
-
-  void saveCategorys() async {
-    try {
-      if (modalFormKey.currentState!.validate()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Processing Data')),
-        );
-        categoryName = widget.categoryController.text;
-
-        // Ajouter la catégorie a la base de données
-        var category = CategoryModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: categoryName!,
-          color: colorCode!,
-          iconCode: iconCode!,
-        );
-        Database.addCategory(category);
-        // notification
-        var notification = NotificationModel(
-            notificationId: Uuid().v4(),
-            title: "Nouvelle Categorie",
-            content: "Une nouvelle categorie a été créée",
-            type: NotificationTypeEnum.INFORMATION,
-            isRead: false,
-            isArchived: false,
-            date: DateTime.now());
-
-        // add notification to database
-        await Database.addNotification(notification);
-        widget.onCategoryAdded(categoryName!);
-        widget.categoryController.clear();
-
-        Navigator.pop(context); // Fermer le modal après succès
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur dans le formulaire')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur dans le formulaire : $e')),
-      );
-    }
-  }
-
   void saveCategory() async {
     try {
       if (modalFormKey.currentState!.validate()) {
@@ -100,8 +50,11 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
           }
         }
         if (already) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cette catégorie existe déjà !')),
+          
+          SnackbarNotifier.show(
+            context: context,
+            message: "Cette categorie existe déjà. Créer une nouvelle",
+            type: 'warning',
           );
         } else {
           if (iconCode == null) {
@@ -137,10 +90,10 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
 
           // add notification to database
           await Database.addNotification(notification);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Catégorie "$categoryName" ajoutée avec succès !'),
-            ),
+          SnackbarNotifier.show(
+            context: context,
+            message: "Catégorie '$categoryName' ajoutée avec succès !",
+            type: 'success',
           );
         }
 
@@ -148,8 +101,10 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
         widget.categoryController.clear();
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur dans le formulaire')),
+        SnackbarNotifier.show(
+          context: context,
+          message: "Erreur dans le formulaire",
+          type: 'error',
         );
       }
     } catch (e) {
