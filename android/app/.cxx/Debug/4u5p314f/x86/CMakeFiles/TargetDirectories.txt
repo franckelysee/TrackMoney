@@ -1,0 +1,2 @@
+D:/Projet/Android/TrackMoney/android/app/.cxx/Debug/4u5p314f/x86/CMakeFiles/edit_cache.dir
+D:/Projet/Android/TrackMoney/android/app/.cxx/Debug/4u5p314f/x86/CMakeFiles/rebuild_cache.dir
