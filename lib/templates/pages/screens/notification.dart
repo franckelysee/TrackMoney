@@ -189,8 +189,8 @@ class _NotificationPageState extends State<NotificationPage> {
         }
       },
       child: NotificatedCard(
-        title: notification.title ?? '',
-        subtitle: notification.content ?? '',
+        title: notification.title,
+        subtitle: notification.content,
         titleSize: 20,
         textColor: notification.isRead
             ? Colors.grey

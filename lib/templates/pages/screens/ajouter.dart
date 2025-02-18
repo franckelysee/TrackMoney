@@ -10,7 +10,6 @@ import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/templates/components/category/category_modal.dart';
 import 'package:trackmoney/templates/header.dart';
-import 'package:trackmoney/templates/home.dart';
 import 'package:trackmoney/templates/pages/screens/analyse.dart';
 import 'package:trackmoney/utils/notification_type_enum.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
