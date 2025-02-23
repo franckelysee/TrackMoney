@@ -178,11 +178,13 @@ class _AjouterPageState extends State<AjouterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
         child: AppHeader(title: 'Ajouter une Depense'),
       ),
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: SizedBox(
           width: MediaQuery.of(context).size.width - 40,
@@ -280,17 +282,16 @@ class _AjouterPageState extends State<AjouterPage> {
                                 showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      return SingleChildScrollView(
-                                          child: CustomCategoryModal(
-                                              categoryController:
-                                                  categoryController,
-                                              onCategoryAdded: (newCategory) {
-                                                setState(() {
-                                                  selectedCategory =
-                                                      newCategory;
-                                                  refreshCategory();
-                                                });
-                                              }));
+                                      return  CustomCategoryModal(
+                                            categoryController:
+                                                categoryController,
+                                            onCategoryAdded: (newCategory) {
+                                              setState(() {
+                                                selectedCategory =
+                                                    newCategory;
+                                                refreshCategory();
+                                              });
+                                            });
                                     });
                               },
                             )
@@ -316,7 +317,7 @@ class _AjouterPageState extends State<AjouterPage> {
                     ),
                     CustomTextFormField(
                       controller: priceController,
-                      keyboardType: TextInputType.numberWithOptions(),
+                      // keyboardType: TextInputType.number,
                       labelText: 'Entrer le montant',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -332,6 +333,7 @@ class _AjouterPageState extends State<AjouterPage> {
                         return null;
                       },
                       onFieldSubmitted: (_){
+                        FocusScope.of(context).unfocus(); 
                         _addTransaction();
                       },
                     ),

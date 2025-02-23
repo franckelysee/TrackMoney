@@ -139,7 +139,7 @@ class _CategoryPageState extends State<CategoryPage> {
                       width: double.infinity,
                       color: Theme.of(context).cardColor,
                       padding: const EdgeInsets.all(8),
-                      child: CategoryList(),
+                      child: SingleChildScrollView(child: CategoryList()),
                     ),
                   ),
                 ],
@@ -213,64 +213,67 @@ class _CategoryListState extends State<CategoryList> {
             return false;
           }
         }).toList();
-        return Column(
-          children: [
-            if (categoriesMonth.length > 0)
-              Column(
-                children: [
-                  const Text(
-                    'Categories du mois',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categoriesMonth.length,
-                        itemBuilder: (context, index) {
-                          return CategoryCard(
-                            backgroundColor: categoriesMonth[index].colorValue,
-                            icon: categoriesMonth[index].icon,
-                            category: categoriesMonth[index].name,
-                            onTap: () {
-                              // Implementez la logique de navigation ici
-                            },
-                          );
-                        }),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 10),
-            const Text(
-              'Toutes les Catégories',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: categories.length, // Nombre d'éléments dans la liste
-                itemBuilder: (context, index) => NotificatedCard(
-                  icon: categories[index].icon,
-                  iconBackgroundColor: categories[index].colorValue,
-                  title: categories[index].name,
-                  titleSize: 25,
-                  onTap: () {
-                    // Implementez la logique de navigation ici
-                  },
-                  trailing: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[300],
+        return Container(
+          height: MediaQuery.of(context).size.height - 100,
+          child: Column(
+            children: [
+              if (categoriesMonth.length > 0)
+                Column(
+                  children: [
+                    const Text(
+                      'Categories du mois',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    child: Icon(Icons.chevron_right),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categoriesMonth.length,
+                          itemBuilder: (context, index) {
+                            return CategoryCard(
+                              backgroundColor: categoriesMonth[index].colorValue,
+                              icon: categoriesMonth[index].icon,
+                              category: categoriesMonth[index].name,
+                              onTap: () {
+                                // Implementez la logique de navigation ici
+                              },
+                            );
+                          }),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 10),
+              const Text(
+                'Toutes les Catégories',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: categories.length, // Nombre d'éléments dans la liste
+                  itemBuilder: (context, index) => NotificatedCard(
+                    icon: categories[index].icon,
+                    iconBackgroundColor: categories[index].colorValue,
+                    title: categories[index].name,
+                    titleSize: 25,
+                    onTap: () {
+                      // Implementez la logique de navigation ici
+                    },
+                    trailing: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[300],
+                      ),
+                      child: Icon(Icons.chevron_right),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

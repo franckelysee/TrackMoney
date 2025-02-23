@@ -89,6 +89,7 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: const AppHeader(title: 'Notifications'),
@@ -121,7 +122,7 @@ class _NotificationPageState extends State<NotificationPage> {
       child: Row(
         children: [
           const Text(
-            'Filtrer par type :',
+            'TYPE :',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 5),
@@ -130,7 +131,7 @@ class _NotificationPageState extends State<NotificationPage> {
             value: selectedType,
             onChanged: (newValue) => setState(() => selectedType = newValue!),
             items: notificationTypes.map((value) {
-              return DropdownMenuItem(value: value, child: Text(value));
+              return DropdownMenuItem(value: value, child: Text(value,style: TextStyle(color: Colors.blueAccent),));
             }).toList(),
           ),
           const Spacer(),
@@ -141,11 +142,17 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Widget _buildToggleButtons() {
-    return Row(
-      children: [
-        _buildToggleButton('Tous', false),
-        _buildToggleButton('Non lu', true),
-      ],
+    return Container(
+      width: 150,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+            children: [
+              _buildToggleButton('Tous', false),
+              _buildToggleButton('Non lu', true),
+            ],
+        ),
+      ),
     );
   }
 

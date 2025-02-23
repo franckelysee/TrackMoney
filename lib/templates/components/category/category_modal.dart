@@ -122,114 +122,117 @@ class _CustomCategoryModalState extends State<CustomCategoryModal> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Icon with GestureDetector
-            SizedBox(
-              width: 150,
-              height: 150,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                onPressed: () async {
-                  final icon = await IconSelector().showIconSelector(context);
-                  if (icon != null) {
-                    setState(() {
-                      selectedIcon = icon;
-                      iconCode = selectedIcon!.codePoint;
-                    });
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 50,
-                    ),
-                    Text(
-                      "Ajouter une Icon",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icon with GestureDetector
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: () async {
+                    final icon = await IconSelector().showIconSelector(context);
+                    if (icon != null) {
+                      setState(() {
+                        selectedIcon = icon;
+                        iconCode = selectedIcon!.codePoint;
+                      });
+                    }
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add,
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        size: 50,
+                      ),
+                      Text(
+                        "Ajouter une Icon",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+          
+              if (selectedIcon != null)
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
+                      color:
+                          selectedColor ?? Theme.of(context).colorScheme.primary,
+                      child: Icon(
+                        selectedIcon,
+                        size: 50,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
+                    SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final color =
+                            await ColorSelector().showColorSelector(context);
+                        if (color != null) {
+                          setState(() {
+                            selectedColor = color;
+                            colorCode = selectedColor!.value;
+                          });
+                        }
+                      },
+                      label: Text('Edit Color'),
+                      icon: Icon(
+                        Icons.edit,
+                      ),
+                    )
                   ],
                 ),
+              SizedBox(height: 16),
+              // Category TextFormField
+              CustomTextFormField(
+                controller: widget.categoryController,
+                labelText: 'Entrer le nom de la category eg:Food',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ce champ est obligatoire';
+                  }
+                  return null;
+                },
               ),
-            ),
-            SizedBox(height: 16),
-
-            if (selectedIcon != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    color:
-                        selectedColor ?? Theme.of(context).colorScheme.primary,
-                    child: Icon(
-                      selectedIcon,
-                      size: 50,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
+              SizedBox(height: 16),
+          
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(width: 8),
-                  TextButton.icon(
-                    onPressed: () async {
-                      final color =
-                          await ColorSelector().showColorSelector(context);
-                      if (color != null) {
-                        setState(() {
-                          selectedColor = color;
-                          colorCode = selectedColor!.value;
-                        });
-                      }
-                    },
-                    label: Text('Edit Color'),
-                    icon: Icon(
-                      Icons.edit,
+                  onPressed: saveCategory,
+                  child: Text(
+                    'Ajouter',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
                     ),
-                  )
-                ],
-              ),
-            SizedBox(height: 16),
-            // Category TextFormField
-            CustomTextFormField(
-              controller: widget.categoryController,
-              labelText: 'Entrer le nom de la category eg:Food',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Ce champ est obligatoire';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16),
-
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                onPressed: saveCategory,
-                child: Text(
-                  'Ajouter',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

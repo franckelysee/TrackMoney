@@ -61,6 +61,7 @@ class _CardComponentState extends State<CardComponent> {
                         color: Colors.white,
                         fontWeight: FontWeight.normal,
                         height: 1.5,
+                        overflow: TextOverflow.ellipsis
                       ),
                     ),
                   ),
