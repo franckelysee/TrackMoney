@@ -279,20 +279,19 @@ class _AjouterPageState extends State<AjouterPage> {
                               icon: Icons.add,
                               radius: 10,
                               onpressed: () {
-                                showModalBottomSheet(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return  CustomCategoryModal(
-                                            categoryController:
-                                                categoryController,
-                                            onCategoryAdded: (newCategory) {
-                                              setState(() {
-                                                selectedCategory =
-                                                    newCategory;
-                                                refreshCategory();
-                                              });
-                                            });
-                                    });
+                                Navigator.push(context, 
+                                  createRoute(CustomCategoryModal(
+                                    categoryController:
+                                        categoryController,
+                                    onCategoryAdded: (newCategory) {
+                                      setState(() {
+                                        selectedCategory =
+                                            newCategory;
+                                        refreshCategory();
+                                      });
+                                    })
+                                  )
+                                );
                               },
                             )
                           ],

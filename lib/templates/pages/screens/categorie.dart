@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/category_model.dart';
+import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/category/category_card.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
@@ -94,7 +95,12 @@ class _CategoryPageState extends State<CategoryPage> {
                           child: CustomTextFormField(
                             controller: searchCategoryController,
                             labelText: 'Rechercher une catégorie',
-                            suffixIcon: Icons.search,
+                            suffixIcon: IconButton(
+                              onPressed: (){
+                                _submitForm();
+                              }, 
+                              icon: Icon(Icons.search)
+                            ),
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return 'Veuillez entrer la catégorie que vous cherchez';
@@ -112,22 +118,16 @@ class _CategoryPageState extends State<CategoryPage> {
                           icon: Icons.add,
                           radius: 10,
                           onpressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return SingleChildScrollView(
-                                  child: CustomCategoryModal(
-                                    categoryController: categoryController,
-                                    onCategoryAdded: (newCategory) {
-                                      // Implémentez la logique d'ajout ici
-                                      setState(() {
-                                        loadCategories();
-                                      });
-                                    },
-                                  ),
-                                );
+                            Navigator.push(context, createRoute(CustomCategoryModal(
+                              categoryController: categoryController,
+                              onCategoryAdded: (newCategory) {
+                                // Implémentez la logique d'ajout ici
+                                setState(() {
+                                  loadCategories();
+                                });
                               },
-                            );
+                            )));
+                            
                           },
                         ),
                       ],
@@ -154,6 +154,7 @@ class _CategoryPageState extends State<CategoryPage> {
         const Text(
           'Toutes les Catégories Correspondentes',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
         Expanded(

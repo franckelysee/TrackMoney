@@ -9,6 +9,7 @@ import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/account_type_enum.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
@@ -34,6 +35,7 @@ class _ComptePageState extends State<ComptePage> {
     'amount': 0.0,
   };
   bool isLoading = true;
+  bool hasAllAccounts = false;
   DateFormat dateFormat = new DateFormat("MMMM");
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _ComptePageState extends State<ComptePage> {
     setState(() {
       isLoading = false;
     });
+    comptesContainsAll();
   }
 
   void fetchTransactions() async {
@@ -139,12 +142,33 @@ class _ComptePageState extends State<ComptePage> {
     return;
   }
 
+  void comptesContainsAll(){
+    hasAllAccounts = comptes.contains(AccountTypeEnum.bancaire);
+    bool hasBan = false;
+    bool hasMob = false;
+    bool hasEsp = false;
+    for (var compte in comptes){
+      if ( compte.type == AccountTypeEnum.espece ){
+        hasEsp = true;
+      }
+      else if(compte.type == AccountTypeEnum.mobile){
+        hasMob = true;
+      }
+      else if(compte.type == AccountTypeEnum.bancaire){
+        hasBan = true;
+      }
+    }
+    if(hasEsp && hasBan && hasMob){
+      hasAllAccounts = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
-        child: AppHeader(title: 'Comptes', subtitle: '2 comptes personnels'),
+        child: AppHeader(title: 'Comptes', subtitle: '${comptes.length} ${comptes.length>1 ? 'comptes personnels':'compte personnel'} '),
       ),
       body: isLoading
           ? Center(
@@ -155,6 +179,7 @@ class _ComptePageState extends State<ComptePage> {
               : SingleChildScrollView(
                   child: Column(
                     children: [
+                      hasAllAccounts? Container():
                       Container(
                         padding: EdgeInsets.all(10),
                         child: Row(

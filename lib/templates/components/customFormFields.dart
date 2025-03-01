@@ -94,7 +94,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? labelText;
   final String? hintText;
   final IconData? prefixIcon;
-  final IconData? suffixIcon;
+  final Widget? suffixIcon;
   final bool isPassword;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -128,7 +128,7 @@ class CustomTextFormField extends StatelessWidget {
         labelStyle: TextStyle(fontSize: 12),
         hintText: hintText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-        suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
+        suffixIcon: suffixIcon ?? suffixIcon,
         filled: true,
         fillColor: Theme.of(context).cardColor,
         border: OutlineInputBorder(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/templates/components/account/select_account_type.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/pages/screens/account_page.dart';

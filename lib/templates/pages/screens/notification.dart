@@ -122,7 +122,7 @@ class _NotificationPageState extends State<NotificationPage> {
       child: Row(
         children: [
           const Text(
-            'TYPE :',
+            'Trier :',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 5),
