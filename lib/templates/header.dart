@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:trackmoney/routes/init_routes.dart';
+import 'package:trackmoney/templates/pages/screens/profile.dart';
 
 class AppHeader extends StatefulWidget {
   final String title;
@@ -34,7 +36,9 @@ class _AppHeaderState extends State<AppHeader> {
         ),
         IconButton(
           icon: const Icon(FontAwesomeIcons.circleUser),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context, createRoute(Profile()));
+          },
         )
       ],
     ) ;
