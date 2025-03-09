@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackmoney/routes/init_routes.dart';
-import 'package:trackmoney/templates/pages/screens/profile.dart';
+import 'package:trackmoney/templates/pages/screens/profile/profile.dart';
 
 class AppHeader extends StatefulWidget {
   final String title;
