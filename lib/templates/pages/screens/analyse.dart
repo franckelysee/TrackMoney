@@ -26,26 +26,51 @@ class _AnalysePageState extends State<AnalysePage> {
 
   // Méthode pour générer une liste de dépenses ou entrées
   Widget _buildTransactionList(String type) {
-    var data =
-        transactionsData.where((element) => element.type == type).toList();
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    var data = transactionsData.where((element) => element.type == type).toList();
+
     return SingleChildScrollView(
-        child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(data.length, (index) {
-              return NotificatedCard(
-                title: data[index].name!,
-                titleSize: 20,
-                subtitle: data[index].category,
-                icon: data[index].icon,
-                price: data[index].type == "depense"
-                    ? -data[index].amount!
-                    : data[index].amount!,
-                iconBackgroundColor:
-                    data[index].type == "depense" ? Colors.red : Colors.green,
-                date: data[index].date!,
-              );
-            })));
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(data.length, (index) {
+          // Déterminer les couleurs en fonction du type de transaction
+          Color iconBgColor;
+          if (data[index].type == "depense") {
+            iconBgColor = Color(0xFFF44336); // Rouge pour les dépenses
+          } else {
+            iconBgColor = Color(0xFF4CAF50); // Vert pour les revenus
+          }
+
+          // La date est maintenant formatée directement dans le composant NotificatedCard
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: NotificatedCard(
+              title: data[index].name!,
+              titleSize: 16,
+              subtitle: data[index].category,
+              subtitleSize: 13,
+              icon: data[index].icon,
+              price: data[index].type == "depense"
+                  ? -data[index].amount!
+                  : data[index].amount!,
+              iconBackgroundColor: iconBgColor,
+              date: data[index].date!,
+              backgroundColor: isDarkMode
+                  ? theme.colorScheme.surfaceContainerLow
+                  : Colors.white,
+              textColor: isDarkMode ? Colors.white : null,
+            ),
+          );
+        }),
+      ),
+    );
   }
+
+
 
   void fetchTransactions() async {
     try {
@@ -76,10 +101,12 @@ class _AnalysePageState extends State<AnalysePage> {
         is_loading_transac = false;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Erreur lors de l\'obtention  des transactions: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Erreur lors de l\'obtention des transactions: $e')),
+        );
+      }
     }
   }
 
@@ -141,48 +168,233 @@ class _AnalysePageState extends State<AnalysePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(60),
         child: AppHeader(title: 'Analyse / Statistiques'),
       ),
       body: is_loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Chargement des données...",
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête de la page
+                  Container(
+                    margin: EdgeInsets.only(bottom: 24),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.bar_chart,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Statistiques financières",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Suivez vos revenus et dépenses",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Graphiques d'analyse
-                  const LineChartSample2(),
-                  const SizedBox(height: 10),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black12
+                              : Colors.grey.withAlpha(30),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 20, top: 20, right: 20),
+                          child: Text(
+                            "Aperçu annuel",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                        const LineChartSample2(),
+                      ],
+                    ),
+                  ),
 
                   // Sélecteur de date
-                  DateSelector(
-                    onDateSelected: (value) {
-                      setState(() {
-                        selectedDate = value;
-                        updateTransaction(selectedDate);
-                      });
-                    },
+                  Container(
+                    margin: EdgeInsets.only(bottom: 24),
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black12
+                              : Colors.grey.withAlpha(20),
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: DateSelector(
+                      onDateSelected: (value) {
+                        setState(() {
+                          selectedDate = value;
+                          updateTransaction(selectedDate);
+                        });
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 10),
+
+                  // Titre de la section transactions
+                  Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 16),
+                    child: Text(
+                      "Transactions du jour",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
 
                   // Sections des onglets
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height - 400,
+                  Container(
+                    height: MediaQuery.of(context).size.height - 450,
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black12
+                              : Colors.grey.withAlpha(30),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
                     child: DefaultTabController(
                       length: 2,
                       animationDuration: tabAnimationDuration,
                       child: Column(
                         children: [
                           // Onglets Entrée/Sortie
-                          const TabBar(
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                            tabs: [
-                              Tab(text: "Entrée"),
-                              Tab(text: "Sortie"),
-                            ],
+                          Container(
+                            margin: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? theme.colorScheme.surfaceContainerLow
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: TabBar(
+                              labelColor: theme.colorScheme.primary,
+                              unselectedLabelColor: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              dividerColor: Colors.transparent,
+                              indicator: BoxDecoration(
+                                color: theme.colorScheme.primary.withAlpha(30),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              tabs: [
+                                Tab(
+                                  icon: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.arrow_downward, size: 16),
+                                      SizedBox(width: 8),
+                                      Text("Entrées"),
+                                    ],
+                                  ),
+                                ),
+                                Tab(
+                                  icon: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.arrow_upward, size: 16),
+                                      SizedBox(width: 8),
+                                      Text("Sorties"),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
 
                           // Contenu des onglets
@@ -190,15 +402,87 @@ class _AnalysePageState extends State<AnalysePage> {
                             child: TabBarView(
                               children: [
                                 is_loading_transac
-                                    ? const Center(
-                                        child: CircularProgressIndicator())
-                                    : _buildTransactionList(
-                                        TransactionTypesEnum.revenu),
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              color: Colors.green,
+                                            ),
+                                            SizedBox(height: 16),
+                                            Text(
+                                              "Chargement des entrées...",
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : transactionsData.where((element) => element.type == TransactionTypesEnum.revenu).isEmpty
+                                        ? Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.account_balance_wallet_outlined,
+                                                  size: 48,
+                                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                                                ),
+                                                SizedBox(height: 16),
+                                                Text(
+                                                  "Aucune entrée pour cette date",
+                                                  style: TextStyle(
+                                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : _buildTransactionList(TransactionTypesEnum.revenu),
                                 is_loading_transac
-                                    ? const Center(
-                                        child: CircularProgressIndicator())
-                                    : _buildTransactionList(
-                                        TransactionTypesEnum.depense),
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              color: Colors.red,
+                                            ),
+                                            SizedBox(height: 16),
+                                            Text(
+                                              "Chargement des sorties...",
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : transactionsData.where((element) => element.type == TransactionTypesEnum.depense).isEmpty
+                                        ? Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.account_balance_wallet_outlined,
+                                                  size: 48,
+                                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                                                ),
+                                                SizedBox(height: 16),
+                                                Text(
+                                                  "Aucune sortie pour cette date",
+                                                  style: TextStyle(
+                                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : _buildTransactionList(TransactionTypesEnum.depense),
                               ],
                             ),
                           ),

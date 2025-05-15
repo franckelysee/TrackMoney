@@ -38,17 +38,39 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
   }
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Déterminer l'icône en fonction du type de compte
+    IconData accountIcon;
+    if (widget.acountType.toLowerCase() == 'bancaire') {
+      accountIcon = Icons.account_balance;
+    } else if (widget.acountType.toLowerCase() == 'mobile') {
+      accountIcon = Icons.phone_android;
+    } else if (widget.acountType.toLowerCase() == 'espece') {
+      accountIcon = Icons.wallet;
+    } else {
+      accountIcon = Icons.credit_card;
+    }
+
     return Container(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: widget.backgroundColor ?? const Color(0xFF1A2431),
-          borderRadius: BorderRadius.circular(50),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              widget.backgroundColor ?? const Color(0xFF1A2431),
+              (widget.backgroundColor ?? const Color(0xFF1A2431)).withAlpha(220),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
+              color: (widget.backgroundColor ?? const Color(0xFF1A2431)).withAlpha(70),
+              spreadRadius: 1,
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -57,18 +79,36 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // Icône du type de compte
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                accountIcon,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+
+            // Titre du type de compte
             Text(
               widget.title,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
               textAlign: TextAlign.center,
             ),
+
+            // Bouton d'ajout
             CircularButton(
               icon: Icons.add,
-              iconColor: Color(0xFF22C22D),
+              iconColor: Colors.white,
               onpressed: () {
                 // Navigate to Add Account screen
                 bool already = false;
@@ -79,7 +119,7 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
                   }
                 }
                 if (already) {
-                  
+
                   SnackbarNotifier.show(
                     context: context,
                     message: "Ce Compte existe déja vous ne pouvez pas avoir deux meme comptes",
@@ -111,7 +151,7 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
                       ),
                     ),
                   ).then((value) {
-                    if (value == true) {
+                    if (value == true && mounted) {
                       // Refresh the AccountPage
                       Navigator.pop(context, true);
                       setState(() {

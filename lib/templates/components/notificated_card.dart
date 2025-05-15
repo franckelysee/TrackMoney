@@ -40,103 +40,148 @@ class NotificatedCard extends StatefulWidget {
 class _NotificatedCardState extends State<NotificatedCard> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Formater la date pour un affichage plus lisible
+    String formattedDate = "";
+    if (widget.date != null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = DateTime(now.year, now.month, now.day - 1);
+      final dateToCheck = DateTime(widget.date!.year, widget.date!.month, widget.date!.day);
+
+      if (dateToCheck == today) {
+        formattedDate = "Aujourd'hui à ${widget.date!.hour.toString().padLeft(2, '0')}:${widget.date!.minute.toString().padLeft(2, '0')}";
+      } else if (dateToCheck == yesterday) {
+        formattedDate = "Hier à ${widget.date!.hour.toString().padLeft(2, '0')}:${widget.date!.minute.toString().padLeft(2, '0')}";
+      } else {
+        const monthNames = [
+          'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+          'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
+        ];
+        formattedDate = "${widget.date!.day} ${monthNames[widget.date!.month - 1]} à ${widget.date!.hour.toString().padLeft(2, '0')}:${widget.date!.minute.toString().padLeft(2, '0')}";
+      }
+    }
+
     return InkWell(
-        onTap: widget.onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 1),
-          child: Card(
-            color: widget.backgroundColor ?? Theme.of(context).cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            shadowColor: Colors.grey.withOpacity(0.5),
-            elevation: 2,
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Card(
+          color: widget.backgroundColor ?? Theme.of(context).cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Icône avec fond coloré
                 if (widget.icon != null)
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: widget.iconBackgroundColor ?? Color(0xFF3273EC),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                          color: Theme.of(context).cardColor, width: 1),
+                      color: widget.iconBackgroundColor ?? theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (widget.iconBackgroundColor ?? theme.colorScheme.primary).withAlpha(50),
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       widget.icon,
                       color: widget.iconColor ?? Colors.white,
+                      size: 22,
                     ),
                   ),
-                SizedBox(
-                  width: 10,
-                ),
+                SizedBox(width: 16),
+
+                // Titre et sous-titre
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.title,
-                        // overflow: TextOverflow.ellipsis,
-                        // softWrap: true,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: widget.titleSize,
                           fontWeight: FontWeight.w600,
                           color: widget.textColor ??
-                              Theme.of(context).colorScheme.secondary,
+                              (isDarkMode ? Colors.white : Colors.black87),
                         ),
                       ),
-                      SizedBox(
-                        height: 5,
-                      ),
+                      SizedBox(height: 4),
                       if (widget.subtitle != null)
                         Text(
                           widget.subtitle!,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: widget.subtitleSize ?? 14,
-                            color: widget.textColor ?? Color(0xFF727272),
+                            color: widget.textColor != null
+                                ? widget.textColor!.withAlpha(180)
+                                : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                          ),
+                        ),
+                      if (widget.date != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            formattedDate,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                            ),
                           ),
                         ),
                     ],
                   ),
                 ),
-                if (widget.price != null) Spacer(),
-                Column(
-                  children: [
-                    if (widget.price != null)
-                      Text(
-                        '\$${widget.price}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: widget.price! > 0 ? Colors.green : Colors.red,
-                        ),
+
+                // Prix
+                if (widget.price != null)
+                  Container(
+                    margin: EdgeInsets.only(left: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: widget.price! > 0
+                          ? Colors.green.withAlpha(isDarkMode ? 40 : 30)
+                          : Colors.red.withAlpha(isDarkMode ? 40 : 30),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Text(
+                      '${widget.price! > 0 ? "+" : ""}${widget.price} FCFA',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: widget.price! > 0 ? Colors.green : Colors.red,
                       ),
-                    if (widget.date != null)
-                      Text(
-                        "${widget.date!.year}-${widget.date!.month}-${widget.date!.day}; ${widget.date!.hour}:${widget.date!.minute}",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )
-                  ],
-                ),
+                    ),
+                  ),
+
+                // Élément trailing (optionnel)
                 if (widget.trailing != null)
                   Padding(
-                    padding: EdgeInsets.only(right: 10),
+                    padding: EdgeInsets.only(left: 12),
                     child: widget.trailing,
                   ),
-                // Container(
-                //   width: 8,
-                //   height: 8,
-                //   decoration: BoxDecoration(
-                //     color: Colors.red,
-                //     borderRadius: BorderRadius.circular(50)
-                //   ),
-                // )
-              ]),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

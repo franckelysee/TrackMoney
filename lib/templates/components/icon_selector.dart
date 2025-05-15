@@ -34,32 +34,101 @@ class IconSelector {
     Icons.girl,
     Icons.gamepad,
   ];
-  Future<IconData?> showIconSelector(BuildContext context) async{
+  Future<IconData?> showIconSelector(BuildContext context) async {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return showModalBottomSheet<IconData>(
       context: context,
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surfaceContainerHighest
+          : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
-        return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+        return Column(
+          children: [
+            // Barre d'indication en haut
+            Container(
+              width: 40,
+              height: 4,
+              margin: EdgeInsets.only(top: 12, bottom: 16),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            itemCount: availableIcons.length, 
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.of(context).pop(availableIcons[index]);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+
+            // Titre
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.emoji_objects,
+                      color: theme.colorScheme.primary,
+                      size: 20,
+                    ),
                   ),
-                  child: Icon(availableIcons[index], size: 40, color: Theme.of(context).colorScheme.secondary,),
+                  SizedBox(width: 16),
+                  Text(
+                    "Choisir une icône",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 16),
+
+            // Grille d'icônes
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 5,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: availableIcons.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop(availableIcons[index]);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: isDarkMode
+                              ? theme.colorScheme.surfaceContainerLow
+                              : Colors.grey[100],
+                        ),
+                        child: Icon(
+                          availableIcons[index],
+                          size: 32,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  }
                 ),
-              );
-            }
-          );
+              ),
+            ),
+          ],
+        );
       },
     );
   }

@@ -103,83 +103,225 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Déterminer la couleur en fonction du type de compte
+    Color accountColor;
+    IconData accountIcon;
+
+    switch (widget.type.toLowerCase()) {
+      case 'bancaire':
+        accountColor = Color(0xFF6C63FF);
+        accountIcon = Icons.account_balance;
+        break;
+      case 'mobile':
+        accountColor = Color(0xFF4CAF50);
+        accountIcon = Icons.phone_android;
+        break;
+      case 'espece':
+        accountColor = Color(0xFFFFA726);
+        accountIcon = Icons.wallet;
+        break;
+      default:
+        accountColor = theme.colorScheme.primary;
+        accountIcon = Icons.credit_card;
+    }
+
     return Scaffold(
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: isDarkMode
+            ? theme.colorScheme.surface
+            : Color(0xFFF8F9FA),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: theme.colorScheme.primary,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           "Ajouter un Portefeuille",
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
         ),
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: activeIndicator
             ? Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: accountColor,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Création du portefeuille...",
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               )
             : SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Form(
-                      key: _formKey,
-                      child: Column(
+                    // En-tête avec icône
+                    Container(
+                      margin: EdgeInsets.only(bottom: 30),
+                      child: Row(
                         children: [
-                          CustomTextFormField(
-                            controller: nameController,
-                            labelText: "Nom du portefeuille",
-                            hintText: "Nom du portefeuille",
-                            validator: (value) => value!.isEmpty
-                                ? "Veuillez renseigner ce champ"
-                                : null,
-                          ),
-                          const SizedBox(height: 20),
-                          CustomTextFormField(
-                            controller: priceController,
-                            labelText: "Montant disponible",
-                            hintText: "0.00",
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Ce champ est obligatoire';
-                              }
-                              if (!RegExp(r'^[0-9]*\.?[0-9]+$')
-                                  .hasMatch(value)) {
-                                return 'Veuillez saisir un montant valide';
-                              }
-                              if (double.tryParse(value)! <= 0) {
-                                return 'Veuillez saisir un montant positif';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                              ),
-                              onPressed: _addAccount,
-                              child: Text(
-                                'Ajouter',
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.surface),
-                              ),
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: accountColor.withAlpha(30),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            child: Icon(
+                              accountIcon,
+                              color: accountColor,
+                              size: 24,
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Portefeuille ${widget.type}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                "Configurez les détails de votre compte",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    CardComponent(
-                      accountType: widget.type,
-                      amount: amount,
-                      accountName: name,
-                      isCreating: true,
+
+                    // Aperçu de la carte
+                    Container(
+                      margin: EdgeInsets.only(bottom: 30),
+                      child: CardComponent(
+                        accountType: widget.type,
+                        amount: amount,
+                        accountName: name.isEmpty ? "Mon portefeuille" : name,
+                        isCreating: true,
+                      ),
+                    ),
+
+                    // Formulaire
+                    Container(
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black12
+                                : Colors.grey.withAlpha(30),
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Informations du portefeuille",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            CustomTextFormField(
+                              controller: nameController,
+                              labelText: "Nom du portefeuille",
+                              hintText: "Ex: Mon compte bancaire",
+                              prefixIcon: Icons.account_balance_wallet,
+                              validator: (value) => value!.isEmpty
+                                  ? "Veuillez renseigner ce champ"
+                                  : null,
+                            ),
+                            const SizedBox(height: 20),
+                            CustomTextFormField(
+                              controller: priceController,
+                              labelText: "Montant disponible",
+                              hintText: "0.00",
+                              prefixIcon: Icons.attach_money,
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Ce champ est obligatoire';
+                                }
+                                if (!RegExp(r'^[0-9]*\.?[0-9]+$')
+                                    .hasMatch(value)) {
+                                  return 'Veuillez saisir un montant valide';
+                                }
+                                if (double.tryParse(value)! <= 0) {
+                                  return 'Veuillez saisir un montant positif';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: accountColor,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: _addAccount,
+                                child: Text(
+                                  'Créer le portefeuille',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

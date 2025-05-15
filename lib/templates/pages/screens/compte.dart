@@ -210,15 +210,18 @@ class _ComptePageState extends State<ComptePage> {
                                 refreshAccounts();
                               },
                             ),
-                            SizedBox(width: 16),
-                            Text(
-                              "Ajouter un autre compte personnel",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: theme.brightness == Brightness.dark
-                                    ? Colors.grey[300]
-                                    : Colors.grey[700],
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                "Ajouter un autre compte personnel",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.brightness == Brightness.dark
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ]

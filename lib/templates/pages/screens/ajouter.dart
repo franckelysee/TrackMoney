@@ -177,190 +177,396 @@ class _AjouterPageState extends State<AjouterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Déterminer la couleur en fonction du type de transaction
+    Color transactionColor = spendingTypeController == 'Dépense'
+        ? Color(0xFFF44336) // Rouge pour les dépenses
+        : Color(0xFF4CAF50); // Vert pour les revenus
+
+    if (spendingTypeController.isEmpty) {
+      transactionColor = theme.colorScheme.primary;
+    }
+
     return Scaffold(
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
       resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
-        child: AppHeader(title: 'Ajouter une Depense'),
+        child: AppHeader(
+          title: spendingTypeController.isEmpty
+              ? 'Ajouter une Transaction'
+              : spendingTypeController == 'Dépense'
+                  ? 'Ajouter une Dépense'
+                  : 'Ajouter un Revenu',
+        ),
       ),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width - 40,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "USD",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // En-tête de la page
+            Container(
+              margin: EdgeInsets.only(bottom: 24),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: transactionColor.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      spendingTypeController == 'Dépense'
+                          ? Icons.arrow_upward
+                          : spendingTypeController == 'Revenu'
+                              ? Icons.arrow_downward
+                              : Icons.add_card,
+                      color: transactionColor,
+                      size: 24,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        spendingTypeController.isEmpty
+                            ? "Nouvelle transaction"
+                            : spendingTypeController == 'Dépense'
+                                ? "Nouvelle dépense"
+                                : "Nouveau revenu",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Enregistrez vos mouvements financiers",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              Form(
+            ),
+
+            // Formulaire
+            Container(
+              padding: EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? theme.colorScheme.surfaceContainerHighest
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkMode
+                        ? Colors.black12
+                        : Colors.grey.withAlpha(30),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Form(
                 key: _formkey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomDropdownButtonFormField(
-                      initialValue: spendingTypeController.isNotEmpty?spendingTypeController: null ,
-                      onChanged: (value) {
-                        spendingTypeController = value!;
-                        // mettre a jour la visibilité du champ categorie
-                        setState(() {});
-                      },
-                      items: spendingTypeItems,
-                      errorText: 'Selectionner le type ',
-                      hint: 'Selectionner le type de transaction',
-                      isRequired: true,
+                    // Type de transaction
+                    Text(
+                      "Type de transaction",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    // Afficher le champ seulement si nécessaire
-                    Column(
+                    SizedBox(height: 12),
+
+                    // Sélection du type de transaction avec des boutons
+                    Row(
                       children: [
-                        CustomTextFormField(
-                          controller: spendingNameController,
-                          labelText:
-                              'Entrer le nom de la $spendingTypeController',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Ce champ est obligatoire';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                                child: ValueListenableBuilder(
-                              valueListenable:
-                                  Hive.box<CategoryModel>('categories')
-                                      .listenable(),
-                              builder: (context, Box<CategoryModel> box, _) {
-                                final categories = box.values.toList();
-                                // Tri des catégories par ordre alphabétique
-                                categories
-                                    .sort((a, b) => a.name.compareTo(b.name));
-                                // cree une liste des noms de catégories
-                                final categoryNames = categories
-                                    .map((category) => category.name)
-                                    .toList();
-                                items = categoryNames;
-                                return CustomDropdownButtonFormField(
-                                  initialValue: selectedCategory.isNotEmpty
-                                      ? selectedCategory
-                                      : null,
-                                  items: items,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedCategory = value!;
-                                      selectedCategoryid = categories
-                                          .firstWhere((category) =>
-                                              category.name == selectedCategory)
-                                          .id
-                                          .toString();
-                                    });
-                                  },
-                                  errorText:
-                                      'Veiller Selectionner une Categorie de dépense',
-                                  hint: 'Selectionner la Categorie de dépense',
-                                  isRequired: true,
-                                );
-                              },
-                            )),
-                            SizedBox(
-                              width: 8,
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                spendingTypeController = 'Dépense';
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: spendingTypeController == 'Dépense'
+                                    ? Color(0xFFF44336).withAlpha(isDarkMode ? 40 : 30)
+                                    : isDarkMode
+                                        ? theme.colorScheme.surfaceContainerLow
+                                        : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: spendingTypeController == 'Dépense'
+                                      ? Color(0xFFF44336)
+                                      : Colors.transparent,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.arrow_upward,
+                                    color: spendingTypeController == 'Dépense'
+                                        ? Color(0xFFF44336)
+                                        : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                    size: 24,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "Dépense",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: spendingTypeController == 'Dépense'
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: spendingTypeController == 'Dépense'
+                                          ? Color(0xFFF44336)
+                                          : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            CircularButton(
-                              color: Theme.of(context).colorScheme.primary,
-                              icon: Icons.add,
-                              radius: 10,
-                              onpressed: () {
-                                Navigator.push(context, 
-                                  createRoute(CustomCategoryModal(
-                                    categoryController:
-                                        categoryController,
-                                    onCategoryAdded: (newCategory) {
-                                      setState(() {
-                                        selectedCategory =
-                                            newCategory;
-                                        refreshCategory();
-                                      });
-                                    })
-                                  )
-                                );
-                              },
-                            )
-                          ],
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                spendingTypeController = 'Revenu';
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: spendingTypeController == 'Revenu'
+                                    ? Color(0xFF4CAF50).withAlpha(isDarkMode ? 40 : 30)
+                                    : isDarkMode
+                                        ? theme.colorScheme.surfaceContainerLow
+                                        : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: spendingTypeController == 'Revenu'
+                                      ? Color(0xFF4CAF50)
+                                      : Colors.transparent,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.arrow_downward,
+                                    color: spendingTypeController == 'Revenu'
+                                        ? Color(0xFF4CAF50)
+                                        : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                    size: 24,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "Revenu",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: spendingTypeController == 'Revenu'
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: spendingTypeController == 'Revenu'
+                                          ? Color(0xFF4CAF50)
+                                          : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    CustomDropdownButtonFormField(
-                      initialValue: accountController.isNotEmpty? accountController:null,
-                      onChanged: (value) {
-                        accountController = value!;
-                      },
-                      items: accounts.map((account) => account.type!).toList(),
-                      errorText: 'Veiller Selectionner un Compte',
-                      hint: 'Selectionner un Compte',
-                      isRequired: true,
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    CustomTextFormField(
-                      controller: priceController,
-                      // keyboardType: TextInputType.number,
-                      labelText: 'Entrer le montant',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ce champ est obligatoire';
-                        }
-                        if (!RegExp(r'^[0-9]*\.?[0-9]+$').hasMatch(value)) {
-                          return 'Veiller saisir un montant valide';
-                        }
-                        if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0) {
-                          return 'Veiller saisir un montant positif';
-                        }
-                        return null;
-                      },
-                      onFieldSubmitted: (_){
-                        FocusScope.of(context).unfocus(); 
-                        _addTransaction();
-                      },
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary),
-                        onPressed: _addTransaction,
-                        child: Text(
-                          'Ajouter',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.surface),
-                        ),
+
+                    SizedBox(height: 24),
+
+                    // Détails de la transaction
+                    if (spendingTypeController.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Détails de la transaction",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+
+                          // Nom de la transaction
+                          CustomTextFormField(
+                            controller: spendingNameController,
+                            labelText: 'Nom de la transaction',
+                            hintText: 'Ex: Courses, Salaire...',
+                            prefixIcon: Icons.description,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Ce champ est obligatoire';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 16),
+
+                          // Catégorie
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: ValueListenableBuilder(
+                                  valueListenable: Hive.box<CategoryModel>('categories').listenable(),
+                                  builder: (context, Box<CategoryModel> box, _) {
+                                    final categories = box.values.toList();
+                                    categories.sort((a, b) => a.name.compareTo(b.name));
+                                    final categoryNames = categories.map((category) => category.name).toList();
+                                    items = categoryNames;
+
+                                    return CustomDropdownButtonFormField(
+                                      initialValue: selectedCategory.isNotEmpty ? selectedCategory : null,
+                                      items: items,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedCategory = value!;
+                                          selectedCategoryid = categories
+                                              .firstWhere((category) => category.name == selectedCategory)
+                                              .id
+                                              .toString();
+                                        });
+                                      },
+                                      errorText: 'Veuillez sélectionner une catégorie',
+                                      hint: 'Catégorie',
+                                      isRequired: true,
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Container(
+                                margin: EdgeInsets.only(top: 4),
+                                child: CircularButton(
+                                  color: transactionColor,
+                                  iconColor: Colors.white,
+                                  icon: Icons.add,
+                                  radius: 12,
+                                  onpressed: () {
+                                    Navigator.push(
+                                      context,
+                                      createRoute(
+                                        CustomCategoryModal(
+                                          categoryController: categoryController,
+                                          onCategoryAdded: (newCategory) {
+                                            setState(() {
+                                              selectedCategory = newCategory;
+                                              refreshCategory();
+                                            });
+                                          }
+                                        )
+                                      )
+                                    );
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                          SizedBox(height: 16),
+
+                          // Compte
+                          CustomDropdownButtonFormField(
+                            initialValue: accountController.isNotEmpty ? accountController : null,
+                            onChanged: (value) {
+                              accountController = value!;
+                            },
+                            items: accounts.map((account) => account.type!).toList(),
+                            errorText: 'Veuillez sélectionner un compte',
+                            hint: 'Compte',
+                            isRequired: true,
+                          ),
+                          SizedBox(height: 16),
+
+                          // Montant
+                          CustomTextFormField(
+                            controller: priceController,
+                            keyboardType: TextInputType.numberWithOptions(decimal: true),
+                            labelText: 'Montant',
+                            hintText: '0.00',
+                            prefixIcon: Icons.attach_money,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Ce champ est obligatoire';
+                              }
+                              if (!RegExp(r'^[0-9]*\.?[0-9]+$').hasMatch(value)) {
+                                return 'Veuillez saisir un montant valide';
+                              }
+                              if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                                return 'Veuillez saisir un montant positif';
+                              }
+                              return null;
+                            },
+                            onFieldSubmitted: (_) {
+                              FocusScope.of(context).unfocus();
+                              _addTransaction();
+                            },
+                          ),
+                          SizedBox(height: 24),
+
+                          // Bouton d'ajout
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: transactionColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: _addTransaction,
+                              child: Text(
+                                'Enregistrer',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

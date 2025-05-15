@@ -73,126 +73,134 @@ class _CardComponentState extends State<CardComponent> {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // En-tête de la carte
-              Row(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width - 60,
+              height: 170,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Icône du type de compte
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(40),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _getAccountIcon(widget.accountType),
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  // Type de compte
-                  Expanded(
-                    child: Text(
-                      'Portefeuille ${widget.accountType}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                        overflow: TextOverflow.ellipsis
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-
-              // Libellé du montant
-              Text(
-                "Montant disponible",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withAlpha(200),
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              SizedBox(height: 8),
-
-              // Montant
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    widget.amount.toString(),
-                    style: TextStyle(
-                      fontSize: 32,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      "FCFA",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withAlpha(220),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              Spacer(),
-
-              // Pied de la carte
-              Row(
-                children: [
-                  if(!widget.isCreating)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(40),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Détails",
-                        style: TextStyle(
+                  // En-tête de la carte
+                  Row(
+                    children: [
+                      // Icône du type de compte
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(40),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _getAccountIcon(widget.accountType),
                           color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          size: 18,
                         ),
                       ),
-                    )
-                  else
-                    Text(
-                      "${widget.accountName}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                      SizedBox(width: 12),
+                      // Type de compte
+                      Expanded(
+                        child: Text(
+                          'Portefeuille ${widget.accountType}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                            overflow: TextOverflow.ellipsis
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+
+                  // Libellé du montant
+                  Text(
+                    "Montant disponible",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withAlpha(200),
+                      fontWeight: FontWeight.normal,
                     ),
+                  ),
+                  SizedBox(height: 4),
+
+                  // Montant
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        widget.amount.toString(),
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Text(
+                          "FCFA",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withAlpha(220),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
                   Spacer(),
-                  if(!widget.isCreating)
-                    Text(
-                      "${widget.accountName}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                ]
+
+                  // Pied de la carte
+                  Row(
+                    children: [
+                      if(!widget.isCreating)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(40),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "Détails",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                      else
+                        Text(
+                          "${widget.accountName}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      Spacer(),
+                      if(!widget.isCreating)
+                        Text(
+                          "${widget.accountName}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ],
@@ -217,7 +225,7 @@ class _CardComponentState extends State<CardComponent> {
 
 class CircularAddAccountButton extends StatefulWidget {
   const CircularAddAccountButton({super.key, this.onAccountLoad});
-  final Function(dynamic)? onAccountLoad ;
+  final Function(dynamic)? onAccountLoad;
 
   @override
   State<CircularAddAccountButton> createState() => _CircularAddAccountButtonState();
@@ -226,53 +234,109 @@ class CircularAddAccountButton extends StatefulWidget {
 class _CircularAddAccountButtonState extends State<CircularAddAccountButton> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return CircularButton(
-          icon: Icons.add,
-          onpressed: () {
-            // Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => AccountPage()));
-            showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context){
-                return Container(
-                  height: MediaQuery.of(context).size.height / 2,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+      icon: Icons.add,
+      iconColor: Colors.white,
+      color: theme.colorScheme.primary,
+      onpressed: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: isDarkMode
+              ? theme.colorScheme.surfaceContainerHighest
+              : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (BuildContext context) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height / 2,
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                children: [
+                  // Barre d'indication en haut
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: EdgeInsets.only(top: 12, bottom: 20),
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 40,horizontal: 20),
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
+
+                  // Titre
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
                       children: [
-                        SelectAccountType(title: "Portefeuille Bancaire",backgroundColor: Color(0xFF1A2431),acountType: AccountTypeEnum.bancaire,),
-                        SizedBox(width: 20,),
-                        SelectAccountType(title: "Portefeuille Mobile",backgroundColor: Color(0xFF838486),acountType: AccountTypeEnum.mobile,),
-                        SizedBox(width: 20,),
-                        SelectAccountType(title: "Portefeuille Espece",backgroundColor: Color(0xFF1A2431),acountType: AccountTypeEnum.espece,),
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.account_balance_wallet,
+                            color: theme.colorScheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Text(
+                          "Sélectionner le type de compte",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.grey[200] : Colors.grey[800],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                );
-              }
-            ).then((value){
-              try {
-                widget.onAccountLoad!(value);
-              } catch (e) {
 
-              }
-            });
+                  SizedBox(height: 24),
 
-          },
-        );
+                  // Liste des types de compte
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          SelectAccountType(
+                            title: "Portefeuille Bancaire",
+                            backgroundColor: Color(0xFF6C63FF),
+                            acountType: AccountTypeEnum.bancaire,
+                          ),
+                          SizedBox(width: 20),
+                          SelectAccountType(
+                            title: "Portefeuille Mobile",
+                            backgroundColor: Color(0xFF4CAF50),
+                            acountType: AccountTypeEnum.mobile,
+                          ),
+                          SizedBox(width: 20),
+                          SelectAccountType(
+                            title: "Portefeuille Espece",
+                            backgroundColor: Color(0xFFFFA726),
+                            acountType: AccountTypeEnum.espece,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        ).then((value) {
+          if (value != null && widget.onAccountLoad != null) {
+            widget.onAccountLoad!(value);
+          }
+        });
+      },
+    );
   }
 }

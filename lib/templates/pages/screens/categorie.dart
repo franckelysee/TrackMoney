@@ -43,7 +43,7 @@ class _CategoryPageState extends State<CategoryPage> {
 
   void _submitForm() {
     if (_formsearchkey.currentState!.validate()) {
-      // Action après validation (ex: connexion)
+      // Rechercher les catégories correspondantes
       List<CategoryModel> searchCategories = [];
       setState(() {
         searchCategories = categories
@@ -54,21 +54,31 @@ class _CategoryPageState extends State<CategoryPage> {
 
         // Affichage des résultats
         if (searchCategories.isEmpty) {
+          // Afficher un message si aucune catégorie n'est trouvée
           SnackbarNotifier.show(
-              context: context,
-              message: "Aucune categorie trouvée...",
-              type: 'error',
-              actionLabel: 'cancel');
+            context: context,
+            message: "Aucune catégorie ne correspond à votre recherche",
+            type: 'info',
+          );
         } else {
+          // Afficher les résultats dans un modal bottom sheet
+          final theme = Theme.of(context);
+          final isDarkMode = theme.brightness == Brightness.dark;
+
           showModalBottomSheet(
             context: context,
+            backgroundColor: isDarkMode
+                ? theme.colorScheme.surfaceContainerHighest
+                : Colors.white,
+            isScrollControlled: true,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            builder: (context) => Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: buildSearchCategoriesList(searchCategories)),
+            builder: (context) => Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              padding: const EdgeInsets.only(top: 8),
+              child: buildSearchCategoriesList(searchCategories),
+            ),
           );
         }
       });
@@ -77,68 +87,172 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
       appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: const AppHeader(title: 'Categories')),
+        preferredSize: const Size.fromHeight(60),
+        child: const AppHeader(title: 'Catégories'),
+      ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          ? Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Form(
-                    key: _formsearchkey,
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Chargement des catégories...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête de la page
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: CustomTextFormField(
-                            controller: searchCategoryController,
-                            labelText: 'Rechercher une catégorie',
-                            suffixIcon: IconButton(
-                              onPressed: (){
-                                _submitForm();
-                              }, 
-                              icon: Icon(Icons.search)
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Veuillez entrer la catégorie que vous cherchez';
-                              }
-                              return null;
-                            },
-                            onFieldSubmitted: (_) {
-                              _submitForm();
-                            },
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.category,
+                            color: theme.colorScheme.primary,
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        CircularButton(
-                          color: Theme.of(context).colorScheme.primary,
-                          icon: Icons.add,
-                          radius: 10,
-                          onpressed: () {
-                            Navigator.push(context, createRoute(CustomCategoryModal(
-                              categoryController: categoryController,
-                              onCategoryAdded: (newCategory) {
-                                // Implémentez la logique d'ajout ici
-                                setState(() {
-                                  loadCategories();
-                                });
-                              },
-                            )));
-                            
-                          },
+                        SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Vos catégories",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Organisez vos transactions",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+
+                  // Barre de recherche et bouton d'ajout
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black12
+                              : Colors.grey.withAlpha(30),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formsearchkey,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomTextFormField(
+                              controller: searchCategoryController,
+                              labelText: 'Rechercher une catégorie',
+                              hintText: 'Ex: Alimentation, Transport...',
+                              prefixIcon: Icons.search,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Veuillez entrer la catégorie que vous cherchez';
+                                }
+                                return null;
+                              },
+                              onFieldSubmitted: (_) {
+                                _submitForm();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          CircularButton(
+                            color: theme.colorScheme.primary,
+                            iconColor: Colors.white,
+                            icon: Icons.add,
+                            radius: 12,
+                            onpressed: () {
+                              Navigator.push(
+                                context,
+                                createRoute(
+                                  CustomCategoryModal(
+                                    categoryController: categoryController,
+                                    onCategoryAdded: (newCategory) {
+                                      setState(() {
+                                        loadCategories();
+                                      });
+                                    },
+                                  )
+                                )
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Liste des catégories
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      color: Theme.of(context).cardColor,
-                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? theme.colorScheme.surfaceContainerLow
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black12
+                                : Colors.grey.withAlpha(20),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
                       child: SingleChildScrollView(child: CategoryList()),
                     ),
                   ),
@@ -149,33 +263,114 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 
   Widget buildSearchCategoriesList(List<CategoryModel> categories) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       children: [
-        const Text(
-          'Toutes les Catégories Correspondentes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+        // Barre d'indication en haut
+        Container(
+          width: 40,
+          height: 4,
+          margin: EdgeInsets.only(top: 8, bottom: 16),
+          decoration: BoxDecoration(
+            color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-        const SizedBox(height: 10),
+
+        // En-tête avec icône
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              margin: EdgeInsets.only(left: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.search,
+                color: theme.colorScheme.primary,
+                size: 20,
+              ),
+            ),
+            SizedBox(width: 16),
+            Text(
+              'Résultats de recherche',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+
+        SizedBox(height: 20),
+
+        // Nombre de résultats
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Text(
+                  '${categories.length} résultat${categories.length > 1 ? 's' : ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 16),
+
+        // Liste des résultats
         Expanded(
           child: ListView.builder(
-            itemCount: categories.length, // Nombre d'éléments dans la liste
-            itemBuilder: (context, index) => NotificatedCard(
-              icon: categories[index].icon,
-              iconBackgroundColor: categories[index].colorValue,
-              title: categories[index].name,
-              titleSize: 25,
-              onTap: () {
-                // Implementez la logique de navigation ici
-              },
-              trailing: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[300],
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            itemCount: categories.length,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: NotificatedCard(
+                icon: categories[index].icon,
+                iconBackgroundColor: categories[index].colorValue,
+                title: categories[index].name,
+                titleSize: 16,
+                backgroundColor: isDarkMode
+                    ? theme.colorScheme.surfaceContainerLow
+                    : Colors.white,
+                textColor: isDarkMode ? Colors.white : null,
+                onTap: () {
+                  // Implementez la logique de navigation ici
+                  Navigator.pop(context);
+                  searchCategoryController.text = categories[index].name;
+                },
+                trailing: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDarkMode
+                        ? theme.colorScheme.surfaceContainerHigh
+                        : Colors.grey[100],
+                  ),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: theme.colorScheme.primary,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(Icons.chevron_right),
               ),
             ),
           ),
@@ -195,80 +390,181 @@ class CategoryList extends StatefulWidget {
 class _CategoryListState extends State<CategoryList> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return ValueListenableBuilder(
       valueListenable: Hive.box<CategoryModel>('categories').listenable(),
       builder: (context, Box<CategoryModel> box, _) {
         if (box.isEmpty) {
-          return const Center(
-            child: Text('Aucune catégorie trouvée'),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.category_outlined,
+                  size: 60,
+                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Aucune catégorie trouvée',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Ajoutez une catégorie en cliquant sur le bouton +',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           );
         }
+
         final categories = box.values.toList();
-        categories.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        categories.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
         var month = DateTime.now().month;
         var categoriesMonth = categories.where((category) {
-          if (category.date.month == month) {
-            return true;
-          } else {
-            return false;
-          }
+          return category.date.month == month;
         }).toList();
-        return Container(
+
+        return SizedBox(
           height: MediaQuery.of(context).size.height - 100,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (categoriesMonth.length > 0)
+              // Catégories du mois
+              if (categoriesMonth.isNotEmpty)
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Categories du mois',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Catégories du mois',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 16),
                     SizedBox(
-                      height: 200,
+                      height: 180,
                       child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: categoriesMonth.length,
-                          itemBuilder: (context, index) {
-                            return CategoryCard(
-                              backgroundColor: categoriesMonth[index].colorValue,
-                              icon: categoriesMonth[index].icon,
-                              category: categoriesMonth[index].name,
-                              onTap: () {
-                                // Implementez la logique de navigation ici
-                              },
-                            );
-                          }),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categoriesMonth.length,
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        itemBuilder: (context, index) {
+                          return CategoryCard(
+                            backgroundColor: categoriesMonth[index].colorValue,
+                            icon: categoriesMonth[index].icon,
+                            category: categoriesMonth[index].name,
+                            onTap: () {
+                              // Implementez la logique de navigation ici
+                            },
+                          );
+                        }
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                  ],
+                ),
+
+              // Toutes les catégories
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.category,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Toutes les catégories',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text(
+                        '${categories.length}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              const SizedBox(height: 10),
-              const Text(
-                'Toutes les Catégories',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 16),
+
+              // Liste de toutes les catégories
               Expanded(
                 child: ListView.builder(
-                  itemCount: categories.length, // Nombre d'éléments dans la liste
-                  itemBuilder: (context, index) => NotificatedCard(
-                    icon: categories[index].icon,
-                    iconBackgroundColor: categories[index].colorValue,
-                    title: categories[index].name,
-                    titleSize: 25,
-                    onTap: () {
-                      // Implementez la logique de navigation ici
-                    },
-                    trailing: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey[300],
+                  padding: EdgeInsets.only(top: 4),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) => Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: NotificatedCard(
+                      icon: categories[index].icon,
+                      iconBackgroundColor: categories[index].colorValue,
+                      title: categories[index].name,
+                      titleSize: 16,
+                      backgroundColor: isDarkMode
+                          ? theme.colorScheme.surfaceContainerLow
+                          : Colors.white,
+                      textColor: isDarkMode ? Colors.white : null,
+                      onTap: () {
+                        // Implementez la logique de navigation ici
+                      },
+                      trailing: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isDarkMode
+                              ? theme.colorScheme.surfaceContainerHigh
+                              : Colors.grey[100],
+                        ),
+                        child: Icon(
+                          Icons.chevron_right,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
                       ),
-                      child: Icon(Icons.chevron_right),
                     ),
                   ),
                 ),
