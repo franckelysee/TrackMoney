@@ -17,30 +17,84 @@ class AppHeader extends StatefulWidget {
 class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return AppBar(
+      elevation: 0,
+      scrolledUnderElevation: 2,
+      shadowColor: Color.fromRGBO(0, 0, 0, isDarkMode ? 0.3 : 0.1),
+      surfaceTintColor: Colors.transparent,
       leading: null,
-      foregroundColor: Theme.of(context).colorScheme.primary,
-      backgroundColor: Theme.of(context).cardColor,
+      foregroundColor: theme.colorScheme.primary,
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surfaceContainerLow
+          : Colors.white,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-          if (widget.subtitle != null) 
-          Text(widget.subtitle!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),),
+          Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black87,
+              letterSpacing: 0.3,
+            ),
+          ),
+          if (widget.subtitle != null)
+            Text(
+              widget.subtitle!,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
+                letterSpacing: 0.2,
+              ),
+            ),
         ]
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () {},
+        Container(
+          margin: EdgeInsets.only(right: 8),
+          child: IconButton(
+            icon: Icon(
+              Icons.settings_outlined,
+              color: theme.colorScheme.primary,
+              size: 22,
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: EdgeInsets.all(12),
+            ),
+            onPressed: () {},
+          ),
         ),
-        IconButton(
-          icon: const Icon(FontAwesomeIcons.circleUser),
-          onPressed: () {
-            Navigator.push(context, createRoute(Profile()));
-          },
+        Container(
+          margin: EdgeInsets.only(right: 16),
+          child: IconButton(
+            icon: Icon(
+              FontAwesomeIcons.circleUser,
+              color: theme.colorScheme.primary,
+              size: 20,
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: EdgeInsets.all(12),
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.push(context, createRoute(Profile()));
+            },
+          ),
         )
       ],
-    ) ;
+    );
   }
 }
