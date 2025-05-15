@@ -404,7 +404,7 @@ class _CategoryListState extends State<CategoryList> {
                 Icon(
                   Icons.category_outlined,
                   size: 60,
-                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                  color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                 ),
                 SizedBox(height: 16),
                 Text(
@@ -412,7 +412,7 @@ class _CategoryListState extends State<CategoryList> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
                   ),
                 ),
                 SizedBox(height: 8),
@@ -420,7 +420,7 @@ class _CategoryListState extends State<CategoryList> {
                   'Ajoutez une catégorie en cliquant sur le bouton +',
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   ),
                   textAlign: TextAlign.center,
                 ),

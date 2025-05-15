@@ -28,6 +28,13 @@ class _NotificationPageState extends State<NotificationPage> {
     NotificationTypeEnum.RAPPEL: Colors.orange,
     NotificationTypeEnum.ALERTE: Colors.red,
   };
+
+  // Couleurs pour le mode sombre
+  final notificationTypeToIconColorDark = {
+    NotificationTypeEnum.INFORMATION: Color(0xFF64B5F6), // Bleu plus clair
+    NotificationTypeEnum.RAPPEL: Color(0xFFFFB74D),      // Orange plus clair
+    NotificationTypeEnum.ALERTE: Color(0xFFE57373),      // Rouge plus clair
+  };
   bool isLoading = true;
 
   @override
@@ -550,7 +557,14 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Color _getNotificationIconColor(String type) {
-    return notificationTypeToIconColor[type] ?? Colors.green;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    if (isDarkMode) {
+      return notificationTypeToIconColorDark[type] ?? Color(0xFF81C784); // Vert clair pour le mode sombre
+    } else {
+      return notificationTypeToIconColor[type] ?? Colors.green;
+    }
   }
 
   Widget _buildDismissBackground(

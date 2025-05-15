@@ -71,7 +71,9 @@ class _NotificatedCardState extends State<NotificatedCard> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Card(
-          color: widget.backgroundColor ?? Theme.of(context).cardColor,
+          color: widget.backgroundColor ?? (isDarkMode
+              ? theme.colorScheme.surfaceContainerLow
+              : theme.cardColor),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -92,9 +94,9 @@ class _NotificatedCardState extends State<NotificatedCard> {
                     decoration: BoxDecoration(
                       color: widget.iconBackgroundColor ?? theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
+                      boxShadow: isDarkMode ? [] : [
                         BoxShadow(
-                          color: (widget.iconBackgroundColor ?? theme.colorScheme.primary).withAlpha(50),
+                          color: Color.fromRGBO(0, 0, 0, 0.15),
                           blurRadius: 8,
                           offset: Offset(0, 3),
                         ),
@@ -131,8 +133,8 @@ class _NotificatedCardState extends State<NotificatedCard> {
                           style: TextStyle(
                             fontSize: widget.subtitleSize ?? 14,
                             color: widget.textColor != null
-                                ? widget.textColor!.withAlpha(180)
-                                : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                                ? widget.textColor!
+                                : (isDarkMode ? Colors.grey[300] : Colors.grey[600]),
                           ),
                         ),
                       if (widget.date != null)
@@ -142,7 +144,7 @@ class _NotificatedCardState extends State<NotificatedCard> {
                             formattedDate,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
                             ),
                           ),
                         ),
@@ -157,8 +159,12 @@ class _NotificatedCardState extends State<NotificatedCard> {
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: widget.price! > 0
-                          ? Colors.green.withAlpha(isDarkMode ? 40 : 30)
-                          : Colors.red.withAlpha(isDarkMode ? 40 : 30),
+                          ? (isDarkMode
+                              ? Color(0xFF1B5E20).withAlpha(60) // Vert foncé en mode sombre
+                              : Colors.green.withAlpha(30))
+                          : (isDarkMode
+                              ? Color(0xFFB71C1C).withAlpha(60) // Rouge foncé en mode sombre
+                              : Colors.red.withAlpha(30)),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Text(
@@ -166,7 +172,9 @@ class _NotificatedCardState extends State<NotificatedCard> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: widget.price! > 0 ? Colors.green : Colors.red,
+                        color: widget.price! > 0
+                            ? (isDarkMode ? Color(0xFF81C784) : Colors.green) // Vert plus clair en mode sombre
+                            : (isDarkMode ? Color(0xFFEF9A9A) : Colors.red),  // Rouge plus clair en mode sombre
                       ),
                     ),
                   ),
