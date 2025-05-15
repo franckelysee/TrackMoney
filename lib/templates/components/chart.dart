@@ -7,10 +7,14 @@ import 'package:trackmoney/utils/date_utils.dart';
 
 class LineChartSample2 extends StatefulWidget {
   final int? year; // Année à afficher, null pour l'année en cours
+  final List<TransactionModel>? transactions; // Transactions à afficher
+  final int? selectedYear; // Année sélectionnée
 
   const LineChartSample2({
     super.key,
     this.year,
+    this.transactions,
+    this.selectedYear,
   });
 
   @override
@@ -107,8 +111,9 @@ class _LineChartSample2State extends State<LineChartSample2> {
 
   // Récupération optimisée des données mensuelles avec filtre par année
   Future<List<Map<String, dynamic>>> _getMonthlySummary() async {
-    final List<TransactionModel> transactions = await Database.getAllTransactions();
-    final int selectedYear = widget.year ?? DateTime.now().year;
+    // Utiliser les transactions passées en paramètre ou les récupérer depuis la base de données
+    final List<TransactionModel> transactions = widget.transactions ?? await Database.getAllTransactions();
+    final int selectedYear = widget.selectedYear ?? widget.year ?? DateTime.now().year;
     final Map<int, Map<String, dynamic>> monthlyData = {};
 
     // Initialiser les données pour chaque mois
@@ -118,17 +123,14 @@ class _LineChartSample2State extends State<LineChartSample2> {
 
     // Traitement par lots pour améliorer les performances
     for (var transaction in transactions) {
-      // Vérifier si la date est null
-      if (transaction.date != null) {
-        final DateTime date = transaction.date;
-        if (date.year == selectedYear) {
-          final int month = date.month;
+      final DateTime date = transaction.date;
+      if (date.year == selectedYear) {
+        final int month = date.month;
 
-          if (transaction.type == TransactionTypesEnum.revenu) {
-            monthlyData[month]!["revenu"] += transaction.amount;
-          } else if (transaction.type == TransactionTypesEnum.depense) {
-            monthlyData[month]!["depense"] += transaction.amount;
-          }
+        if (transaction.type == TransactionTypesEnum.revenu) {
+          monthlyData[month]!["revenu"] += transaction.amount;
+        } else if (transaction.type == TransactionTypesEnum.depense) {
+          monthlyData[month]!["depense"] += transaction.amount;
         }
       }
     }
@@ -182,7 +184,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Aperçu annuel ${widget.year ?? DateTime.now().year}",
+                            "Aperçu annuel ${widget.selectedYear ?? widget.year ?? DateTime.now().year}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

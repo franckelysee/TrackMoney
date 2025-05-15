@@ -417,7 +417,14 @@ class _ComptePageState extends State<ComptePage> {
                                                         title: "Entrées",
                                                         transactionCount: transactionInStats['count'],
                                                         price: transactionInStats['amount'],
-                                                        priceColor: Colors.green
+                                                        priceColor: Colors.green,
+                                                        onTap: () {
+                                                          _showMonthlyTransactions(
+                                                            context,
+                                                            TransactionTypesEnum.revenu,
+                                                            compte
+                                                          );
+                                                        },
                                                       ),
                                                     ),
                                                     SizedBox(width: 16),
@@ -428,7 +435,14 @@ class _ComptePageState extends State<ComptePage> {
                                                         title: "Sorties",
                                                         transactionCount: transactionOutStats['count'],
                                                         price: transactionOutStats['amount'],
-                                                        priceColor: Colors.red
+                                                        priceColor: Colors.red,
+                                                        onTap: () {
+                                                          _showMonthlyTransactions(
+                                                            context,
+                                                            TransactionTypesEnum.depense,
+                                                            compte
+                                                          );
+                                                        },
                                                       ),
                                                     ),
                                                   ],

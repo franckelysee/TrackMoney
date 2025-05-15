@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/templates/pages/screens/ajouter.dart';
-import 'package:trackmoney/templates/pages/screens/analyse.dart';
+import 'package:trackmoney/templates/pages/screens/analyse_improved.dart';
 import 'package:trackmoney/templates/pages/screens/categorie.dart';
 import 'package:trackmoney/templates/pages/screens/compte.dart';
 import 'package:trackmoney/templates/pages/screens/notification.dart';
@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   late List<Widget> pages;
   late Widget currentPage;
   late ComptePage comptePage;
-  late AnalysePage analysePage;
+  late AnalyseImprovedPage analysePage;
   late AjouterPage ajouterPage;
   late CategoryPage categoriePage;
   late NotificationPage notificationPage;
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     comptePage = ComptePage();
-    analysePage = AnalysePage();
+    analysePage = AnalyseImprovedPage();
     ajouterPage = AjouterPage();
     categoriePage = CategoryPage();
     notificationPage = NotificationPage();

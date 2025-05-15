@@ -10,13 +10,15 @@ class TransactionCard extends StatefulWidget {
       this.iconBackgroundColor,
       required this.transactionCount,
       required this.price,
-      required this.priceColor});
+      required this.priceColor,
+      this.onTap});
   final IconData icon;
   final Color? iconBackgroundColor;
   final Color? priceColor;
   final int transactionCount;
   final double price;
   final String title;
+  final VoidCallback? onTap;
   @override
   State<TransactionCard> createState() => _TransactionCardState();
 }
@@ -27,16 +29,14 @@ class _TransactionCardState extends State<TransactionCard> {
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: GestureDetector(
-          onTap: () {
-            // Handle card tap
-          },
+          onTap: widget.onTap,
           child: Card(
             color: Theme.of(context).cardColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
             elevation: 2,
-            shadowColor: Colors.grey.withOpacity(0.5),
+            shadowColor: Color.fromRGBO(158, 158, 158, 0.5),
             child: Container(
               width: MediaQuery.of(context).size.width / 2 - 40,
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -49,7 +49,7 @@ class _TransactionCardState extends State<TransactionCard> {
                           AppConfig.greenbuttonColor,
                       iconColor: Colors.white,
                       onpressed: () {
-                        
+
                       },
                     ),
                     SizedBox(
