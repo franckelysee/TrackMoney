@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
+import 'package:trackmoney/utils/date_utils.dart';
 
 class LineChartSample2 extends StatefulWidget {
-  const LineChartSample2({super.key});
+  final int? year; // Année à afficher, null pour l'année en cours
+
+  const LineChartSample2({
+    super.key,
+    this.year,
+  });
 
   @override
   State<LineChartSample2> createState() => _LineChartSample2State();
@@ -99,10 +105,10 @@ class _LineChartSample2State extends State<LineChartSample2> {
     _expenseData.sort((a, b) => a.x.compareTo(b.x));
   }
 
-  // Récupération optimisée des données mensuelles
+  // Récupération optimisée des données mensuelles avec filtre par année
   Future<List<Map<String, dynamic>>> _getMonthlySummary() async {
     final List<TransactionModel> transactions = await Database.getAllTransactions();
-    final int currentYear = DateTime.now().year;
+    final int selectedYear = widget.year ?? DateTime.now().year;
     final Map<int, Map<String, dynamic>> monthlyData = {};
 
     // Initialiser les données pour chaque mois
@@ -113,7 +119,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
     // Traitement par lots pour améliorer les performances
     for (var transaction in transactions) {
       final DateTime date = transaction.date;
-      if (date.year == currentYear) {
+      if (date.year == selectedYear) {
         final int month = date.month;
 
         if (transaction.type == TransactionTypesEnum.revenu) {
@@ -173,7 +179,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Aperçu annuel ${DateTime.now().year}",
+                            "Aperçu annuel ${widget.year ?? DateTime.now().year}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -240,19 +246,20 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
   }
 
-  // Widget pour les étiquettes du bas (mois)
+  // Widget pour les étiquettes du bas (mois en français)
   Widget _bottomTitleWidgets(double value, TitleMeta meta) {
     const style = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 10,
     );
 
-    final months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-
     if (value.toInt() >= 1 && value.toInt() <= 12) {
+      // Utilisation de la fonction utilitaire pour obtenir le nom du mois en français abrégé
+      final monthName = getShortMonthNameInFrench(value.toInt());
+
       return SideTitleWidget(
         axisSide: meta.axisSide,
-        child: Text(months[value.toInt() - 1], style: style),
+        child: Text(monthName, style: style),
       );
     }
     return SizedBox.shrink();

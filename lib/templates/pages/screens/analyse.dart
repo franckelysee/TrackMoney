@@ -22,7 +22,13 @@ class _AnalysePageState extends State<AnalysePage> {
   bool is_loading_transac = true;
   List<TransactionModel> transactions = [];
   List<TransactionSchema> transactionsData = [];
+  List<TransactionSchema> _allTransactionsData = []; // Stockage de toutes les transactions
   late DateTime selectedDate;
+
+  // Variables pour le filtre par année
+  int _selectedYear = DateTime.now().year;
+  List<int> _availableYears = [];
+  bool _loadingYears = true;
 
   // Méthode optimisée pour générer une liste de dépenses ou entrées
   Widget _buildTransactionList(String type) {
@@ -118,7 +124,7 @@ class _AnalysePageState extends State<AnalysePage> {
           transactions = fetchedTransactions;
 
           // Transformation optimisée des données
-          transactionsData = transactions.map((transaction) {
+          _allTransactionsData = transactions.map((transaction) {
             final category = categoryMap[transaction.categoryId];
 
             return TransactionSchema(
@@ -135,13 +141,19 @@ class _AnalysePageState extends State<AnalysePage> {
           }).toList();
 
           // Tri des transactions par date (plus récentes en premier)
-          transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+          _allTransactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+
+          // Initialiser transactionsData avec toutes les transactions
+          transactionsData = List.from(_allTransactionsData);
 
           is_loading = false;
           is_loading_transac = false;
 
           // Initialiser la date sélectionnée à aujourd'hui
           selectedDate = DateTime.now();
+
+          // Filtrer les transactions pour la date actuelle
+          updateTransaction(selectedDate);
         });
       }
     } catch (e) {
@@ -240,10 +252,60 @@ class _AnalysePageState extends State<AnalysePage> {
     );
   }
 
+  // Méthode pour calculer les années disponibles dans les transactions
+  Future<void> _calculateAvailableYears() async {
+    setState(() {
+      _loadingYears = true;
+    });
+
+    try {
+      // Récupérer toutes les transactions si ce n'est pas déjà fait
+      if (transactions.isEmpty) {
+        await fetchTransactions();
+      }
+
+      // Extraire les années uniques
+      final years = transactions
+          .map((transaction) => transaction.date.year)
+          .toSet()
+          .toList();
+
+      // Trier les années par ordre décroissant (plus récentes en premier)
+      years.sort((a, b) => b.compareTo(a));
+
+      // S'assurer que l'année actuelle est incluse
+      final currentYear = DateTime.now().year;
+      if (!years.contains(currentYear)) {
+        years.add(currentYear);
+        years.sort((a, b) => b.compareTo(a));
+      }
+
+      if (mounted) {
+        setState(() {
+          _availableYears = years;
+          _selectedYear = years.isNotEmpty ? years.first : currentYear;
+          _loadingYears = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du calcul des années disponibles: $e');
+      if (mounted) {
+        setState(() {
+          _loadingYears = false;
+          // Assurer qu'il y a au moins l'année actuelle
+          _availableYears = [DateTime.now().year];
+          _selectedYear = DateTime.now().year;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    fetchTransactions();
+    fetchTransactions().then((_) {
+      _calculateAvailableYears();
+    });
   }
 
   @override
@@ -349,16 +411,65 @@ class _AnalysePageState extends State<AnalysePage> {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(left: 20, top: 20, right: 20),
-                          child: Text(
-                            "Aperçu annuel",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? Colors.white : Colors.black87,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Aperçu annuel",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              // Sélecteur d'année
+                              _loadingYears
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    )
+                                  : Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Color(0x1A6200EE), // Couleur primaire avec alpha 10%
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: DropdownButton<int>(
+                                        value: _selectedYear,
+                                        icon: Icon(
+                                          Icons.arrow_drop_down,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        elevation: 16,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        underline: Container(height: 0),
+                                        onChanged: (int? newValue) {
+                                          if (newValue != null) {
+                                            setState(() {
+                                              _selectedYear = newValue;
+                                            });
+                                          }
+                                        },
+                                        items: _availableYears.map<DropdownMenuItem<int>>((int value) {
+                                          return DropdownMenuItem<int>(
+                                            value: value,
+                                            child: Text(value.toString()),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                            ],
                           ),
                         ),
-                        const LineChartSample2(),
+                        // Graphique avec l'année sélectionnée
+                        LineChartSample2(year: _selectedYear),
                       ],
                     ),
                   ),

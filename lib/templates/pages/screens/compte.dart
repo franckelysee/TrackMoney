@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
@@ -10,6 +9,7 @@ import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
+import 'package:trackmoney/utils/date_utils.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
@@ -36,7 +36,7 @@ class _ComptePageState extends State<ComptePage> {
   };
   bool isLoading = true;
   bool hasAllAccounts = false;
-  DateFormat dateFormat = new DateFormat("MMMM");
+  // Suppression du DateFormat car nous utiliserons notre propre fonction pour les mois en français
   @override
   void initState() {
     super.initState();
@@ -57,7 +57,7 @@ class _ComptePageState extends State<ComptePage> {
 
   void fetchTransactions() async {
     try {
-      var date = new DateTime.now();
+      var date = DateTime.now();
       transactions = await Database.getAllTransactions();
       var categories = await Database.getAllCategories();
       List<TransactionSchema> data = [];
@@ -85,11 +85,13 @@ class _ComptePageState extends State<ComptePage> {
         transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
       });
     } catch (e) {
-      SnackbarNotifier.show(
-        context: context,
-        message: "'Erreur lors de l\'obtention  des transactions: $e",
-        type: 'error',
-      );
+      if (mounted) {
+        SnackbarNotifier.show(
+          context: context,
+          message: "Erreur lors de l'obtention des transactions: $e",
+          type: 'error',
+        );
+      }
     }
   }
 
@@ -112,7 +114,7 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Future<void> _getTodayTransactions() async {
-    var today = new DateTime.now();
+    var today = DateTime.now();
     var dataTransactions = await Database.getAllTransactions();
     var dataCategories = await Database.getAllCategories();
     List<TransactionSchema> newTransactions = [];
@@ -143,24 +145,25 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   void comptesContainsAll(){
-    hasAllAccounts = comptes.contains(AccountTypeEnum.bancaire);
+    // Vérifier si tous les types de comptes sont présents
     bool hasBan = false;
     bool hasMob = false;
     bool hasEsp = false;
+
     for (var compte in comptes){
-      if ( compte.type == AccountTypeEnum.espece ){
+      if (compte.type == AccountTypeEnum.espece) {
         hasEsp = true;
       }
-      else if(compte.type == AccountTypeEnum.mobile){
+      else if (compte.type == AccountTypeEnum.mobile) {
         hasMob = true;
       }
-      else if(compte.type == AccountTypeEnum.bancaire){
+      else if (compte.type == AccountTypeEnum.bancaire) {
         hasBan = true;
       }
     }
-    if(hasEsp && hasBan && hasMob){
-      hasAllAccounts = true;
-    }
+
+    // Mettre à jour hasAllAccounts si tous les types sont présents
+    hasAllAccounts = hasEsp && hasBan && hasMob;
   }
 
   @override
@@ -393,7 +396,7 @@ class _ComptePageState extends State<ComptePage> {
                                                     ),
                                                     SizedBox(width: 16),
                                                     Text(
-                                                      "Transactions du mois de ${dateFormat.format(DateTime.now())}",
+                                                      "Transactions du mois de ${getMonthNameInFrench(DateTime.now().month)}",
                                                       style: TextStyle(
                                                         fontSize: 16,
                                                         fontWeight: FontWeight.w600,
