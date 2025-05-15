@@ -118,14 +118,17 @@ class _LineChartSample2State extends State<LineChartSample2> {
 
     // Traitement par lots pour améliorer les performances
     for (var transaction in transactions) {
-      final DateTime date = transaction.date;
-      if (date.year == selectedYear) {
-        final int month = date.month;
+      // Vérifier si la date est null
+      if (transaction.date != null) {
+        final DateTime date = transaction.date;
+        if (date.year == selectedYear) {
+          final int month = date.month;
 
-        if (transaction.type == TransactionTypesEnum.revenu) {
-          monthlyData[month]!["revenu"] += transaction.amount;
-        } else if (transaction.type == TransactionTypesEnum.depense) {
-          monthlyData[month]!["depense"] += transaction.amount;
+          if (transaction.type == TransactionTypesEnum.revenu) {
+            monthlyData[month]!["revenu"] += transaction.amount;
+          } else if (transaction.type == TransactionTypesEnum.depense) {
+            monthlyData[month]!["depense"] += transaction.amount;
+          }
         }
       }
     }

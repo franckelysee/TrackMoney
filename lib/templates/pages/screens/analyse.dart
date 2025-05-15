@@ -83,14 +83,14 @@ class _AnalysePageState extends State<AnalysePage> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: NotificatedCard(
-            title: item.name!,
+            title: item.name ?? "Transaction",
             titleSize: 16,
-            subtitle: item.category,
+            subtitle: item.category ?? "Catégorie inconnue",
             subtitleSize: 13,
-            icon: item.icon,
-            price: item.type == "depense" ? -item.amount! : item.amount!,
+            icon: item.icon ?? Icons.attach_money,
+            price: item.type == "depense" ? -(item.amount ?? 0) : (item.amount ?? 0),
             iconBackgroundColor: iconBgColor,
-            date: item.date!,
+            date: item.date ?? DateTime.now(),
             backgroundColor: isDarkMode
                 ? theme.colorScheme.surfaceContainerLow
                 : Colors.white,
@@ -203,6 +203,7 @@ class _AnalysePageState extends State<AnalysePage> {
 
       // Filtrage optimisé des transactions à partir de toutes les transactions
       final filteredTransactions = _allTransactionsData.where((transaction) {
+        if (transaction.date == null) return false;
         final transactionDate = transaction.date!;
         return transactionDate.year == date.year &&
                transactionDate.month == date.month &&
@@ -276,6 +277,7 @@ class _AnalysePageState extends State<AnalysePage> {
 
       // Extraire les années uniques
       final years = transactions
+          .where((transaction) => transaction.date != null)
           .map((transaction) => transaction.date.year)
           .toSet()
           .toList();
