@@ -334,6 +334,7 @@ class _ComptePageState extends State<ComptePage> {
                                             amount: compte.balance!,
                                             accountType: compte.type!,
                                             accountName: compte.name!,
+                                            accountId: compte.id,
                                             onAccountLoad: (value) {
                                               refreshAccounts();
                                             },

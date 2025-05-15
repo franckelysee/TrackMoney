@@ -6,6 +6,7 @@ import 'package:trackmoney/templates/components/chart.dart';
 import 'package:trackmoney/templates/components/date_selector.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/date_utils.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
 class AnalysePage extends StatefulWidget {
@@ -51,8 +52,9 @@ class _AnalysePageState extends State<AnalysePage> {
             SizedBox(height: 16),
             Text(
               type == TransactionTypesEnum.revenu
-                  ? "Aucune entrée pour cette date"
-                  : "Aucune sortie pour cette date",
+                  ? "Aucune entrée pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}"
+                  : "Aucune sortie pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}",
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                 fontSize: 16,
@@ -114,7 +116,7 @@ class _AnalysePageState extends State<AnalysePage> {
       final categories = results[1] as List<dynamic>;
 
       // Création d'une Map pour un accès rapide aux catégories par ID
-      final categoryMap = Map<String, dynamic>();
+      final categoryMap = <String, dynamic>{};
       for (var category in categories) {
         categoryMap[category.id] = category;
       }
@@ -176,11 +178,11 @@ class _AnalysePageState extends State<AnalysePage> {
 
   // Méthode optimisée pour récupérer toutes les transactions
   Future<List<TransactionSchema>> getAllTransactions() async {
-    if (transactions.isEmpty) {
+    if (_allTransactionsData.isEmpty) {
       await fetchTransactions();
-      return transactionsData;
+      return _allTransactionsData;
     }
-    return transactionsData;
+    return _allTransactionsData;
   }
 
   // Méthode optimisée pour filtrer les transactions par date
@@ -194,12 +196,13 @@ class _AnalysePageState extends State<AnalysePage> {
 
     try {
       // Vérifier si nous avons déjà les données
-      if (transactions.isEmpty) {
+      if (_allTransactionsData.isEmpty) {
         await fetchTransactions();
+        return; // fetchTransactions appellera updateTransaction à nouveau
       }
 
-      // Filtrage optimisé des transactions
-      final filteredTransactions = transactionsData.where((transaction) {
+      // Filtrage optimisé des transactions à partir de toutes les transactions
+      final filteredTransactions = _allTransactionsData.where((transaction) {
         final transactionDate = transaction.date!;
         return transactionDate.year == date.year &&
                transactionDate.month == date.month &&
@@ -211,6 +214,13 @@ class _AnalysePageState extends State<AnalysePage> {
           transactionsData = filteredTransactions;
           is_loading_transac = false;
         });
+
+        // Afficher un message si aucune transaction n'est trouvée
+        if (filteredTransactions.isEmpty) {
+          debugPrint('Aucune transaction trouvée pour la date: ${date.toString()}');
+        } else {
+          debugPrint('${filteredTransactions.length} transactions trouvées pour la date: ${date.toString()}');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -503,11 +513,11 @@ class _AnalysePageState extends State<AnalysePage> {
                     ),
                   ),
 
-                  // Titre de la section transactions
+                  // Titre de la section transactions avec la date sélectionnée
                   Padding(
                     padding: EdgeInsets.only(left: 4, bottom: 16),
                     child: Text(
-                      "Transactions du jour",
+                      "Transactions du ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

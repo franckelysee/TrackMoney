@@ -1,21 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/templates/components/account/select_account_type.dart';
 import 'package:trackmoney/templates/components/button.dart';
-import 'package:trackmoney/templates/pages/screens/account_page.dart';
+import 'package:trackmoney/templates/pages/screens/account_details_page.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
-import 'package:trackmoney/utils/app_config.dart';
 
 class CardComponent extends StatefulWidget {
-  const CardComponent({super.key, this.color, required this.amount, required this.accountType, this.accountName, this.isCreating = false, this.onAccountLoad});
-  final Color? color ;
+  const CardComponent({
+    super.key,
+    this.color,
+    required this.amount,
+    required this.accountType,
+    this.accountName,
+    this.isCreating = false,
+    this.onAccountLoad,
+    this.accountId,
+    this.hideDetails = false,
+  });
+
+  final Color? color;
   final double amount;
   final String accountType;
   final bool isCreating;
+  final bool hideDetails;
   final String? accountName;
-  final Function(dynamic)? onAccountLoad ;
+  final String? accountId;
+  final Function(dynamic)? onAccountLoad;
   @override
   State<CardComponent> createState() => _CardComponentState();
 }
@@ -160,19 +170,24 @@ class _CardComponentState extends State<CardComponent> {
                   // Pied de la carte
                   Row(
                     children: [
-                      if(!widget.isCreating)
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(40),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            "Détails",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                      if(!widget.isCreating && !widget.hideDetails)
+                        GestureDetector(
+                          onTap: () {
+                            _navigateToAccountDetails(context);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(40),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              "Détails",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         )
@@ -219,6 +234,35 @@ class _CardComponentState extends State<CardComponent> {
     } else {
       return Icons.credit_card;
     }
+  }
+
+  // Fonction pour naviguer vers la page de détails du compte
+  void _navigateToAccountDetails(BuildContext context) {
+    // Créer un compte temporaire avec les informations disponibles
+    final tempAccount = AccountModel(
+      id: widget.accountId ?? 'temp_id',
+      name: widget.accountName ?? 'Mon compte',
+      type: widget.accountType,
+      balance: widget.amount,
+    );
+
+    // Ouvrir directement la page de détails avec le compte temporaire
+    _openAccountDetailsPage(context, tempAccount);
+  }
+
+  // Fonction pour ouvrir la page de détails du compte
+  void _openAccountDetailsPage(BuildContext context, AccountModel account) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AccountDetailsPage(account: account),
+      ),
+    ).then((value) {
+      // Rafraîchir les données si nécessaire après le retour de la page de détails
+      if (value == true && widget.onAccountLoad != null) {
+        widget.onAccountLoad!(true);
+      }
+    });
   }
 }
 
