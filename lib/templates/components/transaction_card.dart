@@ -65,7 +65,7 @@ class _TransactionCardState extends State<TransactionCard> {
                       height: 10,
                     ),
                     Text(
-                      '\$${widget.price}',
+                      '${widget.price} FCFA',
                       style: TextStyle(
                         fontSize: 14,
                         color: widget.priceColor,
