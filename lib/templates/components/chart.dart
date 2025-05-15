@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
-import 'package:intl/intl.dart'; // Pour récupérer l'année actuelle
-
-
 
 class LineChartSample2 extends StatefulWidget {
   const LineChartSample2({super.key});
@@ -15,60 +12,110 @@ class LineChartSample2 extends StatefulWidget {
 }
 
 class _LineChartSample2State extends State<LineChartSample2> {
-  List<Color> gradientColors = [Colors.cyanAccent, Colors.blue];
-  List<Color> purpleGradientColors = [Colors.deepPurpleAccent, Colors.indigo];
+  // Couleurs optimisées pour le mode clair et sombre
+  final List<Color> revenueGradientColors = [
+    Color(0xFF4CAF50),  // Vert plus foncé
+    Color(0xFF81C784),  // Vert plus clair
+  ];
 
-  List<Map<String, dynamic>> transactionsData = [];
-  List<FlSpot> revenuData = [];
-  List<FlSpot> depenseData = [];
-  double maxtransactionValue = 0.0;
+  final List<Color> expenseGradientColors = [
+    Color(0xFFF44336),  // Rouge plus foncé
+    Color(0xFFE57373),  // Rouge plus clair
+  ];
+
+  // Couleurs semi-transparentes pour les zones sous les courbes
+  final List<Color> revenueAreaColors = [
+    Color(0x334CAF50),  // Vert plus foncé avec alpha
+    Color(0x3381C784),  // Vert plus clair avec alpha
+  ];
+
+  final List<Color> expenseAreaColors = [
+    Color(0x33F44336),  // Rouge plus foncé avec alpha
+    Color(0x33E57373),  // Rouge plus clair avec alpha
+  ];
+
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _transactionsData = [];
+  List<FlSpot> _revenueData = [];
+  List<FlSpot> _expenseData = [];
+  double _maxTransactionValue = 1000.0; // Valeur par défaut pour éviter 0
 
   @override
   void initState() {
-    getTransactions();
     super.initState();
+    _loadTransactions();
   }
 
-  void getTransactions() async {
-    transactionsData = await getMonthlySummary();
-    setState(() {
-      calculateChartData();
-    });
+  // Chargement optimisé des transactions
+  Future<void> _loadTransactions() async {
+    try {
+      final data = await _getMonthlySummary();
+
+      if (mounted) {
+        setState(() {
+          _transactionsData = data;
+          _calculateChartData();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      // Utiliser un logger serait préférable en production
+      debugPrint('Erreur lors du chargement des transactions: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void calculateChartData() {
-    double maxRevenu = 0.0;
-    double maxDepense = 0.0;
-    revenuData = [];
-    depenseData = [];
+  // Calcul optimisé des données du graphique
+  void _calculateChartData() {
+    double maxRevenue = 0.0;
+    double maxExpense = 0.0;
+    _revenueData = [];
+    _expenseData = [];
 
-    for (var transaction in transactionsData) {
-      double revenu = transaction["revenu"].toDouble();
-      double depense = transaction["depense"].toDouble();
+    for (var transaction in _transactionsData) {
+      final month = transaction["month"].toDouble();
+      final revenue = transaction["revenu"].toDouble();
+      final expense = transaction["depense"].toDouble();
 
-      revenuData.add(FlSpot(transaction["month"].toDouble(), revenu));
-      depenseData.add(FlSpot(transaction["month"].toDouble(), depense));
+      _revenueData.add(FlSpot(month, revenue));
+      _expenseData.add(FlSpot(month, expense));
 
-      if (revenu > maxRevenu) maxRevenu = revenu;
-      if (depense > maxDepense) maxDepense = depense;
+      maxRevenue = revenue > maxRevenue ? revenue : maxRevenue;
+      maxExpense = expense > maxExpense ? expense : maxExpense;
     }
 
-    maxtransactionValue = maxRevenu > maxDepense ? maxRevenu : maxDepense;
+    // Ajouter une marge de 10% pour une meilleure visualisation
+    _maxTransactionValue = (maxRevenue > maxExpense ? maxRevenue : maxExpense) * 1.1;
+
+    // Assurer une valeur minimale pour éviter les graphiques vides
+    _maxTransactionValue = _maxTransactionValue < 1000 ? 1000 : _maxTransactionValue;
+
+    // Trier les données par mois
+    _revenueData.sort((a, b) => a.x.compareTo(b.x));
+    _expenseData.sort((a, b) => a.x.compareTo(b.x));
   }
 
-  Future<List<Map<String, dynamic>>> getMonthlySummary() async {
+  // Récupération optimisée des données mensuelles
+  Future<List<Map<String, dynamic>>> _getMonthlySummary() async {
     final List<TransactionModel> transactions = await Database.getAllTransactions();
-    int currentYear = DateTime.now().year;
-    Map<int, Map<String, dynamic>> monthlyData = {};
+    final int currentYear = DateTime.now().year;
+    final Map<int, Map<String, dynamic>> monthlyData = {};
 
+    // Initialiser les données pour chaque mois
     for (int i = 1; i <= 12; i++) {
       monthlyData[i] = {"month": i, "revenu": 0, "depense": 0};
     }
 
+    // Traitement par lots pour améliorer les performances
     for (var transaction in transactions) {
-      DateTime date = transaction.date;
+      final DateTime date = transaction.date;
       if (date.year == currentYear) {
-        int month = date.month;
+        final int month = date.month;
+
         if (transaction.type == TransactionTypesEnum.revenu) {
           monthlyData[month]!["revenu"] += transaction.amount;
         } else if (transaction.type == TransactionTypesEnum.depense) {
@@ -82,32 +129,125 @@ class _LineChartSample2State extends State<LineChartSample2> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      shadowColor: Colors.grey.withOpacity(0.5),
-      elevation: 2,
-      child: Stack(
-        children: <Widget>[
-          AspectRatio(
-            aspectRatio: 1.70,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 18, left: 12, top: 24, bottom: 12),
-              child: RepaintBoundary(
-                child: LineChart( mainData()),
-              ),
-            ),
-          ),
-          
-        ],
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? theme.colorScheme.surfaceContainerLow
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
+      child: _isLoading
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: theme.colorScheme.primary,
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Chargement du graphique...",
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Stack(
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Aperçu annuel ${DateTime.now().year}",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          // Légende du graphique
+                          Row(
+                            children: [
+                              _buildLegendItem(
+                                "Revenus",
+                                revenueGradientColors[0],
+                                isDarkMode
+                              ),
+                              SizedBox(width: 12),
+                              _buildLegendItem(
+                                "Dépenses",
+                                expenseGradientColors[0],
+                                isDarkMode
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Graphique avec RepaintBoundary pour optimiser le rendu
+                    RepaintBoundary(
+                      child: AspectRatio(
+                        aspectRatio: 1.70,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 24, 18, 12),
+                          child: LineChart(_buildChartData(isDarkMode)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
     );
   }
 
-  // Reste du code (bottomTitleWidgets, mainData, avgData)...
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(fontWeight: FontWeight.bold, fontSize: 10);
-    final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Widget pour créer un élément de légende
+  Widget _buildLegendItem(String label, Color color, bool isDarkMode) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget pour les étiquettes du bas (mois)
+  Widget _bottomTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 10,
+    );
+
+    final months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
     if (value.toInt() >= 1 && value.toInt() <= 12) {
       return SideTitleWidget(
@@ -115,550 +255,151 @@ class _LineChartSample2State extends State<LineChartSample2> {
         child: Text(months[value.toInt() - 1], style: style),
       );
     }
-    return Container();
+    return SizedBox.shrink();
   }
-  LineChartData mainData() {
+
+  // Construction optimisée des données du graphique
+  LineChartData _buildChartData(bool isDarkMode) {
     return LineChartData(
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          // Utilisation des propriétés compatibles avec votre version de fl_chart
+          getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+            return touchedBarSpots.map((barSpot) {
+              final isRevenue = barSpot.barIndex == 0;
+              return LineTooltipItem(
+                '${isRevenue ? "Revenus" : "Dépenses"}: ${barSpot.y.toStringAsFixed(0)}',
+                TextStyle(
+                  color: isRevenue
+                      ? revenueGradientColors[0]
+                      : expenseGradientColors[0],
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            }).toList();
+          },
+        ),
+      ),
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
         drawHorizontalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 10,
+        horizontalInterval: _maxTransactionValue / 5,
         getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(226, 187, 187, 187),
-            strokeWidth: 1,
+          return FlLine(
+            color: isDarkMode
+                ? Colors.grey[800]!
+                : Colors.grey[300]!,
+            strokeWidth: 0.8,
           );
         },
         getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(226, 187, 187, 187),
-            strokeWidth: 1,
+          return FlLine(
+            color: isDarkMode
+                ? Colors.grey[800]!
+                : Colors.grey[300]!,
+            strokeWidth: 0.8,
           );
         },
       ),
       titlesData: FlTitlesData(
         show: true,
-        topTitles: const AxisTitles(
-          axisNameWidget: Text(""),
+        topTitles: AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
         leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 45)),
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: AxisTitles(
-          axisNameWidget: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Container(
-                      width: 10, height: 10, color: Colors.deepPurpleAccent),
-                  SizedBox(width: 3),
-                  Text("Dépenses"),
-                ],
-              ),
-              SizedBox(width: 10),
-              Row(
-                children: [
-                  Container(width: 10, height: 10, color: Colors.cyanAccent),
-                  SizedBox(width: 3),
-                  Text("Revenus"),
-                ],
-              )
-            ],
-          ),
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
-          ),
-        ),
-      ),
-      borderData: FlBorderData(show: false),
-      minX: 1,
-      maxX: 12, // Affichage pour tout le mois
-      minY: 0,
-      maxY: maxtransactionValue, // Ajustable selon les données
-      lineBarsData: [
-        LineChartBarData(
-          spots: revenuData,
-          isCurved: true,
-          gradient: LinearGradient(colors: gradientColors),
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(show: true),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-        LineChartBarData(
-          spots: depenseData,
-          isCurved: true,
-          gradient: LinearGradient(colors: purpleGradientColors),
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(show: true),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: purpleGradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+            reservedSize: 40,
+            getTitlesWidget: (value, meta) {
+              if (value == 0) return SizedBox.shrink();
 
-}
-
-class LineChartSample extends StatefulWidget {
-  const LineChartSample({super.key});
-
-  @override
-  State<LineChartSample> createState() => _LineChartSampleState();
-}
-
-class _LineChartSampleState extends State<LineChartSample> {
-  List<Color> gradientColors = [
-    Colors.cyanAccent,
-    Colors.blue,
-  ];
-  List<Color> purpleGradientColors = [
-    Colors.deepPurpleAccent,
-    Colors.indigo,
-  ];
-
-  bool showAvg = false;
-  List<TransactionModel> transactionsPerMonth = [];
-  List<TransactionModel> transactionsPerMonthDepense = [];
-  List<TransactionModel> transactionsPerMonthRevenu = [];
-  double maxtransactionValue = 0.0;
-
-  List<Map<String, dynamic>> transactions = [
-    {"day": 1, "revenu": 200, "depense": 100},
-    {"day": 2, "revenu": 300, "depense": 200},
-    {"day": 3, "revenu": 150, "depense": 180},
-    {"day": 4, "revenu": 100, "depense": 250},
-    {"day": 5, "revenu": 400, "depense": 300},
-    {"day": 6, "revenu": 500, "depense": 350},
-    {"day": 7, "revenu": 600, "depense": 400},
-  ];
-  List<Map<String, dynamic>> transactionsData = [];
-
-  void getTransactions() async {
-    transactionsPerMonth = await Database.getAllTransactions();
-    transactionsData = await getMonthlySummary();
-    setState(() {
-      maxtransactionValue = getMaxTransactionValue();
-    });
-  }
-
-  Future<List<Map<String, dynamic>>> getMonthlySummary() async {
-    final List<TransactionModel> transactions =
-        await Database.getAllTransactions();
-
-    // Obtenir l'année actuelle
-    int currentYear = DateTime.now().year;
-
-    // Initialiser un Map pour stocker les sommes
-    Map<int, Map<String, dynamic>> monthlyData = {};
-
-    // Initialiser chaque mois avec 0
-    for (int i = 1; i <= 12; i++) {
-      monthlyData[i] = {"month": i, "revenu": 0, "depense": 0};
-    }
-
-    // Parcourir toutes les transactions
-    for (var transaction in transactions) {
-      DateTime date = transaction.date; // Supposons que tu as un champ date
-      if (date.year == currentYear) {
-        int month = date.month;
-
-        if (transaction.type == TransactionTypesEnum.revenu) {
-          monthlyData[month]!["revenu"] += transaction.amount;
-        } else if (transaction.type == TransactionTypesEnum.depense) {
-          monthlyData[month]!["depense"] += transaction.amount;
-        }
-      }
-    }
-
-    // Transformer en liste
-    return monthlyData.values.toList();
-  }
-
-  List<FlSpot> getRevenuData() {
-    return transactionsData
-        .map((transaction) => FlSpot(
-            transaction["month"].toDouble(), transaction["revenu"].toDouble()))
-        .toList();
-  }
-
-  List<FlSpot> getDepenseData() {
-    return transactionsData
-        .map((transaction) => FlSpot(
-            transaction["month"].toDouble(), transaction["depense"].toDouble()))
-        .toList();
-  }
-
-  double getMaxTransactionValue() {
-    double maxRevenu = transactionsData
-        .map((e) => e["revenu"].toDouble())
-        .reduce((a, b) => a > b ? a : b);
-    double maxDepense = transactionsData
-        .map((e) => e["depense"].toDouble())
-        .reduce((a, b) => a > b ? a : b);
-
-    return (maxRevenu > maxDepense ? maxRevenu : maxDepense);
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    getTransactions();
-
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-        color: Theme.of(context).cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        shadowColor: Colors.grey.withOpacity(0.5),
-        elevation: 2,
-        child: Stack(
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1.70,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  right: 18,
-                  left: 12,
-                  top: 24,
-                  bottom: 12,
-                ),
-                child: LineChart(
-                  showAvg ? avgData() : mainData(),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 60,
-              height: 34,
-              child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    showAvg = !showAvg;
-                  });
-                },
+              return SideTitleWidget(
+                axisSide: meta.axisSide,
                 child: Text(
-                  'avg',
+                  value >= 1000
+                      ? '${(value / 1000).toStringAsFixed(1)}k'
+                      : value.toInt().toString(),
                   style: TextStyle(
-                    fontSize: 12,
-                    color: showAvg
-                        ? Colors.blue.withOpacity(0.5)
-                        : Colors.blueAccent,
+                    fontSize: 10,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),
-              ),
-            ),
-          ],
-        ));
-  }
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 10,
-    );
-    Widget text;
-    switch (value.toInt()) {
-      case 1:
-        text = const Text(
-          'Jan',
-          style: style,
-        );
-        break;
-      case 2:
-        text = const Text(
-          'Feb',
-          style: style,
-        );
-        break;
-      case 3:
-        text = const Text(
-          'Mar',
-          style: style,
-        );
-        break;
-      case 4:
-        text = const Text(
-          'Apr',
-          style: style,
-        );
-        break;
-      case 5:
-        text = const Text(
-          'May',
-          style: style,
-        );
-        break;
-      case 6:
-        text = const Text(
-          'Jun',
-          style: style,
-        );
-        break;
-      case 7:
-        text = const Text(
-          'Jul',
-          style: style,
-        );
-        break;
-      case 8:
-        text = const Text(
-          'Aug',
-          style: style,
-        );
-        break;
-      case 9:
-        text = const Text(
-          'Sep',
-          style: style,
-        );
-        break;
-      case 10:
-        text = const Text(
-          'Oct',
-          style: style,
-        );
-        break;
-      case 11:
-        text = const Text(
-          'Nov',
-          style: style,
-        );
-        break;
-      case 12:
-        text = const Text(
-          'Dec',
-          style: style,
-        );
-        break;
-      default:
-        return Container();
-    }
-
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      child: text,
-    );
-  }
-
-  LineChartData mainData() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        drawHorizontalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 10,
-        getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(226, 187, 187, 187),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color.fromARGB(226, 187, 187, 187),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        topTitles: const AxisTitles(
-          axisNameWidget: Text(""),
+              );
+            },
+          ),
+        ),
+        rightTitles: AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 45)),
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
-          axisNameWidget: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Container(
-                      width: 10, height: 10, color: Colors.deepPurpleAccent),
-                  SizedBox(width: 3),
-                  Text("Dépenses"),
-                ],
-              ),
-              SizedBox(width: 10),
-              Row(
-                children: [
-                  Container(width: 10, height: 10, color: Colors.cyanAccent),
-                  SizedBox(width: 3),
-                  Text("Revenus"),
-                ],
-              )
-            ],
-          ),
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 30,
             interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
+            getTitlesWidget: _bottomTitleWidgets,
           ),
         ),
       ),
       borderData: FlBorderData(show: false),
       minX: 1,
-      maxX: 12, // Affichage pour tout le mois
+      maxX: 12,
       minY: 0,
-      maxY: maxtransactionValue, // Ajustable selon les données
+      maxY: _maxTransactionValue,
       lineBarsData: [
+        // Données des revenus
         LineChartBarData(
-          spots: getRevenuData(),
+          spots: _revenueData,
           isCurved: true,
-          gradient: LinearGradient(colors: gradientColors),
-          barWidth: 2,
+          curveSmoothness: 0.3,
+          gradient: LinearGradient(colors: revenueGradientColors),
+          barWidth: 3,
           isStrokeCapRound: true,
-          dotData: const FlDotData(show: true),
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) {
+              return FlDotCirclePainter(
+                radius: 3,
+                color: revenueGradientColors[0],
+                strokeWidth: 1,
+                strokeColor: Colors.white,
+              );
+            },
+          ),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
+              colors: revenueAreaColors,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         ),
+        // Données des dépenses
         LineChartBarData(
-          spots: getDepenseData(),
+          spots: _expenseData,
           isCurved: true,
-          gradient: LinearGradient(colors: purpleGradientColors),
-          barWidth: 2,
+          curveSmoothness: 0.3,
+          gradient: LinearGradient(colors: expenseGradientColors),
+          barWidth: 3,
           isStrokeCapRound: true,
-          dotData: const FlDotData(show: true),
-          belowBarData: BarAreaData(
+          dotData: FlDotData(
             show: true,
-            gradient: LinearGradient(
-              colors: purpleGradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  LineChartData avgData() {
-    return LineChartData(
-      lineTouchData: const LineTouchData(enabled: false),
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        verticalInterval: 1,
-        horizontalInterval: 1,
-        getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: bottomTitleWidgets,
-            interval: 1,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            // getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
-            interval: 1,
-          ),
-        ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: [
-              ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                  .lerp(0.2)!,
-              ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                  .lerp(0.2)!,
-            ],
-          ),
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: false,
+            getDotPainter: (spot, percent, barData, index) {
+              return FlDotCirclePainter(
+                radius: 3,
+                color: expenseGradientColors[0],
+                strokeWidth: 1,
+                strokeColor: Colors.white,
+              );
+            },
           ),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: [
-                ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-                ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-              ],
+              colors: expenseAreaColors,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         ),
@@ -666,3 +407,5 @@ class _LineChartSampleState extends State<LineChartSample> {
     );
   }
 }
+
+// Fin du fichier

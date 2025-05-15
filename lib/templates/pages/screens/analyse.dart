@@ -24,140 +24,220 @@ class _AnalysePageState extends State<AnalysePage> {
   List<TransactionSchema> transactionsData = [];
   late DateTime selectedDate;
 
-  // Méthode pour générer une liste de dépenses ou entrées
+  // Méthode optimisée pour générer une liste de dépenses ou entrées
   Widget _buildTransactionList(String type) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
-    var data = transactionsData.where((element) => element.type == type).toList();
+    // Filtrage optimisé des données
+    final data = transactionsData.where((element) => element.type == type).toList();
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(data.length, (index) {
-          // Déterminer les couleurs en fonction du type de transaction
-          Color iconBgColor;
-          if (data[index].type == "depense") {
-            iconBgColor = Color(0xFFF44336); // Rouge pour les dépenses
-          } else {
-            iconBgColor = Color(0xFF4CAF50); // Vert pour les revenus
-          }
-
-          // La date est maintenant formatée directement dans le composant NotificatedCard
-
-          return Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: NotificatedCard(
-              title: data[index].name!,
-              titleSize: 16,
-              subtitle: data[index].category,
-              subtitleSize: 13,
-              icon: data[index].icon,
-              price: data[index].type == "depense"
-                  ? -data[index].amount!
-                  : data[index].amount!,
-              iconBackgroundColor: iconBgColor,
-              date: data[index].date!,
-              backgroundColor: isDarkMode
-                  ? theme.colorScheme.surfaceContainerLow
-                  : Colors.white,
-              textColor: isDarkMode ? Colors.white : null,
+    if (data.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 48,
+              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
             ),
-          );
-        }),
-      ),
+            SizedBox(height: 16),
+            Text(
+              type == TransactionTypesEnum.revenu
+                  ? "Aucune entrée pour cette date"
+                  : "Aucune sortie pour cette date",
+              style: TextStyle(
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Utilisation de ListView.builder au lieu de SingleChildScrollView + Column + List.generate
+    // pour une meilleure performance avec de grandes listes
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: data.length,
+      // Utilisation de const pour les widgets immuables
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (context, index) {
+        final item = data[index];
+
+        // Déterminer les couleurs en fonction du type de transaction
+        final Color iconBgColor = item.type == "depense"
+            ? Color(0xFFF44336) // Rouge pour les dépenses
+            : Color(0xFF4CAF50); // Vert pour les revenus
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: NotificatedCard(
+            title: item.name!,
+            titleSize: 16,
+            subtitle: item.category,
+            subtitleSize: 13,
+            icon: item.icon,
+            price: item.type == "depense" ? -item.amount! : item.amount!,
+            iconBackgroundColor: iconBgColor,
+            date: item.date!,
+            backgroundColor: isDarkMode
+                ? theme.colorScheme.surfaceContainerLow
+                : Colors.white,
+            textColor: isDarkMode ? Colors.white : null,
+          ),
+        );
+      },
     );
   }
 
 
 
-  void fetchTransactions() async {
+  // Méthode optimisée pour récupérer les transactions initiales
+  Future<void> fetchTransactions() async {
     try {
-      transactions = await Database.getAllTransactions();
-      var categories = await Database.getAllCategories();
-      setState(() {
-        var data = transactions.map((TransactionModel transaction) {
-          var cat = categories.firstWhere((category) {
-            return category.id == transaction.categoryId;
-          });
-          return TransactionSchema(
+      // Utilisation de Future.wait pour exécuter les requêtes en parallèle
+      final results = await Future.wait([
+        Database.getAllTransactions(),
+        Database.getAllCategories(),
+      ]);
+
+      final fetchedTransactions = results[0] as List<TransactionModel>;
+      final categories = results[1] as List<dynamic>;
+
+      // Création d'une Map pour un accès rapide aux catégories par ID
+      final categoryMap = Map<String, dynamic>();
+      for (var category in categories) {
+        categoryMap[category.id] = category;
+      }
+
+      if (mounted) {
+        setState(() {
+          transactions = fetchedTransactions;
+
+          // Transformation optimisée des données
+          transactionsData = transactions.map((transaction) {
+            final category = categoryMap[transaction.categoryId];
+
+            return TransactionSchema(
               id: transaction.id,
               name: transaction.name,
               type: transaction.type,
               amount: transaction.amount,
-              icon: cat.icon,
-              iconcolor: cat.colorValue,
-              category: cat.name,
+              icon: category?.icon,
+              iconcolor: category?.colorValue,
+              category: category?.name ?? 'Catégorie inconnue',
               date: transaction.date,
-              account_id: transaction.accountId);
-        }).toList();
-        transactionsData = data;
-        transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
-      });
-      await Future.delayed(const Duration(milliseconds: 300));
-      setState(() {
-        is_loading = false;
-        is_loading_transac = false;
-      });
+              account_id: transaction.accountId,
+            );
+          }).toList();
+
+          // Tri des transactions par date (plus récentes en premier)
+          transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
+
+          is_loading = false;
+          is_loading_transac = false;
+
+          // Initialiser la date sélectionnée à aujourd'hui
+          selectedDate = DateTime.now();
+        });
+      }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          is_loading = false;
+          is_loading_transac = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Erreur lors de l\'obtention des transactions: $e')),
+            content: Text('Erreur lors du chargement des transactions: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
   }
 
+  // Méthode optimisée pour récupérer toutes les transactions
   Future<List<TransactionSchema>> getAllTransactions() async {
-    transactions = await Database.getAllTransactions();
-    var categories = await Database.getAllCategories();
-    setState(() {
-      var data = transactions.map((TransactionModel transaction) {
-        var cat = categories.firstWhere((category) {
-          return category.id == transaction.categoryId;
-        });
-        return TransactionSchema(
-            id: transaction.id,
-            name: transaction.name,
-            type: transaction.type,
-            amount: transaction.amount,
-            icon: cat.icon,
-            iconcolor: cat.colorValue,
-            category: cat.name,
-            date: transaction.date,
-            account_id: transaction.accountId);
-      }).toList();
-      transactionsData = data;
-      transactionsData.sort((a, b) => b.date!.compareTo(a.date!));
-    });
+    if (transactions.isEmpty) {
+      await fetchTransactions();
+      return transactionsData;
+    }
     return transactionsData;
   }
 
-  void updateTransaction(DateTime date) async {
+  // Méthode optimisée pour filtrer les transactions par date
+  Future<void> updateTransaction(DateTime date) async {
+    if (!mounted) return;
+
     setState(() {
       is_loading_transac = true;
+      selectedDate = date;
     });
 
-    var alltransactions = await getAllTransactions();
-    // 🔹 Appliquer le filtre sur la copie des données d'origine
-    List<TransactionSchema> filteredTransactions = [];
-    for (var transaction in alltransactions) {
-      if (transaction.date!.month == date.month &&
-          transaction.date!.day == date.day &&
-          transaction.date!.year == date.year) {
-        filteredTransactions.add(transaction);
+    try {
+      // Vérifier si nous avons déjà les données
+      if (transactions.isEmpty) {
+        await fetchTransactions();
+      }
+
+      // Filtrage optimisé des transactions
+      final filteredTransactions = transactionsData.where((transaction) {
+        final transactionDate = transaction.date!;
+        return transactionDate.year == date.year &&
+               transactionDate.month == date.month &&
+               transactionDate.day == date.day;
+      }).toList();
+
+      if (mounted) {
+        setState(() {
+          transactionsData = filteredTransactions;
+          is_loading_transac = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          is_loading_transac = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du filtrage des transactions: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
+  }
 
-    // 🔹 Attendre un court délai pour afficher un chargement fluide
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    setState(() {
-      transactionsData = filteredTransactions;
-      is_loading_transac = false;
-    });
+  // Widget pour afficher un indicateur de chargement
+  Widget _buildLoadingIndicator(String message, Color color, bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: color,
+            strokeWidth: 3,
+          ),
+          SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -397,92 +477,29 @@ class _AnalysePageState extends State<AnalysePage> {
                             ),
                           ),
 
-                          // Contenu des onglets
+                          // Contenu des onglets - Optimisé pour éviter les reconstructions inutiles
                           Expanded(
                             child: TabBarView(
+                              // Réduire les reconstructions inutiles
+                              physics: const BouncingScrollPhysics(),
                               children: [
+                                // Onglet des revenus
                                 is_loading_transac
-                                    ? Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            CircularProgressIndicator(
-                                              color: Colors.green,
-                                            ),
-                                            SizedBox(height: 16),
-                                            Text(
-                                              "Chargement des entrées...",
-                                              style: TextStyle(
-                                                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    ? _buildLoadingIndicator(
+                                        "Chargement des entrées...",
+                                        Colors.green,
+                                        isDarkMode,
                                       )
-                                    : transactionsData.where((element) => element.type == TransactionTypesEnum.revenu).isEmpty
-                                        ? Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.account_balance_wallet_outlined,
-                                                  size: 48,
-                                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                                                ),
-                                                SizedBox(height: 16),
-                                                Text(
-                                                  "Aucune entrée pour cette date",
-                                                  style: TextStyle(
-                                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : _buildTransactionList(TransactionTypesEnum.revenu),
+                                    : _buildTransactionList(TransactionTypesEnum.revenu),
+
+                                // Onglet des dépenses
                                 is_loading_transac
-                                    ? Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            CircularProgressIndicator(
-                                              color: Colors.red,
-                                            ),
-                                            SizedBox(height: 16),
-                                            Text(
-                                              "Chargement des sorties...",
-                                              style: TextStyle(
-                                                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    ? _buildLoadingIndicator(
+                                        "Chargement des sorties...",
+                                        Colors.red,
+                                        isDarkMode,
                                       )
-                                    : transactionsData.where((element) => element.type == TransactionTypesEnum.depense).isEmpty
-                                        ? Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.account_balance_wallet_outlined,
-                                                  size: 48,
-                                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                                                ),
-                                                SizedBox(height: 16),
-                                                Text(
-                                                  "Aucune sortie pour cette date",
-                                                  style: TextStyle(
-                                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : _buildTransactionList(TransactionTypesEnum.depense),
+                                    : _buildTransactionList(TransactionTypesEnum.depense),
                               ],
                             ),
                           ),
