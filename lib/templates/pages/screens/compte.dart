@@ -165,48 +165,108 @@ class _ComptePageState extends State<ComptePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
         child: AppHeader(title: 'Comptes', subtitle: '${comptes.length} ${comptes.length>1 ? 'comptes personnels':'compte personnel'} '),
       ),
       body: isLoading
           ? Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: theme.colorScheme.primary,
+              ),
             )
           : comptes.isEmpty
               ? _buildEmptyState()
               : SingleChildScrollView(
                   child: Column(
                     children: [
-                      hasAllAccounts? Container():
+                      hasAllAccounts ? Container() :
                       Container(
-                        padding: EdgeInsets.all(10),
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: theme.brightness == Brightness.dark
+                              ? theme.colorScheme.surfaceContainerHighest
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.black26
+                                  : Colors.grey.withAlpha(30),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
                         child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              CircularAddAccountButton(
-                                onAccountLoad: (value) {
-                                  refreshAccounts();
-                                },
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            CircularAddAccountButton(
+                              onAccountLoad: (value) {
+                                refreshAccounts();
+                              },
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              "Ajouter un autre compte personnel",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: theme.brightness == Brightness.dark
+                                    ? Colors.grey[300]
+                                    : Colors.grey[700],
                               ),
-                              SizedBox(width: 10),
-                              Text("Ajouter autre Porteifeille"),
-                            ]),
+                            ),
+                          ]
+                        ),
                       ),
-                      SizedBox(
+                      Container(
                         height: MediaQuery.of(context).size.height - 200,
+                        margin: EdgeInsets.only(top: 8),
                         child: DefaultTabController(
                           animationDuration: tabAnimationDuration,
                           length: comptes.length,
                           child: Column(
                             children: [
-                              TabBar(
-                                tabs: comptes
-                                    .map((compte) => Tab(
-                                          text: compte.type,
-                                        ))
-                                    .toList(),
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: theme.brightness == Brightness.dark
+                                      ? theme.colorScheme.surfaceContainerHighest
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.brightness == Brightness.dark
+                                          ? Colors.black26
+                                          : Colors.grey.withAlpha(20),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: TabBar(
+                                  labelColor: theme.colorScheme.primary,
+                                  unselectedLabelColor: theme.brightness == Brightness.dark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  indicatorSize: TabBarIndicatorSize.tab,
+                                  dividerColor: Colors.transparent,
+                                  indicator: BoxDecoration(
+                                    color: theme.colorScheme.primary.withAlpha(30),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  tabs: comptes
+                                      .map((compte) => Tab(
+                                            text: compte.type,
+                                            height: 46,
+                                          ))
+                                      .toList(),
+                                ),
                               ),
                               Expanded(
                                 child: TabBarView(
@@ -295,49 +355,86 @@ class _ComptePageState extends State<ComptePage> {
                                           SizedBox(
                                             height: 5,
                                           ),
-                                          Column(
-                                            children: [
-                                              Text(
-                                                "Transactions du mois de ${dateFormat.format(DateTime.now())}",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 20),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  TransactionCard(
-                                                      icon: Icons
-                                                          .download_outlined,
-                                                      title: "Entrées",
-                                                      transactionCount:
-                                                          transactionInStats[
-                                                              'count'],
-                                                      price: transactionInStats[
-                                                          'amount'],
-                                                      priceColor: Colors.green),
-                                                  Spacer(),
-                                                  TransactionCard(
-                                                      icon:
-                                                          Icons.logout_outlined,
-                                                      iconBackgroundColor:
-                                                          Colors.red,
-                                                      title: "Sorties",
-                                                      transactionCount:
-                                                          transactionOutStats[
-                                                              'count'],
-                                                      price:
-                                                          transactionOutStats[
-                                                              'amount'],
-                                                      priceColor: Colors.red)
-                                                ],
-                                              )
-                                            ],
+                                          Container(
+                                            padding: EdgeInsets.all(20),
+                                            decoration: BoxDecoration(
+                                              color: theme.brightness == Brightness.dark
+                                                  ? theme.colorScheme.surfaceContainerHighest
+                                                  : Colors.white,
+                                              borderRadius: BorderRadius.circular(16),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: theme.brightness == Brightness.dark
+                                                      ? Colors.black26
+                                                      : Colors.grey.withAlpha(30),
+                                                  blurRadius: 10,
+                                                  offset: Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      padding: EdgeInsets.all(10),
+                                                      decoration: BoxDecoration(
+                                                        color: theme.colorScheme.primary.withAlpha(30),
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.bar_chart,
+                                                        color: theme.colorScheme.primary,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 16),
+                                                    Text(
+                                                      "Transactions du mois de ${dateFormat.format(DateTime.now())}",
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: theme.brightness == Brightness.dark
+                                                            ? Colors.grey[200]
+                                                            : Colors.grey[800],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 20),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: TransactionCard(
+                                                        icon: Icons.download_outlined,
+                                                        title: "Entrées",
+                                                        transactionCount: transactionInStats['count'],
+                                                        price: transactionInStats['amount'],
+                                                        priceColor: Colors.green
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 16),
+                                                    Expanded(
+                                                      child: TransactionCard(
+                                                        icon: Icons.logout_outlined,
+                                                        iconBackgroundColor: Colors.red,
+                                                        title: "Sorties",
+                                                        transactionCount: transactionOutStats['count'],
+                                                        price: transactionOutStats['amount'],
+                                                        priceColor: Colors.red
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                           SizedBox(
-                                            height: 5,
+                                            height: 20,
                                           ),
-                                          if (transactionsData.length > 0)
-                                            _buildTransactionSummary(compte)
+                                          transactionsData.isNotEmpty
+                                              ? _buildTransactionSummary(compte)
+                                              : Container()
                                         ],
                                       ),
                                     );
@@ -355,33 +452,110 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Container(
         height: 500,
-        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(horizontal: 24),
+        padding: EdgeInsets.all(30),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.brightness == Brightness.dark
+              ? theme.colorScheme.surfaceContainerHighest
+              : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.black26
+                  : Colors.grey.withAlpha(30),
+              blurRadius: 15,
+              offset: Offset(0, 5),
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              FontAwesomeIcons.wallet,
-              size: 50,
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha(30),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                FontAwesomeIcons.wallet,
+                size: 50,
+                color: theme.colorScheme.primary,
+              ),
             ),
+            SizedBox(height: 24),
             Text(
-              'Ajoutez Votre Premier Portefeille ',
+              'Ajoutez Votre Premier Portefeuille',
               style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
-            CircularAddAccountButton(
-              onAccountLoad: (value) {
-                refreshAccounts();
-              },
+            SizedBox(height: 16),
+            Text(
+              'Créez un compte pour commencer à suivre vos finances',
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.grey[300]
+                    : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 30),
+            SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Afficher la boîte de dialogue pour ajouter un compte
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height / 2,
+                        child: Center(
+                          child: CircularAddAccountButton(
+                            onAccountLoad: (value) {
+                              refreshAccounts();
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 5,
+                  shadowColor: theme.colorScheme.primary.withAlpha(100),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add, size: 20),
+                    SizedBox(width: 10),
+                    Text(
+                      "Ajouter un compte",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -390,30 +564,124 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Widget _buildTransactionSummary(AccountModel compte) {
+    final theme = Theme.of(context);
     // _getTodayTransactions();
     return Column(
       children: [
-        if (todayTransactions.length > 0)
-          Column(
-            children: [
-              Text("Aujourd'hui",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-              Column(
-                children: _buildTransactionItemsList(todayTransactions, compte),
-              ),
-            ],
+        if (todayTransactions.isNotEmpty)
+          Container(
+            margin: EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? theme.colorScheme.surfaceContainerHighest
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.black26
+                      : Colors.grey.withAlpha(30),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.blue.withAlpha(50)
+                            : Colors.blue.withAlpha(30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.today,
+                        color: Colors.blue,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Text(
+                      "Aujourd'hui",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.grey[200]
+                            : Colors.grey[800],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Column(
+                  children: _buildTransactionItemsList(todayTransactions, compte),
+                ),
+              ],
+            ),
           ),
-        if (transactionsData.length > 0)
-          Column(
-            children: [
-              Text(
-                "Transactions du mois",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-              Column(
-                children: _buildTransactionItemsList(transactionsData, compte),
-              ),
-            ],
+        if (transactionsData.isNotEmpty)
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? theme.colorScheme.surfaceContainerHighest
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.black26
+                      : Colors.grey.withAlpha(30),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.brightness == Brightness.dark
+                            ? theme.colorScheme.primary.withAlpha(50)
+                            : theme.colorScheme.primary.withAlpha(30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.calendar_month,
+                        color: theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Text(
+                      "Transactions du mois",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.grey[200]
+                            : Colors.grey[800],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Column(
+                  children: _buildTransactionItemsList(transactionsData, compte),
+                ),
+              ],
+            ),
           )
       ],
     );
