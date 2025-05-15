@@ -585,6 +585,178 @@ class _ComptePageState extends State<ComptePage> {
     );
   }
 
+  // Méthode pour afficher les transactions du mois filtrées par type
+  void _showMonthlyTransactions(BuildContext context, String transactionType, AccountModel compte) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Filtrer les transactions par type et par compte
+    final filteredTransactions = transactionsData.where((transaction) {
+      return transaction.type == transactionType && transaction.account_id == compte.id;
+    }).toList();
+
+    // Trier les transactions par date (plus récentes en premier)
+    filteredTransactions.sort((a, b) => b.date!.compareTo(a.date!));
+
+    // Titre du modal en fonction du type de transaction
+    final String title = transactionType == TransactionTypesEnum.revenu
+        ? "Entrées du mois de ${getMonthNameInFrench(DateTime.now().month)}"
+        : "Sorties du mois de ${getMonthNameInFrench(DateTime.now().month)}";
+
+    // Couleur en fonction du type de transaction
+    final Color typeColor = transactionType == TransactionTypesEnum.revenu
+        ? Colors.green
+        : Colors.red;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? theme.colorScheme.surface
+                : Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // En-tête du modal
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black12
+                          : Colors.grey.withAlpha(30),
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: typeColor.withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            transactionType == TransactionTypesEnum.revenu
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
+                            color: typeColor,
+                            size: 16,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Liste des transactions
+              Expanded(
+                child: filteredTransactions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 48,
+                              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              transactionType == TransactionTypesEnum.revenu
+                                  ? "Aucune entrée pour le mois de ${getMonthNameInFrench(DateTime.now().month)}"
+                                  : "Aucune sortie pour le mois de ${getMonthNameInFrench(DateTime.now().month)}",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: filteredTransactions.length,
+                        itemBuilder: (context, index) {
+                          final transaction = filteredTransactions[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: NotificatedCard(
+                              titleSize: 16,
+                              icon: transaction.icon,
+                              title: transaction.name ?? "Transaction",
+                              subtitle: transaction.category ?? "Catégorie inconnue",
+                              subtitleSize: 13,
+                              price: transaction.type == TransactionTypesEnum.depense
+                                  ? -(transaction.amount ?? 0)
+                                  : (transaction.amount ?? 0),
+                              iconBackgroundColor: transaction.type == TransactionTypesEnum.depense
+                                  ? Colors.red
+                                  : Colors.green,
+                              date: transaction.date ?? DateTime.now(),
+                              backgroundColor: isDarkMode
+                                  ? theme.colorScheme.surfaceContainerLow
+                                  : Colors.white,
+                              textColor: isDarkMode ? Colors.white : null,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildTransactionSummary(AccountModel compte) {
     final theme = Theme.of(context);
     // _getTodayTransactions();
@@ -728,176 +900,4 @@ List<Widget> _buildTransactionItemsList(
           transactions[index].type == "depense" ? Colors.red : Colors.green,
     );
   });
-}
-
-// Méthode pour afficher les transactions du mois filtrées par type
-void _showMonthlyTransactions(BuildContext context, String transactionType, AccountModel compte) {
-  final theme = Theme.of(context);
-  final isDarkMode = theme.brightness == Brightness.dark;
-
-  // Filtrer les transactions par type et par compte
-  final filteredTransactions = transactionsData.where((transaction) {
-    return transaction.type == transactionType && transaction.account_id == compte.id;
-  }).toList();
-
-  // Trier les transactions par date (plus récentes en premier)
-  filteredTransactions.sort((a, b) => b.date!.compareTo(a.date!));
-
-  // Titre du modal en fonction du type de transaction
-  final String title = transactionType == TransactionTypesEnum.revenu
-      ? "Entrées du mois de ${getMonthNameInFrench(DateTime.now().month)}"
-      : "Sorties du mois de ${getMonthNameInFrench(DateTime.now().month)}";
-
-  // Couleur en fonction du type de transaction
-  final Color typeColor = transactionType == TransactionTypesEnum.revenu
-      ? Colors.green
-      : Colors.red;
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: isDarkMode
-              ? theme.colorScheme.surface
-              : Color(0xFFF8F9FA),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // En-tête du modal
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? theme.colorScheme.surfaceContainerHighest
-                    : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDarkMode
-                        ? Colors.black12
-                        : Colors.grey.withAlpha(30),
-                    blurRadius: 5,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: typeColor.withAlpha(30),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          transactionType == TransactionTypesEnum.revenu
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
-                          color: typeColor,
-                          size: 16,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-
-            // Liste des transactions
-            Expanded(
-              child: filteredTransactions.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.account_balance_wallet_outlined,
-                            size: 48,
-                            color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            transactionType == TransactionTypesEnum.revenu
-                                ? "Aucune entrée pour le mois de ${getMonthNameInFrench(DateTime.now().month)}"
-                                : "Aucune sortie pour le mois de ${getMonthNameInFrench(DateTime.now().month)}",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: filteredTransactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = filteredTransactions[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: NotificatedCard(
-                            titleSize: 16,
-                            icon: transaction.icon,
-                            title: transaction.name ?? "Transaction",
-                            subtitle: transaction.category ?? "Catégorie inconnue",
-                            subtitleSize: 13,
-                            price: transaction.type == TransactionTypesEnum.depense
-                                ? -(transaction.amount ?? 0)
-                                : (transaction.amount ?? 0),
-                            iconBackgroundColor: transaction.type == TransactionTypesEnum.depense
-                                ? Colors.red
-                                : Colors.green,
-                            date: transaction.date ?? DateTime.now(),
-                            backgroundColor: isDarkMode
-                                ? theme.colorScheme.surfaceContainerLow
-                                : Colors.white,
-                            textColor: isDarkMode ? Colors.white : null,
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
 }
