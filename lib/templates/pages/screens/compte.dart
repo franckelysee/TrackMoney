@@ -514,7 +514,7 @@ class _ComptePageState extends State<ComptePage> {
             ),
             SizedBox(height: 30),
             SizedBox(
-              width: 200,
+              width: 220, // Augmenté la largeur pour éviter le débordement
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
@@ -545,6 +545,7 @@ class _ComptePageState extends State<ComptePage> {
                   ),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min, // Utiliser MainAxisSize.min pour que le Row prenne la taille minimale nécessaire
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.add, size: 20),

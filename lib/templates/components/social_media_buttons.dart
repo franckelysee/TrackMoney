@@ -13,46 +13,99 @@ class SocialMediaButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Se connecter avec',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-              onPressed: onFacebookPressed??() {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3b5998), // Couleur de Facebook
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            // Bouton Facebook
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF3b5998).withAlpha(isDarkMode ? 50 : 100),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
               ),
-              icon: const FaIcon(
-                FontAwesomeIcons.facebook,
-                color: Colors.white,
-              ),
-              label: const Text(
-                'Facebook',
-                style: TextStyle(color: Colors.white),
+              child: ElevatedButton.icon(
+                onPressed: onFacebookPressed ?? () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF3b5998), // Couleur de Facebook
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: FaIcon(
+                  FontAwesomeIcons.facebook,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                label: Text(
+                  'Facebook',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 16),
-            ElevatedButton.icon(
-              onPressed: onGooglePressed??() {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Couleur de Google
-                padding:const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            const SizedBox(width: 20),
+            // Bouton Google
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withAlpha(isDarkMode ? 50 : 100),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
               ),
-              icon: const FaIcon(
-                FontAwesomeIcons.google,
-                color: Colors.white,
-              ),
-              label: const Text(
-                'Google',
-                style: TextStyle(color: Colors.white),
+              child: ElevatedButton.icon(
+                onPressed: onGooglePressed ?? () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Couleur de Google
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: FaIcon(
+                  FontAwesomeIcons.google,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                label: Text(
+                  'Google',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
           ],

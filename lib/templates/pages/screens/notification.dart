@@ -88,106 +88,414 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: const AppHeader(title: 'Notifications'),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                const Divider(),
-                _buildFilterSection(),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredNotifications.length,
-                    itemBuilder: (context, index) {
-                      var notification = filteredNotifications[index];
-                      return _buildNotificationItem(notification, index);
-                    },
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
                   ),
-                ),
-              ],
+                  SizedBox(height: 16),
+                  Text(
+                    "Chargement des notifications...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête de la page
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.notifications,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Centre de notifications",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Restez informé de vos activités",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Section de filtrage
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black12
+                              : Colors.grey.withAlpha(30),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: _buildFilterSection(),
+                  ),
+
+                  // Compteur de notifications
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Notifications filtrées',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            '${filteredNotifications.length}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        Spacer(),
+                        if (filteredNotifications.isNotEmpty)
+                          Text(
+                            'Glisser pour plus d\'options',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Liste des notifications
+                  Expanded(
+                    child: filteredNotifications.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.notifications_off_outlined,
+                                  size: 60,
+                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Aucune notification',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Vous n\'avez aucune notification pour le moment',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? theme.colorScheme.surfaceContainerLow
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDarkMode
+                                      ? Colors.black12
+                                      : Colors.grey.withAlpha(20),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: ListView.separated(
+                                padding: EdgeInsets.all(16),
+                                itemCount: filteredNotifications.length,
+                                separatorBuilder: (context, index) => SizedBox(height: 8),
+                                itemBuilder: (context, index) {
+                                  var notification = filteredNotifications[index];
+                                  return _buildNotificationItem(notification, index);
+                                },
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
             ),
     );
   }
 
   Widget _buildFilterSection() {
-    return Container(
-      color: Theme.of(context).cardColor,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        children: [
-          const Text(
-            'Trier :',
-            style: TextStyle(fontWeight: FontWeight.bold),
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Titre de la section
+        Row(
+          children: [
+            Icon(
+              Icons.filter_alt,
+              size: 18,
+              color: theme.colorScheme.primary,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Filtrer par type',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+
+        // Sélecteur de type
+        Container(
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? theme.colorScheme.surfaceContainerLow
+                : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 5),
-          DropdownButton<String>(
-            icon: const Icon(Icons.filter_list),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: DropdownButton<String>(
+            isExpanded: true,
+            icon: Icon(
+              Icons.arrow_drop_down,
+              color: theme.colorScheme.primary,
+            ),
+            underline: SizedBox(),
             value: selectedType,
             onChanged: (newValue) => setState(() => selectedType = newValue!),
             items: notificationTypes.map((value) {
-              return DropdownMenuItem(value: value, child: Text(value,style: TextStyle(color: Colors.blueAccent),));
+              IconData iconData;
+              Color iconColor;
+
+              if (value == NotificationTypeEnum.INFORMATION) {
+                iconData = Icons.info;
+                iconColor = Colors.blue;
+              } else if (value == NotificationTypeEnum.RAPPEL) {
+                iconData = Icons.warning;
+                iconColor = Colors.orange;
+              } else if (value == NotificationTypeEnum.ALERTE) {
+                iconData = Icons.error;
+                iconColor = Colors.red;
+              } else {
+                iconData = Icons.notifications;
+                iconColor = theme.colorScheme.primary;
+              }
+
+              return DropdownMenuItem(
+                value: value,
+                child: Row(
+                  children: [
+                    Icon(
+                      iconData,
+                      color: iconColor,
+                      size: 18,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                        fontWeight: value == selectedType ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }).toList(),
           ),
-          const Spacer(),
-          _buildToggleButtons(),
-        ],
-      ),
+        ),
+
+        SizedBox(height: 16),
+
+        // Titre de la section
+        Row(
+          children: [
+            Icon(
+              Icons.visibility,
+              size: 18,
+              color: theme.colorScheme.primary,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Affichage',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+
+        // Boutons de filtrage
+        _buildToggleButtons(),
+      ],
     );
   }
 
   Widget _buildToggleButtons() {
-    return Container(
-      width: 150,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-            children: [
-              _buildToggleButton('Tous', false),
-              _buildToggleButton('Non lu', true),
-            ],
+    return Row(
+      children: [
+        Expanded(
+          child: _buildToggleButton('Toutes', false),
         ),
-      ),
+        SizedBox(width: 12),
+        Expanded(
+          child: _buildToggleButton('Non lues', true),
+        ),
+      ],
     );
   }
 
   Widget _buildToggleButton(String label, bool isUnread) {
-    return TextButton(
-      onPressed: () => setState(() => showUnreadOnly = isUnread),
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final isSelected = showUnreadOnly == isUnread;
+
+    return InkWell(
+      onTap: () => setState(() => showUnreadOnly = isUnread),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          color: showUnreadOnly == isUnread
-              ? Theme.of(context).colorScheme.primary.withAlpha(50)
-              : Theme.of(context).cardColor,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: showUnreadOnly == isUnread
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.5),
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30)
+              : isDarkMode
+                  ? theme.colorScheme.surfaceContainerLow
+                  : Colors.grey[100],
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+            width: 1.5,
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isUnread ? Icons.mark_email_unread : Icons.all_inbox,
+              size: 16,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildNotificationItem(NotificationModel notification, int index) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Dismissible(
       key: UniqueKey(),
       background: _buildDismissBackground(
-          Colors.green, Icons.archive, 'Archiver', Alignment.centerLeft),
+          Color(0xFF4CAF50), Icons.archive, 'Archiver', Alignment.centerLeft),
       secondaryBackground: _buildDismissBackground(
-          Colors.red, Icons.delete, 'Supprimer', Alignment.centerRight),
+          Color(0xFFF44336), Icons.delete, 'Supprimer', Alignment.centerRight),
       onDismissed: (direction) {
         if (direction == DismissDirection.startToEnd) {
           archiveNotification(notification.notificationId);
@@ -198,21 +506,39 @@ class _NotificationPageState extends State<NotificationPage> {
       child: NotificatedCard(
         title: notification.title,
         subtitle: notification.content,
-        titleSize: 20,
+        titleSize: 16,
+        subtitleSize: 14,
+        backgroundColor: isDarkMode
+            ? theme.colorScheme.surfaceContainerLow
+            : Colors.white,
         textColor: notification.isRead
-            ? Colors.grey
-            : Theme.of(context).colorScheme.secondary,
+            ? (isDarkMode ? Colors.grey[500] : Colors.grey[600])
+            : (isDarkMode ? Colors.white : Colors.black87),
         icon: _getNotificationIcon(notification.type),
-        iconBackgroundColor: Theme.of(context).cardColor,
-        iconColor: notification.isRead
+        iconBackgroundColor: notification.isRead
             ? Colors.grey
             : _getNotificationIconColor(notification.type),
+        iconColor: Colors.white,
         trailing: _buildPopupMenu(notification),
         onTap: () {
-          if (!notification.isRead) markAsRead(notification.notificationId);
+          if (!notification.isRead) {
+            markAsRead(notification.notificationId);
+          }
+
+          // Afficher un message plus informatif
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Notification cliquée: ${notification.content}')),
+              content: Text(
+                notification.isRead
+                    ? 'Notification déjà lue'
+                    : 'Notification marquée comme lue'
+              ),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
           );
         },
       ),
@@ -229,38 +555,124 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Widget _buildDismissBackground(
       Color color, IconData icon, String label, Alignment alignment) {
+    final isLeft = alignment == Alignment.centerLeft;
+
     return Container(
-      color: color,
+      decoration: BoxDecoration(
+        color: color.withAlpha(230),
+        borderRadius: BorderRadius.circular(16),
+      ),
       alignment: alignment,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(label,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
+          if (isLeft) Icon(icon, color: Colors.white),
+          if (isLeft) const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          if (!isLeft) const SizedBox(width: 8),
+          if (!isLeft) Icon(icon, color: Colors.white),
         ],
       ),
     );
   }
 
   Widget _buildPopupMenu(NotificationModel notification) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return PopupMenuButton<String>(
-      color: Theme.of(context).cardColor,
+      color: isDarkMode
+          ? theme.colorScheme.surfaceContainerHighest
+          : Colors.white,
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      icon: Icon(
+        Icons.more_vert,
+        color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+        size: 20,
+      ),
       onSelected: (action) {
-        if (action == 'read') markAsRead(notification.notificationId);
-        if (action == 'archive')
+        if (action == 'read') {
+          markAsRead(notification.notificationId);
+        }
+        if (action == 'archive') {
           archiveNotification(notification.notificationId);
-        if (action == 'delete') deleteNotification(notification.notificationId);
+        }
+        if (action == 'delete') {
+          deleteNotification(notification.notificationId);
+        }
       },
       itemBuilder: (context) => [
         PopupMenuItem(
-            value: 'read',
-            child: Text(notification.isRead ? 'Déjà lu' : 'Marquer comme lu')),
-        const PopupMenuItem(value: 'archive', child: Text('Archiver')),
-        const PopupMenuItem(value: 'delete', child: Text('Supprimer')),
+          value: 'read',
+          child: Row(
+            children: [
+              Icon(
+                notification.isRead ? Icons.check_circle : Icons.mark_email_read,
+                color: notification.isRead ? Colors.green : theme.colorScheme.primary,
+                size: 18,
+              ),
+              SizedBox(width: 12),
+              Text(
+                notification.isRead ? 'Déjà lu' : 'Marquer comme lu',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'archive',
+          child: Row(
+            children: [
+              Icon(
+                Icons.archive,
+                color: Colors.amber,
+                size: 18,
+              ),
+              SizedBox(width: 12),
+              Text(
+                'Archiver',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete,
+                color: Colors.red,
+                size: 18,
+              ),
+              SizedBox(width: 12),
+              Text(
+                'Supprimer',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

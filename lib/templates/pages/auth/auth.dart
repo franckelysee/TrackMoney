@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/routes/init_routes.dart';
-import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/social_media_buttons.dart';
 import 'package:trackmoney/templates/pages/screens/devise.dart';
-import 'package:trackmoney/utils/app_config.dart';
 import 'package:trackmoney/utils/devise_list.dart';
 
 class AuthPage extends StatefulWidget {
@@ -34,7 +32,6 @@ class _AuthPageState extends State<AuthPage> {
   // }
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setFirstLaunch();
   }
@@ -45,87 +42,188 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final primaryColor = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Expanded(
-              child: Align(
-                  alignment: Alignment.bottomCenter,
+      backgroundColor: isDarkMode
+          ? theme.colorScheme.surface
+          : Color(0xFFF8F9FA),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+            // Logo et slogan
+              Expanded(
+                flex: 3,
+                child: Center(
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'TrackMoney',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color: AppConfig.primaryColor,
-                          ),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo avec effet d'ombre
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withAlpha(30),
+                          shape: BoxShape.circle,
                         ),
-                        Text(
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          size: 60,
+                          color: primaryColor,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+
+                      // Nom de l'application
+                      Text(
+                        'TrackMoney',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+
+                      // Slogan
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withAlpha(isDarkMode ? 40 : 30),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
                           "'Parce que chaque dépense a son importance.'",
                           style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: AppConfig.primaryColor,
-                              fontStyle: FontStyle.italic),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: primaryColor,
+                            fontStyle: FontStyle.italic,
+                          ),
                           textAlign: TextAlign.center,
                         ),
-                      ])),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const SizedBox(height: 20),
-            const SizedBox(
-              height: 20,
-            ),
-            const MyButton(
-                label: "S'inscrire",
-                onPressed: null,
-                color: AppConfig.primaryColor),
-            const SizedBox(
-              height: 20,
-            ),
-            const MyButton(
-                label: "Se connecter",
-                onPressed: null,
-                color: Color(0xFFD9D9D9),
-                textColor: Colors.black),
-            const SizedBox(
-              height: 50,
-            ),
-            const SocialMediaButtons(
-                onFacebookPressed: null, onGooglePressed: null),
-            const SizedBox(
-              height: 20,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Expanded(
-                child: Align(
-              alignment: Alignment.center,
-              child: TextButton(
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Boutons d'authentification
+              Expanded(
+                flex: 4,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Bouton d'inscription
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      margin: EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withAlpha(isDarkMode ? 50 : 100),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: (){}, // À implémenter
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Text(
+                          "S'inscrire",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Bouton de connexion
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      margin: EdgeInsets.only(bottom: 30),
+                      child: ElevatedButton(
+                        onPressed: (){}, // À implémenter
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDarkMode
+                              ? theme.colorScheme.surfaceContainerHighest
+                              : Colors.white,
+                          foregroundColor: isDarkMode ? Colors.white : Colors.black87,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+                              width: 1,
+                            ),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Text(
+                          "Se connecter",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Boutons de médias sociaux
+                    SocialMediaButtons(
+                      onFacebookPressed: null,
+                      onGooglePressed: null,
+                    ),
+                  ],
+                ),
+              ),
+              // Lien pour continuer sans compte
+              Container(
+                margin: EdgeInsets.only(bottom: 16),
+                child: TextButton(
                   onPressed: () {
                     Navigator.of(context).push(createRoute(DeviseSelector(
                       devises: devises,
                     )));
                   },
-                  child: const Text(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    backgroundColor: primaryColor.withAlpha(isDarkMode ? 40 : 20),
+                  ),
+                  child: Text(
                     "Continuer sans créer de compte",
-                    style: TextStyle(color: AppConfig.primaryColor),
-                  )),
-            )),
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
-    );
+    ));
   }
 }
