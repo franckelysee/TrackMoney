@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/pages/screens/profile/profile.dart';
+import 'package:trackmoney/templates/pages/screens/profile/settings_page.dart';
 import 'package:trackmoney/utils/user_utils.dart';
 
 class AppHeader extends StatefulWidget {
@@ -16,6 +17,41 @@ class AppHeader extends StatefulWidget {
 }
 
 class _AppHeaderState extends State<AppHeader> {
+  // Méthode pour naviguer vers la page de profil si l'utilisateur n'est pas un visiteur
+  void _navigateToProfileIfNotGuest(BuildContext context) {
+    // Capturer le contexte avant l'opération asynchrone
+    final capturedContext = context;
+
+    // Utiliser une fonction asynchrone immédiatement invoquée
+    Future<void> checkAndNavigate() async {
+      try {
+        // Vérifier si l'utilisateur est un visiteur
+        final isGuest = await UserUtils.showAuthModalIfGuest(capturedContext);
+
+        // Si l'utilisateur n'est pas un visiteur et que le widget est toujours monté
+        if (!isGuest && mounted) {
+          Navigator.push(
+            capturedContext,
+            createRoute(Profile())
+          );
+        }
+      } catch (e) {
+        debugPrint('Erreur lors de la navigation vers le profil: $e');
+      }
+    }
+
+    // Exécuter la fonction asynchrone
+    checkAndNavigate();
+  }
+
+  // Méthode pour naviguer vers la page des paramètres
+  void _navigateToSettings(BuildContext context) {
+    Navigator.push(
+      context,
+      createRoute(SettingsPage())
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -71,7 +107,7 @@ class _AppHeaderState extends State<AppHeader> {
               ),
               padding: EdgeInsets.all(12),
             ),
-            onPressed: () {},
+            onPressed: () => _navigateToSettings(context),
           ),
         ),
         Container(
@@ -90,13 +126,9 @@ class _AppHeaderState extends State<AppHeader> {
               padding: EdgeInsets.all(12),
               elevation: 0,
             ),
-            onPressed: () async {
-              // Vérifier si l'utilisateur est un visiteur
-              final isGuest = await UserUtils.showAuthModalIfGuest(context);
-              // Si l'utilisateur n'est pas un visiteur, naviguer vers la page de profil
-              if (!isGuest && mounted) {
-                Navigator.push(context, createRoute(Profile()));
-              }
+            onPressed: () {
+              // Vérifier si l'utilisateur est un visiteur et naviguer vers la page de profil si nécessaire
+              _navigateToProfileIfNotGuest(context);
             },
           ),
         )

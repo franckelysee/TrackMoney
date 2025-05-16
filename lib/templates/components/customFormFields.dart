@@ -161,19 +161,26 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputType keyboardType;
   final Function(String)? onFieldSubmitted;
   final FocusNode? focusNode;
+  final bool enabled;
+  final TextStyle? style;
+  final Function(String)? onChanged;
 
-  const CustomTextFormField(
-      {super.key,
-      this.labelText,
-      this.hintText,
-      this.prefixIcon,
-      this.suffixIcon,
-      this.isPassword = false,
-      this.controller,
-      this.validator,
-      this.keyboardType = TextInputType.text,
-      this.onFieldSubmitted,
-      this.focusNode});
+  const CustomTextFormField({
+    super.key,
+    this.labelText,
+    this.hintText,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.isPassword = false,
+    this.controller,
+    this.validator,
+    this.keyboardType = TextInputType.text,
+    this.onFieldSubmitted,
+    this.focusNode,
+    this.enabled = true,
+    this.style,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +193,8 @@ class CustomTextFormField extends StatelessWidget {
       keyboardType: keyboardType,
       validator: validator,
       focusNode: focusNode,
-      style: TextStyle(
+      enabled: enabled,
+      style: style ?? TextStyle(
         color: isDarkMode ? Colors.white : Colors.black87,
         fontSize: 15,
       ),
@@ -255,6 +263,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
       ),
       onFieldSubmitted: onFieldSubmitted,
+      onChanged: onChanged,
     );
   }
 }

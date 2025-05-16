@@ -8,6 +8,7 @@ import 'package:trackmoney/services/user_service.dart';
 import 'package:trackmoney/templates/components/sync_button.dart';
 import 'package:trackmoney/templates/pages/auth/auth.dart';
 import 'package:trackmoney/templates/pages/screens/profile/edit_profile.dart';
+import 'package:trackmoney/templates/pages/screens/profile/settings_page.dart';
 import 'package:trackmoney/utils/user_utils.dart';
 
 
@@ -53,7 +54,7 @@ class _ProfileState extends State<Profile> {
     try {
       // Récupérer l'utilisateur actuel
       currentUser = await UserService.getCurrentUser();
-      
+
       // Si aucun utilisateur n'est connecté, créer un utilisateur visiteur
       currentUser ??= await UserService.createGuestUser();
 
@@ -640,7 +641,7 @@ class _ProfileState extends State<Profile> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          createRoute(EditeProfile(user: currentUser))
+                          createRoute(EditProfile())
                         ).then((_) {
                           // Recharger les données de l'utilisateur après la modification
                           _loadUserData();
@@ -662,6 +663,56 @@ class _ProfileState extends State<Profile> {
                           SizedBox(width: 10),
                           Text(
                             "Modifier le Profil",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // Bouton des paramètres
+                  Container(
+                    width: double.infinity,
+                    height: 55,
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          createRoute(SettingsPage())
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.brightness == Brightness.dark
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : Colors.white,
+                        foregroundColor: theme.brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+                        elevation: 2,
+                        shadowColor: Colors.black.withAlpha(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(
+                            color: theme.brightness == Brightness.dark
+                                ? Colors.grey[800]!
+                                : Colors.grey[300]!,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.settings, size: 20),
+                          SizedBox(width: 10),
+                          Text(
+                            "Paramètres",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

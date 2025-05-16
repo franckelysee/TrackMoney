@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart' show Provider;
 import 'package:trackmoney/models/user_model.dart';
 import 'package:trackmoney/services/user_service.dart';
 import 'package:trackmoney/templates/components/auth_required_modal.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
-import 'package:trackmoney/utils/app_config.dart';
 import 'package:trackmoney/utils/user_utils.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:intl/intl.dart';
@@ -573,9 +570,16 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                           SizedBox(height: 16),
                           CustomDropdownButtonFormField(
-                            initialValue: 'XAF',
-                            items: ['XAF', 'EUR', 'USD', 'GBP'],
-                            onChanged: (value){}
+                            initialValue: selectedCurrency,
+                            items: ['FCFA', 'XAF', 'EUR', 'USD', 'GBP'],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  selectedCurrency = value;
+                                  _formChanged = true;
+                                });
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -589,33 +593,44 @@ class _EditProfileState extends State<EditProfile> {
                       height: 55,
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: ElevatedButton(
-                        onPressed: () {
-                          Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-                        },
+                        onPressed: isGuest || !_formChanged || isLoading
+                            ? null // Désactiver le bouton si l'utilisateur est un visiteur ou si aucune modification n'a été faite
+                            : _updateProfile,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey[400],
+                          disabledForegroundColor: Colors.grey[700],
                           elevation: 5,
                           shadowColor: theme.colorScheme.primary.withAlpha(100),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.save, size: 20),
-                            SizedBox(width: 10),
-                            Text(
-                              "Mettre à jour",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                        child: isLoading
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.save, size: 20),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "Mettre à jour",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                     SizedBox(height: 20),
