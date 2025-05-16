@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/models/account_model.dart';
-import 'package:trackmoney/templates/components/account/select_account_type.dart';
-import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/pages/screens/account_details_page.dart';
+import 'package:trackmoney/templates/pages/screens/account_page.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
 import 'package:trackmoney/utils/currency_utils.dart';
 
@@ -314,111 +313,178 @@ class CircularAddAccountButton extends StatefulWidget {
 }
 
 class _CircularAddAccountButtonState extends State<CircularAddAccountButton> {
-  @override
-  Widget build(BuildContext context) {
+  // Méthode pour construire une carte de type de compte
+  Widget _buildAccountTypeCard(String title, IconData icon, Color color) {
+    return Container(
+      width: 80,
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withAlpha(70),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 24,
+          ),
+          SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Méthode pour afficher le dialog de sélection de type de compte
+  void _showAccountTypeDialog(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
-    return CircularButton(
-      icon: Icons.add,
-      iconColor: Colors.white,
-      color: theme.colorScheme.primary,
-      onpressed: () {
-        showModalBottomSheet(
-          context: context,
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Empêcher la fermeture en cliquant à l'extérieur
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           backgroundColor: isDarkMode
               ? theme.colorScheme.surfaceContainerHighest
               : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          builder: (BuildContext context) {
-            return SizedBox(
-              height: MediaQuery.of(context).size.height / 2,
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                children: [
-                  // Barre d'indication en haut
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: EdgeInsets.only(top: 12, bottom: 20),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-
-                  // Titre
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: theme.colorScheme.primary,
-                            size: 20,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Text(
-                          "Sélectionner le type de compte",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.grey[200] : Colors.grey[800],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // Liste des types de compte
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          SelectAccountType(
-                            title: "Portefeuille Bancaire",
-                            backgroundColor: Color(0xFF6C63FF),
-                            acountType: AccountTypeEnum.bancaire,
-                          ),
-                          SizedBox(width: 20),
-                          SelectAccountType(
-                            title: "Portefeuille Mobile",
-                            backgroundColor: Color(0xFF4CAF50),
-                            acountType: AccountTypeEnum.mobile,
-                          ),
-                          SizedBox(width: 20),
-                          SelectAccountType(
-                            title: "Portefeuille Espece",
-                            backgroundColor: Color(0xFFFFA726),
-                            acountType: AccountTypeEnum.espece,
-                          ),
-                        ],
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Titre
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet,
+                        color: theme.colorScheme.primary,
+                        size: 20,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-        ).then((value) {
-          if (value != null && widget.onAccountLoad != null) {
-            widget.onAccountLoad!(value);
-          }
-        });
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        "Sélectionner le type de compte",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.grey[200] : Colors.grey[800],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                // Types de compte
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // Naviguer vers la page de création de compte avec le type bancaire
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.bancaire);
+                      },
+                      child: _buildAccountTypeCard(
+                        "Bancaire",
+                        Icons.account_balance,
+                        Color(0xFF6C63FF),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // Naviguer vers la page de création de compte avec le type mobile
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.mobile);
+                      },
+                      child: _buildAccountTypeCard(
+                        "Mobile",
+                        Icons.phone_android,
+                        Color(0xFF4CAF50),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // Naviguer vers la page de création de compte avec le type espèce
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.espece);
+                      },
+                      child: _buildAccountTypeCard(
+                        "Espèce",
+                        Icons.wallet,
+                        Color(0xFFFFA726),
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
       },
     );
+  }
+
+  // Méthode pour naviguer vers la page de création de compte
+  void _navigateToAccountCreation(BuildContext context, String accountType) {
+    // Utiliser la page de création de compte
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AccountPage(type: accountType),
+      ),
+    ).then((value) {
+      // Rafraîchir les données si nécessaire après le retour de la page de création
+      if (value == true && widget.onAccountLoad != null) {
+        widget.onAccountLoad!(true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Afficher directement le dialog au lieu d'un bouton
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showAccountTypeDialog(context);
+    });
+
+    // Retourner un widget vide car nous affichons directement le dialog
+    return Container();
   }
 }

@@ -17,6 +17,7 @@ class _NotificationPageState extends State<NotificationPage> {
   List<String> notificationTypes = NotificationTypeEnum().values;
   String selectedType = NotificationTypeEnum.TOUTES;
   bool showUnreadOnly = false;
+  bool isFilterExpanded = false; // État pour suivre si la section des filtres est développée
 
   final notificationTypeToIconData = {
     NotificationTypeEnum.INFORMATION: Icons.info,
@@ -133,7 +134,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 children: [
                   // En-tête de la page
                   Container(
-                    margin: EdgeInsets.only(bottom: 20),
+                    margin: EdgeInsets.only(bottom: 10),
                     child: Row(
                       children: [
                         Container(
@@ -174,9 +175,8 @@ class _NotificationPageState extends State<NotificationPage> {
                     ),
                   ),
 
-                  // Section de filtrage
+                  // Section de filtrage avec bouton pour développer/réduire
                   Container(
-                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isDarkMode
                           ? theme.colorScheme.surfaceContainerHighest
@@ -192,12 +192,85 @@ class _NotificationPageState extends State<NotificationPage> {
                         ),
                       ],
                     ),
-                    child: _buildFilterSection(),
+                    child: Column(
+                      children: [
+                        // En-tête de la section de filtrage avec bouton pour développer/réduire
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              isFilterExpanded = !isFilterExpanded;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.filter_alt,
+                                  size: 18,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Filtres',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDarkMode ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                                Spacer(),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    selectedType == NotificationTypeEnum.TOUTES && !showUnreadOnly
+                                        ? 'Aucun'
+                                        : '${(selectedType != NotificationTypeEnum.TOUTES ? 1 : 0) + (showUnreadOnly ? 1 : 0)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  isFilterExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Contenu de la section de filtrage (visible uniquement si développé)
+                        ClipRect(
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            height: isFilterExpanded ? null : 0,
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                              child: AnimatedOpacity(
+                                duration: Duration(milliseconds: 300),
+                                opacity: isFilterExpanded ? 1.0 : 0.0,
+                                child: _buildFilterSection(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   // Compteur de notifications
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     child: Row(
                       children: [
                         Icon(
@@ -232,12 +305,15 @@ class _NotificationPageState extends State<NotificationPage> {
                         ),
                         Spacer(),
                         if (filteredNotifications.isNotEmpty)
-                          Text(
-                            'Glisser pour plus d\'options',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          Flexible(
+                            child: Text(
+                              'Glisser pour options',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              ),
                             ),
                           ),
                       ],
@@ -246,38 +322,57 @@ class _NotificationPageState extends State<NotificationPage> {
 
                   // Liste des notifications
                   Expanded(
+                    flex: 3, // Donner plus d'espace à la liste des notifications
                     child: filteredNotifications.isEmpty
                         ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.notifications_off_outlined,
-                                  size: 60,
-                                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Aucune notification',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: MediaQuery.of(context).size.height * 0.3,
+                              ),
+                              child: SingleChildScrollView(
+                                physics: AlwaysScrollableScrollPhysics(),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.notifications_off_outlined,
+                                        size: 40, // Taille encore plus réduite
+                                        color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                                      ),
+                                      SizedBox(height: 8), // Espacement encore plus réduit
+                                      Text(
+                                        'Aucune notification',
+                                        style: TextStyle(
+                                          fontSize: 14, // Taille encore plus réduite
+                                          fontWeight: FontWeight.w500,
+                                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                        ),
+                                      ),
+                                      SizedBox(height: 4), // Espacement encore plus réduit
+                                      Text(
+                                        'Vous n\'avez aucune notification',
+                                        style: TextStyle(
+                                          fontSize: 12, // Taille encore plus réduite
+                                          color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Vous n\'avez aucune notification pour le moment',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                              ),
                             ),
                           )
                         : Container(
+                            constraints: BoxConstraints(
+                              // Hauteur minimale pour afficher environ 5 notifications
+                              // Chaque notification fait environ 80px de hauteur + 8px d'espacement
+                              // Padding de 16px en haut et en bas = 32px
+                              // Total: (80 + 8) * 5 + 32 = 472px
+                              minHeight: MediaQuery.of(context).size.height * 0.6,
+                            ),
                             decoration: BoxDecoration(
                               color: isDarkMode
                                   ? theme.colorScheme.surfaceContainerLow
@@ -324,13 +419,13 @@ class _NotificationPageState extends State<NotificationPage> {
         Row(
           children: [
             Icon(
-              Icons.filter_alt,
+              Icons.category,
               size: 18,
               color: theme.colorScheme.primary,
             ),
             SizedBox(width: 8),
             Text(
-              'Filtrer par type',
+              'Type de notification',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -339,7 +434,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ],
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 8),
 
         // Sélecteur de type
         Container(
@@ -401,7 +496,7 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         ),
 
-        SizedBox(height: 16),
+        SizedBox(height: 10),
 
         // Titre de la section
         Row(
@@ -422,7 +517,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ],
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 8),
 
         // Boutons de filtrage
         _buildToggleButtons(),

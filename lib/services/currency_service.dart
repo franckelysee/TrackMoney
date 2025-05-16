@@ -49,27 +49,27 @@ class CurrencyService {
   // Initialiser les devises par défaut
   static Future<void> initDefaultCurrencies() async {
     final box = await _openBox();
-    
+
     // Vérifier si la boîte est vide
     if (box.isEmpty) {
-      // Liste des devises par défaut
+      // Liste des devises par défaut avec leurs symboles
       final defaultCurrencies = [
-        Devise(name: 'Franc CFA', devise: 'FCFA'),
-        Devise(name: 'Euro', devise: 'EUR'),
-        Devise(name: 'Dollar américain', devise: 'USD'),
-        Devise(name: 'Livre sterling', devise: 'GBP'),
-        Devise(name: 'Yen japonais', devise: 'JPY'),
-        Devise(name: 'Franc suisse', devise: 'CHF'),
-        Devise(name: 'Dollar canadien', devise: 'CAD'),
-        Devise(name: 'Dollar australien', devise: 'AUD'),
-        Devise(name: 'Yuan chinois', devise: 'CNY'),
-        Devise(name: 'Naira nigérian', devise: 'NGN'),
-        Devise(name: 'Rand sud-africain', devise: 'ZAR'),
-        Devise(name: 'Dirham marocain', devise: 'MAD'),
-        Devise(name: 'Dinar tunisien', devise: 'TND'),
-        Devise(name: 'Cedi ghanéen', devise: 'GHS'),
+        Devise(name: 'Franc CFA', devise: 'FCFA', symbol: 'FCFA'),
+        Devise(name: 'Euro', devise: 'EUR', symbol: '€'),
+        Devise(name: 'Dollar américain', devise: 'USD', symbol: '\$'),
+        Devise(name: 'Livre sterling', devise: 'GBP', symbol: '£'),
+        Devise(name: 'Yen japonais', devise: 'JPY', symbol: '¥'),
+        Devise(name: 'Franc suisse', devise: 'CHF', symbol: 'CHF'),
+        Devise(name: 'Dollar canadien', devise: 'CAD', symbol: 'CA\$'),
+        Devise(name: 'Dollar australien', devise: 'AUD', symbol: 'A\$'),
+        Devise(name: 'Yuan chinois', devise: 'CNY', symbol: '¥'),
+        Devise(name: 'Naira nigérian', devise: 'NGN', symbol: '₦'),
+        Devise(name: 'Rand sud-africain', devise: 'ZAR', symbol: 'R'),
+        Devise(name: 'Dirham marocain', devise: 'MAD', symbol: 'DH'),
+        Devise(name: 'Dinar tunisien', devise: 'TND', symbol: 'DT'),
+        Devise(name: 'Cedi ghanéen', devise: 'GHS', symbol: '₵'),
       ];
-      
+
       // Ajouter les devises par défaut
       for (var currency in defaultCurrencies) {
         await box.put(currency.devise, currency);

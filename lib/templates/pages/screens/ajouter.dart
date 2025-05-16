@@ -242,30 +242,34 @@ class _AjouterPageState extends State<AjouterPage> {
                     ),
                   ),
                   SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        spendingTypeController.isEmpty
-                            ? "Nouvelle transaction"
-                            : spendingTypeController == 'Dépense'
-                                ? "Nouvelle dépense"
-                                : "Nouveau revenu",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.black87,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          spendingTypeController.isEmpty
+                              ? "Nouvelle transaction"
+                              : spendingTypeController == 'Dépense'
+                                  ? "Nouvelle dépense"
+                                  : "Nouveau revenu",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Enregistrez vos mouvements financiers",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        SizedBox(height: 4),
+                        Text(
+                          "Enregistrez vos mouvements financiers",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

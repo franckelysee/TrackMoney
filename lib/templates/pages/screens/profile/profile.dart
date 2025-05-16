@@ -38,19 +38,13 @@ class _ProfileState extends State<Profile> {
 
   // Vérifier si l'utilisateur est un visiteur et afficher le modal si nécessaire
   Future<void> _checkIfGuestUser() async {
-    final isGuest = await UserUtils.isGuestUser();
+    // Utiliser la fonction utilitaire pour afficher le modal si l'utilisateur est un visiteur
+    final isGuest = await UserUtils.showAuthModalIfGuest(context);
 
+    // Si l'utilisateur est un visiteur et que le modal a été affiché, revenir à la page précédente
+    // sauf si l'utilisateur a cliqué sur "Se connecter" (result == true)
     if (isGuest && mounted) {
-      final result = await AuthRequiredModal.show(
-        context,
-        title: 'Profil non disponible',
-        message: 'Vous êtes actuellement connecté en tant que visiteur. Connectez-vous ou créez un compte pour accéder à votre profil et synchroniser vos données.',
-      );
-
-      // Si l'utilisateur a cliqué sur "Annuler", revenir à la page précédente
-      if (result != true && mounted) {
-        Navigator.pop(context);
-      }
+      Navigator.pop(context);
     }
   }
 

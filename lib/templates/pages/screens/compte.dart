@@ -10,6 +10,7 @@ import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/templates/pages/screens/account_page.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
 import 'package:trackmoney/utils/date_utils.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
@@ -268,6 +269,10 @@ class _ComptePageState extends State<ComptePage> {
                                     color: theme.colorScheme.primary.withAlpha(30),
                                     borderRadius: BorderRadius.circular(30),
                                   ),
+                                  onTap: (index) {
+                                    // Assurer que le TabController change d'onglet
+                                    DefaultTabController.of(context).animateTo(index);
+                                  },
                                   tabs: comptes
                                       .map((compte) => Tab(
                                             text: compte.type,
@@ -538,22 +543,8 @@ class _ComptePageState extends State<ComptePage> {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  // Afficher la boîte de dialogue pour ajouter un compte
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return SizedBox(
-                        height: MediaQuery.of(context).size.height / 2,
-                        child: Center(
-                          child: CircularAddAccountButton(
-                            onAccountLoad: (value) {
-                              refreshAccounts();
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                  // Afficher directement le dialog de sélection de type de compte
+                  _showAccountTypeDialog(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
@@ -580,6 +571,162 @@ class _ComptePageState extends State<ComptePage> {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Méthode pour afficher le dialog de sélection de type de compte
+  void _showAccountTypeDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Empêcher la fermeture en cliquant à l'extérieur
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: isDarkMode
+              ? theme.colorScheme.surfaceContainerHighest
+              : Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Titre
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withAlpha(isDarkMode ? 50 : 30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet,
+                        color: theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        "Sélectionner le type de compte",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.grey[200] : Colors.grey[800],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                // Types de compte
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildAccountTypeCard(
+                      "Bancaire",
+                      Icons.account_balance,
+                      Color(0xFF6C63FF),
+                      () {
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.bancaire);
+                      },
+                    ),
+                    _buildAccountTypeCard(
+                      "Mobile",
+                      Icons.phone_android,
+                      Color(0xFF4CAF50),
+                      () {
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.mobile);
+                      },
+                    ),
+                    _buildAccountTypeCard(
+                      "Espèce",
+                      Icons.wallet,
+                      Color(0xFFFFA726),
+                      () {
+                        Navigator.pop(context);
+                        _navigateToAccountCreation(context, AccountTypeEnum.espece);
+                      },
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Méthode pour naviguer vers la page de création de compte
+  void _navigateToAccountCreation(BuildContext context, String accountType) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AccountPage(type: accountType),
+      ),
+    ).then((value) {
+      if (value == true) {
+        refreshAccounts();
+      }
+    });
+  }
+
+  // Méthode pour construire une carte de type de compte
+  Widget _buildAccountTypeCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withAlpha(70),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

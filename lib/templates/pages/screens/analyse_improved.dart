@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/schemas/transaction_schema.dart';
@@ -65,26 +66,31 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
 
     if (data.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 48,
-              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 48,
+                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                ),
+                SizedBox(height: 16),
+                Text(
+                  type == 'revenu'
+                      ? "Aucune entrée pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}"
+                      : "Aucune sortie pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            Text(
-              type == 'revenu'
-                  ? "Aucune entrée pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}"
-                  : "Aucune sortie pour le ${selectedDate.day} ${getMonthNameInFrench(selectedDate.month)} ${selectedDate.year}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                fontSize: 16,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -885,7 +891,7 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
 
                   // Sections des onglets avec TabController
                   Container(
-                    height: MediaQuery.of(context).size.height - 450,
+                    height: max(MediaQuery.of(context).size.height * 0.45, 350), // Au moins 350px ou 45% de la hauteur de l'écran
                     decoration: BoxDecoration(
                       color: isDarkMode
                           ? theme.colorScheme.surfaceContainerHighest

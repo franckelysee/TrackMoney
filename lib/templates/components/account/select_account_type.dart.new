@@ -95,28 +95,18 @@ class _SelectAccountTypeState extends State<SelectAccountType> {
             ),
             SizedBox(height: 12),
 
-            // Bouton d'ajout avec effet de pression
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  // Fermer le modal et retourner le type de compte sélectionné
-                  Navigator.pop(context, widget.acountType);
-                },
-                borderRadius: BorderRadius.circular(18),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(30),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+            // Bouton d'ajout
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(30),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
               ),
             ),
           ],

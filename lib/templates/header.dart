@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/pages/screens/profile/profile.dart';
+import 'package:trackmoney/utils/user_utils.dart';
 
 class AppHeader extends StatefulWidget {
   final String title;
@@ -89,8 +90,14 @@ class _AppHeaderState extends State<AppHeader> {
               padding: EdgeInsets.all(12),
               elevation: 0,
             ),
-            onPressed: () {
-              Navigator.push(context, createRoute(Profile()));
+            onPressed: () async {
+              // Vérifier si l'utilisateur est un visiteur
+              final isGuest = await UserUtils.showAuthModalIfGuest(context);
+
+              // Si l'utilisateur n'est pas un visiteur, naviguer vers la page de profil
+              if (!isGuest && mounted) {
+                Navigator.push(context, createRoute(Profile()));
+              }
             },
           ),
         )
