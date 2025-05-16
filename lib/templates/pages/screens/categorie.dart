@@ -117,146 +117,127 @@ class _CategoryPageState extends State<CategoryPage> {
                 ],
               ),
             )
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // En-tête de la page
-                  Container(
-                    margin: EdgeInsets.only(bottom: 20),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withAlpha(30),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.category,
-                            color: theme.colorScheme.primary,
-                            size: 24,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Vos catégories",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: isDarkMode ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              "Organisez vos transactions",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Barre de recherche et bouton d'ajout
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: isDarkMode
-                          ? theme.colorScheme.surfaceContainerHighest
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDarkMode
-                              ? Colors.black12
-                              : Colors.grey.withAlpha(30),
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formsearchkey,
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // En-tête de la page
+                    Container(
+                      margin: EdgeInsets.only(bottom: 20),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: CustomTextFormField(
-                              controller: searchCategoryController,
-                              labelText: 'Rechercher une catégorie',
-                              hintText: 'Ex: Alimentation, Transport...',
-                              prefixIcon: Icons.search,
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return 'Veuillez entrer la catégorie que vous cherchez';
-                                }
-                                return null;
-                              },
-                              onFieldSubmitted: (_) {
-                                _submitForm();
-                              },
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withAlpha(30),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.category,
+                              color: theme.colorScheme.primary,
+                              size: 24,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          CircularButton(
-                            color: theme.colorScheme.primary,
-                            iconColor: Colors.white,
-                            icon: Icons.add,
-                            radius: 12,
-                            onpressed: () {
-                              Navigator.push(
-                                context,
-                                createRoute(
-                                  CustomCategoryModal(
-                                    categoryController: categoryController,
-                                    onCategoryAdded: (newCategory) {
-                                      setState(() {
-                                        loadCategories();
-                                      });
-                                    },
-                                  )
-                                )
-                              );
-                            },
+                          SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Vos catégories",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                "Organisez vos transactions",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-
-                  // Liste des catégories
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
+                    // Barre de recherche et bouton d'ajout
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       decoration: BoxDecoration(
                         color: isDarkMode
-                            ? theme.colorScheme.surfaceContainerLow
+                            ? theme.colorScheme.surfaceContainerHighest
                             : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
                             color: isDarkMode
                                 ? Colors.black12
-                                : Colors.grey.withAlpha(20),
-                            blurRadius: 8,
-                            offset: Offset(0, 3),
+                                : Colors.grey.withAlpha(30),
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
                           ),
                         ],
                       ),
-                      padding: const EdgeInsets.all(16),
-                      child: SingleChildScrollView(child: CategoryList()),
+                      child: Form(
+                        key: _formsearchkey,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextFormField(
+                                controller: searchCategoryController,
+                                labelText: 'Rechercher une catégorie',
+                                hintText: 'Ex: Alimentation, Transport...',
+                                prefixIcon: Icons.search,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'Veuillez entrer la catégorie que vous cherchez';
+                                  }
+                                  return null;
+                                },
+                                onFieldSubmitted: (_) {
+                                  _submitForm();
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            CircularButton(
+                              color: theme.colorScheme.primary,
+                              iconColor: Colors.white,
+                              icon: Icons.add,
+                              radius: 12,
+                              onpressed: () {
+                                Navigator.push(
+                                  context,
+                                  createRoute(
+                                    CustomCategoryModal(
+                                      categoryController: categoryController,
+                                      onCategoryAdded: (newCategory) {
+                                        setState(() {
+                                          loadCategories();
+                                        });
+                                      },
+                                    )
+                                  )
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 20),
+
+                    // Contenu des catégories
+                    CategoryListContent(),
+                  ],
+                ),
               ),
             ),
     );
@@ -380,14 +361,9 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 }
 
-class CategoryList extends StatefulWidget {
-  const CategoryList({super.key});
+class CategoryListContent extends StatelessWidget {
+  const CategoryListContent({super.key});
 
-  @override
-  State<CategoryList> createState() => _CategoryListState();
-}
-
-class _CategoryListState extends State<CategoryList> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -437,26 +413,49 @@ class _CategoryListState extends State<CategoryList> {
           return category.date.month == month;
         }).toList();
 
-        return SizedBox(
-          height: MediaQuery.of(context).size.height - 100,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Catégories du mois
-              if (categoriesMonth.isNotEmpty)
-                Column(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Catégories du mois
+            if (categoriesMonth.isNotEmpty)
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? theme.colorScheme.surfaceContainerLow
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black12
+                          : Colors.grey.withAlpha(20),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(left: 4),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.star,
-                            size: 20,
-                            color: theme.colorScheme.primary,
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withAlpha(30),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.star,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: 12),
                           Text(
                             'Catégories du mois',
                             style: TextStyle(
@@ -465,16 +464,33 @@ class _CategoryListState extends State<CategoryList> {
                               color: isDarkMode ? Colors.white : Colors.black87,
                             ),
                           ),
+                          Spacer(),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '${categoriesMonth.length}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     SizedBox(height: 16),
-                    SizedBox(
+                    Container(
                       height: 180,
+                      padding: EdgeInsets.only(bottom: 20),
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: categoriesMonth.length,
-                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 20),
                         itemBuilder: (context, index) {
                           return CategoryCard(
                             backgroundColor: categoriesMonth[index].colorValue,
@@ -487,90 +503,121 @@ class _CategoryListState extends State<CategoryList> {
                         }
                       ),
                     ),
-                    SizedBox(height: 24),
-                  ],
-                ),
-
-              // Toutes les catégories
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.category,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Toutes les catégories',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        '${categories.length}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              SizedBox(height: 16),
 
-              // Liste de toutes les catégories
-              Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.only(top: 4),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) => Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: NotificatedCard(
-                      icon: categories[index].icon,
-                      iconBackgroundColor: categories[index].colorValue,
-                      title: categories[index].name,
-                      titleSize: 16,
-                      backgroundColor: isDarkMode
-                          ? theme.colorScheme.surfaceContainerLow
-                          : Colors.white,
-                      textColor: isDarkMode ? Colors.white : null,
-                      onTap: () {
-                        // Implementez la logique de navigation ici
-                      },
-                      trailing: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isDarkMode
-                              ? theme.colorScheme.surfaceContainerHigh
-                              : Colors.grey[100],
+            // Toutes les catégories
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? theme.colorScheme.surfaceContainerLow
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkMode
+                        ? Colors.black12
+                        : Colors.grey.withAlpha(20),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.category,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.chevron_right,
-                          color: theme.colorScheme.primary,
-                          size: 20,
+                        SizedBox(width: 12),
+                        Text(
+                          'Toutes les catégories',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(isDarkMode ? 40 : 30),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            '${categories.length}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Liste de toutes les catégories
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) => Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: NotificatedCard(
+                        icon: categories[index].icon,
+                        iconBackgroundColor: categories[index].colorValue,
+                        title: categories[index].name,
+                        titleSize: 16,
+                        backgroundColor: isDarkMode
+                            ? theme.colorScheme.surfaceContainerHigh
+                            : Colors.grey[50],
+                        textColor: isDarkMode ? Colors.white : null,
+                        onTap: () {
+                          // Implementez la logique de navigation ici
+                        },
+                        trailing: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDarkMode
+                                ? theme.colorScheme.surfaceContainerHighest
+                                : Colors.white,
+                          ),
+                          child: Icon(
+                            Icons.chevron_right,
+                            color: theme.colorScheme.primary,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // Espace en bas pour le défilement
+            SizedBox(height: 20),
+          ],
         );
       },
     );

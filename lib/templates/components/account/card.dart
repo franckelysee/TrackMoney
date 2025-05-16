@@ -479,12 +479,35 @@ class _CircularAddAccountButtonState extends State<CircularAddAccountButton> {
 
   @override
   Widget build(BuildContext context) {
-    // Afficher directement le dialog au lieu d'un bouton
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showAccountTypeDialog(context);
-    });
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
-    // Retourner un widget vide car nous affichons directement le dialog
-    return Container();
+    // Afficher un bouton circulaire avec un icône +
+    return InkWell(
+      onTap: () {
+        _showAccountTypeDialog(context);
+      },
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withAlpha(isDarkMode ? 60 : 100),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
+    );
   }
 }

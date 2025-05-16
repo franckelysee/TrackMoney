@@ -190,47 +190,68 @@ class _ComptePageState extends State<ComptePage> {
                   child: Column(
                     children: [
                       hasAllAccounts ? Container() :
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: theme.brightness == Brightness.dark
-                              ? theme.colorScheme.surfaceContainerHighest
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.brightness == Brightness.dark
-                                  ? Colors.black26
-                                  : Colors.grey.withAlpha(30),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            CircularAddAccountButton(
-                              onAccountLoad: (value) {
-                                refreshAccounts();
-                              },
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                "Ajouter un autre compte personnel",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: theme.brightness == Brightness.dark
-                                      ? Colors.grey[300]
-                                      : Colors.grey[700],
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                      InkWell(
+                        onTap: () {
+                          _showAccountTypeDialog(context);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: theme.brightness == Brightness.dark
+                                ? theme.colorScheme.surfaceContainerHighest
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.brightness == Brightness.dark
+                                    ? Colors.black26
+                                    : Colors.grey.withAlpha(30),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
                               ),
-                            ),
-                          ]
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colorScheme.primary.withAlpha(theme.brightness == Brightness.dark ? 60 : 100),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  "Ajouter un autre compte personnel",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.brightness == Brightness.dark
+                                        ? Colors.grey[300]
+                                        : Colors.grey[700],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ]
+                          ),
                         ),
                       ),
                       Container(

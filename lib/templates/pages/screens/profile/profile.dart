@@ -5,17 +5,17 @@ import 'package:trackmoney/models/user_model.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/services/account_service.dart';
 import 'package:trackmoney/services/user_service.dart';
-import 'package:trackmoney/templates/components/auth_required_modal.dart';
 import 'package:trackmoney/templates/components/sync_button.dart';
+import 'package:trackmoney/templates/pages/auth/auth.dart';
 import 'package:trackmoney/templates/pages/screens/profile/edit_profile.dart';
 import 'package:trackmoney/utils/user_utils.dart';
 
 
 class Profile extends StatefulWidget {
-  const Profile({ Key? key }) : super(key: key);
+  const Profile({super.key});
 
   @override
-  _ProfileState createState() => _ProfileState();
+  State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
@@ -53,11 +53,9 @@ class _ProfileState extends State<Profile> {
     try {
       // Récupérer l'utilisateur actuel
       currentUser = await UserService.getCurrentUser();
-
+      
       // Si aucun utilisateur n'est connecté, créer un utilisateur visiteur
-      if (currentUser == null) {
-        currentUser = await UserService.createGuestUser();
-      }
+      currentUser ??= await UserService.createGuestUser();
 
       // Récupérer les comptes de l'utilisateur
       userAccounts = await AccountService.getAccountsByUserId(currentUser!.id!);
@@ -71,11 +69,119 @@ class _ProfileState extends State<Profile> {
         });
       }
     } catch (e) {
-      print('Erreur lors du chargement des données utilisateur: $e');
+      // Gérer l'erreur silencieusement
       if (mounted) {
         setState(() {
           isLoading = false;
         });
+
+        // Afficher un message d'erreur discret
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Impossible de charger les données utilisateur"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  // Afficher la boîte de dialogue de confirmation de déconnexion
+  void _showLogoutConfirmationDialog() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Se déconnecter"),
+        content: Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Annuler",
+              style: TextStyle(
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleLogout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: Colors.white,
+            ),
+            child: Text("Se déconnecter"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Gérer la déconnexion
+  Future<void> _handleLogout() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Déconnecter l'utilisateur
+      await UserService.logoutCurrentUser();
+
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
+        // Rediriger vers la page d'authentification
+        Navigator.pushAndRemoveUntil(
+          context,
+          createRoute(AuthPage()),
+          (route) => false, // Supprimer toutes les routes précédentes
+        );
+
+        // Afficher un message de succès
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Vous avez été déconnecté avec succès"),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
+        // Afficher un message d'erreur
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Une erreur est survenue lors de la déconnexion"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
       }
     }
   }
@@ -143,7 +249,7 @@ class _ProfileState extends State<Profile> {
                     borderRadius: BorderRadius.circular(80),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.5),
+                        color: theme.colorScheme.primary.withAlpha(128),
                         blurRadius: 15,
                         spreadRadius: 2,
                       )
@@ -578,6 +684,48 @@ class _ProfileState extends State<Profile> {
                         // Recharger les données après la synchronisation
                         _loadUserData();
                       },
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // Bouton de déconnexion
+                  Container(
+                    width: double.infinity,
+                    height: 55,
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showLogoutConfirmationDialog();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.brightness == Brightness.dark
+                            ? theme.colorScheme.errorContainer
+                            : Color(0xFFFFEBEE),
+                        foregroundColor: theme.colorScheme.error,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(
+                            color: theme.colorScheme.error.withAlpha(50),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout, size: 20),
+                          SizedBox(width: 10),
+                          Text(
+                            "Se déconnecter",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 30),

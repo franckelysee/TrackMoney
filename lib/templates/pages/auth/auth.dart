@@ -66,17 +66,20 @@ class _AuthPageState extends State<AuthPage> {
   // Créer un utilisateur visiteur et naviguer vers la page de sélection des devises
   Future<void> _continueAsGuest() async {
     try {
-      // Créer un utilisateur visiteur
-      final guestUser = await UserService.createGuestUser();
+      setState(() {
+        isLoading = true;
+      });
 
-      // Connecter l'utilisateur visiteur
-      if (guestUser.id != null) {
-        await UserService.updateUser(guestUser.copyWith(isLoggedIn: true));
-      }
+      // Créer un utilisateur visiteur (déjà connecté grâce à notre nouvelle implémentation)
+      final guestUser = await UserService.createGuestUser();
 
       // Naviguer vers la page de sélection des devises
       if (mounted) {
-        Navigator.of(context).push(createRoute(DeviseSelector(
+        setState(() {
+          isLoading = false;
+        });
+
+        Navigator.of(context).pushReplacement(createRoute(DeviseSelector(
           devises: devises,
           userId: guestUser.id,
         )));
@@ -84,8 +87,13 @@ class _AuthPageState extends State<AuthPage> {
     } catch (e) {
       // Utiliser un logger en production au lieu de print
       debugPrint('Erreur lors de la création de l\'utilisateur visiteur: $e');
+
       // Afficher un message d'erreur
       if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
         SnackbarNotifier.show(
           context: context,
           message: "Une erreur est survenue. Veuillez réessayer.",
@@ -126,7 +134,7 @@ class _AuthPageState extends State<AuthPage> {
               ),
             ),
             SizedBox(height: 24),
-            
+
             // Nom de l'application
             Center(
               child: Text(
@@ -140,7 +148,7 @@ class _AuthPageState extends State<AuthPage> {
               ),
             ),
             SizedBox(height: 12),
-            
+
             // Slogan
             Center(
               child: Container(
@@ -161,9 +169,9 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
             ),
-            
+
             SizedBox(height: 60),
-            
+
             // Bouton d'inscription
             Container(
               width: double.infinity,
@@ -204,7 +212,7 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
             ),
-            
+
             // Bouton de connexion
             Container(
               width: double.infinity,
@@ -241,15 +249,15 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
             ),
-            
+
             // Boutons de médias sociaux
             SocialMediaButtons(
               onFacebookPressed: null,
               onGooglePressed: null,
             ),
-            
+
             SizedBox(height: 40),
-            
+
             // Lien pour continuer sans compte
             Center(
               child: TextButton(
@@ -272,7 +280,7 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
             ),
-            
+
             SizedBox(height: 20),
           ],
         ),

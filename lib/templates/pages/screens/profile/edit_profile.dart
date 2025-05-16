@@ -7,25 +7,28 @@ import 'package:trackmoney/templates/components/auth_required_modal.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/utils/app_config.dart';
 import 'package:trackmoney/utils/user_utils.dart';
+import 'package:trackmoney/utils/snackBarNotifyer.dart';
+import 'package:intl/intl.dart';
 
 
-class EditeProfile extends StatefulWidget {
-  final UserModel? user;
-
-  const EditeProfile({ Key? key, this.user }) : super(key: key);
+class EditProfile extends StatefulWidget {
+  const EditProfile({super.key});
 
   @override
-  _EditeProfileState createState() => _EditeProfileState();
+  State<EditProfile> createState() => _EditProfileState();
 }
 
-class _EditeProfileState extends State<EditeProfile> {
-  Color btnTecxtColor = Colors.white;
+class _EditProfileState extends State<EditProfile> {
+  Color btnTextColor = Colors.white;
   bool isGuest = false;
+  bool isLoading = true;
+  UserModel? currentUser;
+  bool _formChanged = false;
+  final _formKey = GlobalKey<FormState>();
 
   // Contrôleurs pour les champs de formulaire
   late TextEditingController usernameController;
   late TextEditingController emailController;
-  late TextEditingController passwordController;
   late TextEditingController birthDateController;
   late TextEditingController countryController;
   late TextEditingController cityController;
@@ -35,43 +38,127 @@ class _EditeProfileState extends State<EditeProfile> {
   void initState() {
     super.initState();
 
-    // Vérifier si l'utilisateur est un visiteur après le premier rendu
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkIfGuestUser();
-    });
+    // Initialiser les contrôleurs avec des valeurs par défaut
+    usernameController = TextEditingController();
+    emailController = TextEditingController();
+    birthDateController = TextEditingController();
+    countryController = TextEditingController();
+    cityController = TextEditingController();
+    selectedCurrency = 'FCFA';
 
-    // Initialiser les contrôleurs avec les données de l'utilisateur
-    usernameController = TextEditingController(text: widget.user?.username ?? '');
-    emailController = TextEditingController(text: widget.user?.email ?? '');
-    passwordController = TextEditingController(text: widget.user?.password ?? '');
-
-    // Formater la date de naissance si elle existe
-    String birthDateText = '';
-    if (widget.user?.birthDate != null) {
-      final date = widget.user!.birthDate!;
-      birthDateText = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-    }
-    birthDateController = TextEditingController(text: birthDateText);
-
-    countryController = TextEditingController(text: widget.user?.country ?? '');
-    cityController = TextEditingController(text: widget.user?.city ?? '');
-    selectedCurrency = widget.user?.defaultCurrency ?? 'FCFA';
+    // Charger l'utilisateur actuel et vérifier s'il est un visiteur
+    _loadCurrentUser();
   }
 
-  // Vérifier si l'utilisateur est un visiteur et afficher le modal si nécessaire
-  Future<void> _checkIfGuestUser() async {
-    isGuest = await UserUtils.isGuestUser();
+  // Charger l'utilisateur actuel
+  Future<void> _loadCurrentUser() async {
+    setState(() {
+      isLoading = true;
+    });
 
-    if (isGuest && mounted) {
-      final result = await AuthRequiredModal.show(
-        context,
-        title: 'Modification non disponible',
-        message: 'Vous êtes actuellement connecté en tant que visiteur. Connectez-vous ou créez un compte pour modifier votre profil et synchroniser vos données.',
+    try {
+      // Récupérer l'utilisateur actuel
+      currentUser = await UserService.getCurrentUser();
+
+      if (currentUser != null) {
+        // Initialiser les contrôleurs avec les données de l'utilisateur
+        usernameController.text = currentUser!.username ?? '';
+        emailController.text = currentUser!.email ?? '';
+
+        // Formater la date de naissance si elle existe
+        String birthDateText = '';
+        if (currentUser!.birthDate != null) {
+          final date = currentUser!.birthDate!;
+          birthDateText = DateFormat('dd/MM/yyyy').format(date);
+        }
+        birthDateController.text = birthDateText;
+
+        countryController.text = currentUser!.country ?? '';
+        cityController.text = currentUser!.city ?? '';
+        selectedCurrency = currentUser!.defaultCurrency ?? 'FCFA';
+      }
+
+      // Vérifier si l'utilisateur est un visiteur
+      isGuest = await UserUtils.isGuestUser();
+
+      if (isGuest && mounted) {
+        _showGuestUserModal();
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du chargement de l\'utilisateur: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Afficher le modal pour les utilisateurs visiteurs
+  Future<void> _showGuestUserModal() async {
+    final result = await AuthRequiredModal.show(
+      context,
+      title: 'Modification non disponible',
+      message: 'Vous êtes actuellement connecté en tant que visiteur. Connectez-vous ou créez un compte pour modifier votre profil et synchroniser vos données.',
+    );
+
+    // Si l'utilisateur a cliqué sur "Annuler", revenir à la page précédente
+    if (result != true && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  // Mettre à jour le profil de l'utilisateur
+  Future<void> _updateProfile() async {
+    if (!_formKey.currentState!.validate() || currentUser == null) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Créer un nouvel utilisateur avec les données mises à jour
+      final updatedUser = currentUser!.copyWith(
+        username: usernameController.text,
+        birthDate: birthDateController.text.isNotEmpty
+            ? DateFormat('dd/MM/yyyy').parse(birthDateController.text)
+            : null,
+        country: countryController.text,
+        city: cityController.text,
+        defaultCurrency: selectedCurrency,
       );
 
-      // Si l'utilisateur a cliqué sur "Annuler", revenir à la page précédente
-      if (result != true && mounted) {
-        Navigator.pop(context);
+      // Mettre à jour l'utilisateur
+      await UserService.updateUser(updatedUser);
+
+      if (mounted) {
+        // Afficher un message de succès
+        SnackbarNotifier.show(
+          context: context,
+          message: "Profil mis à jour avec succès",
+          type: 'success',
+        );
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la mise à jour du profil: $e');
+
+      if (mounted) {
+        // Afficher un message d'erreur
+        SnackbarNotifier.show(
+          context: context,
+          message: "Une erreur est survenue lors de la mise à jour du profil",
+          type: 'error',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          _formChanged = false;
+        });
       }
     }
   }
@@ -81,7 +168,6 @@ class _EditeProfileState extends State<EditeProfile> {
     // Libérer les ressources
     usernameController.dispose();
     emailController.dispose();
-    passwordController.dispose();
     birthDateController.dispose();
     countryController.dispose();
     cityController.dispose();
@@ -328,32 +414,36 @@ class _EditeProfileState extends State<EditeProfile> {
                             icon: Icons.person,
                             color: Color(0xFF6C63FF),
                             child: CustomTextFormField(
+                              controller: usernameController,
                               hintText: "Nom d'utilisateur",
                               labelText: "Nom d'utilisateur",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Le nom d'utilisateur est requis";
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                setState(() {
+                                  _formChanged = true;
+                                });
+                              },
                             ),
                           ),
 
-                          // Email
+                          // Email (non modifiable)
                           _buildFormField(
                             icon: Icons.email,
                             color: Color(0xFF4CAF50),
                             child: CustomTextFormField(
+                              controller: emailController,
                               hintText: "E-mail",
                               labelText: "E-mail",
-                            ),
-                          ),
-
-                          // Mot de passe
-                          _buildFormField(
-                            icon: Icons.lock,
-                            color: Color(0xFFFFA726),
-                            child: CustomTextFormField(
-                              hintText: "Mot de passe",
-                              labelText: "Mot de passe",
-                              isPassword: true,
-                              suffixIcon: IconButton(
-                                onPressed: (){},
-                                icon: Icon(Icons.remove_red_eye_sharp, color: Colors.grey),
+                              enabled: false, // Rendre le champ non modifiable
+                              style: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[700],
                               ),
                             ),
                           ),
@@ -363,10 +453,31 @@ class _EditeProfileState extends State<EditeProfile> {
                             icon: Icons.cake,
                             color: Color(0xFFE57373),
                             child: CustomTextFormField(
+                              controller: birthDateController,
                               hintText: "12/04/2000",
                               labelText: "Date de naissance",
+                              onChanged: (value) {
+                                setState(() {
+                                  _formChanged = true;
+                                });
+                              },
                               suffixIcon: IconButton(
-                                onPressed: (){},
+                                onPressed: () async {
+                                  // Afficher le sélecteur de date
+                                  final DateTime? picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: currentUser?.birthDate ?? DateTime.now(),
+                                    firstDate: DateTime(1900),
+                                    lastDate: DateTime.now(),
+                                  );
+
+                                  if (picked != null && mounted) {
+                                    setState(() {
+                                      birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
+                                      _formChanged = true;
+                                    });
+                                  }
+                                },
                                 icon: Icon(Icons.calendar_month, color: Colors.grey),
                               ),
                             ),
@@ -377,8 +488,14 @@ class _EditeProfileState extends State<EditeProfile> {
                             icon: Icons.public,
                             color: Color(0xFF42A5F5),
                             child: CustomTextFormField(
+                              controller: countryController,
                               hintText: "Pays",
                               labelText: "Pays",
+                              onChanged: (value) {
+                                setState(() {
+                                  _formChanged = true;
+                                });
+                              },
                             ),
                           ),
 
@@ -387,8 +504,14 @@ class _EditeProfileState extends State<EditeProfile> {
                             icon: Icons.location_city,
                             color: Color(0xFF9575CD),
                             child: CustomTextFormField(
+                              controller: cityController,
                               hintText: "Ville",
                               labelText: "Ville",
+                              onChanged: (value) {
+                                setState(() {
+                                  _formChanged = true;
+                                });
+                              },
                             ),
                             isLast: true,
                           ),

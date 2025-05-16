@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/routes/init_routes.dart';
+import 'package:trackmoney/services/firebase_service.dart';
 import 'package:trackmoney/services/currency_service.dart';
 import 'package:trackmoney/services/user_service.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
@@ -36,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       try {
-        // Tentative de connexion
+        // Tentative de connexion avec Firebase
         final success = await UserService.loginUser(
           emailController.text.trim(),
           passwordController.text,
@@ -51,26 +52,32 @@ class _LoginPageState extends State<LoginPage> {
             // Récupérer l'utilisateur connecté
             final currentUser = await UserService.getCurrentUser();
 
-            // Afficher un message de succès
-            SnackbarNotifier.show(
-              context: context,
-              message: "Connexion réussie ! Bienvenue ${currentUser?.username ?? ''}",
-              type: 'success',
-            );
-
-            // Rediriger vers la page de sélection de devise si l'utilisateur n'a pas de devise par défaut
-            if (currentUser?.defaultCurrency == null || currentUser!.defaultCurrency!.isEmpty) {
-              final devises = await CurrencyService.getAllCurrencies();
-              Navigator.pushReplacement(
-                context,
-                createRoute(DeviseSelector(
-                  devises: devises,
-                  userId: currentUser!.id,
-                )),
+            if (mounted) {
+              // Afficher un message de succès
+              SnackbarNotifier.show(
+                context: context,
+                message: "Connexion réussie ! Bienvenue ${currentUser?.username ?? ''}",
+                type: 'success',
               );
-            } else {
-              // Sinon, rediriger vers la page d'accueil
-              Navigator.pushReplacementNamed(context, '/home');
+
+              // Rediriger vers la page de sélection de devise si l'utilisateur n'a pas de devise par défaut
+              if (currentUser?.defaultCurrency == null || currentUser!.defaultCurrency!.isEmpty) {
+                final devises = await CurrencyService.getAllCurrencies();
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    createRoute(DeviseSelector(
+                      devises: devises,
+                      userId: currentUser!.id,
+                    )),
+                  );
+                }
+              } else {
+                // Sinon, rediriger vers la page d'accueil
+                if (mounted) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                }
+              }
             }
           } else {
             // Afficher un message d'erreur
@@ -86,8 +93,8 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             isLoading = false;
           });
-
-          // Afficher un message d'erreur
+          print("une erreur s'est produite: $e");
+          // Afficher un message d'erreur générique
           SnackbarNotifier.show(
             context: context,
             message: "Une erreur est survenue: $e",
@@ -96,6 +103,114 @@ class _LoginPageState extends State<LoginPage> {
         }
       }
     }
+  }
+
+  // Méthode pour afficher la boîte de dialogue de récupération de mot de passe
+  void _showForgotPasswordDialog() {
+    final TextEditingController resetEmailController = TextEditingController();
+    final GlobalKey<FormState> resetFormKey = GlobalKey<FormState>();
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Réinitialiser le mot de passe"),
+              content: Form(
+                key: resetFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Entrez votre adresse email pour recevoir un lien de réinitialisation de mot de passe.",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 16),
+                    CustomTextFormField(
+                      controller: resetEmailController,
+                      labelText: 'Email',
+                      hintText: 'Entrez votre adresse email',
+                      prefixIcon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez entrer votre email';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          return 'Veuillez entrer un email valide';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Annuler"),
+                ),
+                ElevatedButton(
+                  onPressed: isResetting
+                      ? null
+                      : () async {
+                          if (resetFormKey.currentState!.validate()) {
+                            setState(() {
+                              isResetting = true;
+                            });
+
+                            try {
+                              // Utiliser notre service Firebase au lieu de FirebaseAuth directement
+                              await FirebaseService.resetPassword(
+                                resetEmailController.text.trim(),
+                              );
+
+                              // Vérifier si le widget est toujours monté avant d'utiliser le contexte
+                              if (mounted) {
+                                Navigator.pop(context);
+
+                                // Afficher un message de succès
+                                SnackbarNotifier.show(
+                                  context: context,
+                                  message: "Un email de réinitialisation a été envoyé à ${resetEmailController.text}",
+                                  type: 'success',
+                                );
+                              }
+                            } catch (e) {
+                              // Mettre à jour l'état local
+                              setState(() {
+                                isResetting = false;
+                              });
+
+                              // Afficher un message d'erreur générique
+                              SnackbarNotifier.show(
+                                context: context,
+                                message: "Une erreur est survenue lors de la réinitialisation du mot de passe",
+                                type: 'error',
+                              );
+                            }
+                          }
+                        },
+                  child: isResetting
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text("Envoyer"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -195,12 +310,8 @@ class _LoginPageState extends State<LoginPage> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // TODO: Implémenter la récupération de mot de passe
-                        SnackbarNotifier.show(
-                          context: context,
-                          message: "Fonctionnalité à venir",
-                          type: 'info',
-                        );
+                        // Afficher une boîte de dialogue pour la récupération de mot de passe
+                        _showForgotPasswordDialog();
                       },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,

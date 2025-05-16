@@ -93,7 +93,6 @@ class _AppHeaderState extends State<AppHeader> {
             onPressed: () async {
               // Vérifier si l'utilisateur est un visiteur
               final isGuest = await UserUtils.showAuthModalIfGuest(context);
-
               // Si l'utilisateur n'est pas un visiteur, naviguer vers la page de profil
               if (!isGuest && mounted) {
                 Navigator.push(context, createRoute(Profile()));

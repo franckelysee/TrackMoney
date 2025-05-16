@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/models/user_model.dart';
+import 'package:trackmoney/services/firebase_service.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/services/currency_service.dart';
 import 'package:trackmoney/services/user_service.dart';
@@ -41,38 +42,6 @@ class _RegisterPageState extends State<RegisterPage> {
       });
 
       try {
-        // Vérifier si l'email existe déjà
-        final emailExists = await UserService.emailExists(emailController.text.trim());
-        if (emailExists) {
-          if (mounted) {
-            setState(() {
-              isLoading = false;
-            });
-            SnackbarNotifier.show(
-              context: context,
-              message: "Cet email est déjà utilisé",
-              type: 'error',
-            );
-          }
-          return;
-        }
-
-        // Vérifier si le nom d'utilisateur existe déjà
-        final usernameExists = await UserService.usernameExists(usernameController.text.trim());
-        if (usernameExists) {
-          if (mounted) {
-            setState(() {
-              isLoading = false;
-            });
-            SnackbarNotifier.show(
-              context: context,
-              message: "Ce nom d'utilisateur est déjà utilisé",
-              type: 'error',
-            );
-          }
-          return;
-        }
-
         // Créer un nouvel utilisateur
         final newUser = UserModel(
           username: usernameController.text.trim(),
@@ -81,30 +50,41 @@ class _RegisterPageState extends State<RegisterPage> {
           isLoggedIn: true, // Connecter automatiquement l'utilisateur après l'inscription
         );
 
-        // Ajouter l'utilisateur à la base de données
-        await UserService.addUser(newUser);
+        // Ajouter l'utilisateur à la base de données avec Firebase
+        final registeredUser = await UserService.addUser(newUser);
 
         if (mounted) {
           setState(() {
             isLoading = false;
           });
 
-          // Afficher un message de succès
-          SnackbarNotifier.show(
-            context: context,
-            message: "Inscription réussie ! Bienvenue ${newUser.username}",
-            type: 'success',
-          );
+          if (registeredUser != null) {
+            // Afficher un message de succès
+            SnackbarNotifier.show(
+              context: context,
+              message: "Inscription réussie ! Bienvenue ${registeredUser.username}",
+              type: 'success',
+            );
 
-          // Rediriger vers la page de sélection de devise
-          final devises = await CurrencyService.getAllCurrencies();
-          Navigator.pushReplacement(
-            context,
-            createRoute(DeviseSelector(
-              devises: devises,
-              userId: newUser.id,
-            )),
-          );
+            // Rediriger vers la page de sélection de devise
+            final devises = await CurrencyService.getAllCurrencies();
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                createRoute(DeviseSelector(
+                  devises: devises,
+                  userId: registeredUser.id,
+                )),
+              );
+            }
+          } else {
+            // Si l'inscription a échoué
+            SnackbarNotifier.show(
+              context: context,
+              message: "L'inscription a échoué. Veuillez réessayer.",
+              type: 'error',
+            );
+          }
         }
       } catch (e) {
         if (mounted) {
@@ -112,10 +92,10 @@ class _RegisterPageState extends State<RegisterPage> {
             isLoading = false;
           });
 
-          // Afficher un message d'erreur
+          // Afficher un message d'erreur générique
           SnackbarNotifier.show(
             context: context,
-            message: "Une erreur est survenue: $e",
+            message: "Une erreur est survenue lors de l'inscription: $e",
             type: 'error',
           );
         }

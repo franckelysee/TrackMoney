@@ -20,8 +20,14 @@ class UserUtils {
   /// Vérifier si l'utilisateur actuel est un visiteur
   static Future<bool> isGuestUser() async {
     final currentUser = await getCurrentUser();
-    return currentUser != null &&
-           currentUser.email == 'guest@trackmoney.app' &&
+
+    // Si aucun utilisateur n'est connecté, retourner false
+    if (currentUser == null) {
+      return false;
+    }
+
+    // Vérifier si l'utilisateur est un visiteur
+    return currentUser.email == 'guest@trackmoney.app' &&
            currentUser.username == 'Visiteur';
   }
 
@@ -31,7 +37,7 @@ class UserUtils {
   static Future<bool> showAuthModalIfGuest(BuildContext context) async {
     final isGuest = await isGuestUser();
 
-    if (isGuest) {
+    if (isGuest && context.mounted) {
       // Afficher le modal d'authentification
       await AuthRequiredModal.show(
         context,
