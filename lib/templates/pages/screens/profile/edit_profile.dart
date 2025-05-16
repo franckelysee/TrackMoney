@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart' show Provider;
+import 'package:trackmoney/models/user_model.dart';
+import 'package:trackmoney/services/user_service.dart';
+import 'package:trackmoney/templates/components/auth_required_modal.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
 import 'package:trackmoney/utils/app_config.dart';
+import 'package:trackmoney/utils/user_utils.dart';
 
 
 class EditeProfile extends StatefulWidget {
-  const EditeProfile({ Key? key }) : super(key: key);
+  final UserModel? user;
+
+  const EditeProfile({ Key? key, this.user }) : super(key: key);
 
   @override
   _EditeProfileState createState() => _EditeProfileState();
@@ -14,6 +20,73 @@ class EditeProfile extends StatefulWidget {
 
 class _EditeProfileState extends State<EditeProfile> {
   Color btnTecxtColor = Colors.white;
+  bool isGuest = false;
+
+  // Contrôleurs pour les champs de formulaire
+  late TextEditingController usernameController;
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+  late TextEditingController birthDateController;
+  late TextEditingController countryController;
+  late TextEditingController cityController;
+  late String selectedCurrency;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Vérifier si l'utilisateur est un visiteur après le premier rendu
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkIfGuestUser();
+    });
+
+    // Initialiser les contrôleurs avec les données de l'utilisateur
+    usernameController = TextEditingController(text: widget.user?.username ?? '');
+    emailController = TextEditingController(text: widget.user?.email ?? '');
+    passwordController = TextEditingController(text: widget.user?.password ?? '');
+
+    // Formater la date de naissance si elle existe
+    String birthDateText = '';
+    if (widget.user?.birthDate != null) {
+      final date = widget.user!.birthDate!;
+      birthDateText = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    }
+    birthDateController = TextEditingController(text: birthDateText);
+
+    countryController = TextEditingController(text: widget.user?.country ?? '');
+    cityController = TextEditingController(text: widget.user?.city ?? '');
+    selectedCurrency = widget.user?.defaultCurrency ?? 'FCFA';
+  }
+
+  // Vérifier si l'utilisateur est un visiteur et afficher le modal si nécessaire
+  Future<void> _checkIfGuestUser() async {
+    isGuest = await UserUtils.isGuestUser();
+
+    if (isGuest && mounted) {
+      final result = await AuthRequiredModal.show(
+        context,
+        title: 'Modification non disponible',
+        message: 'Vous êtes actuellement connecté en tant que visiteur. Connectez-vous ou créez un compte pour modifier votre profil et synchroniser vos données.',
+      );
+
+      // Si l'utilisateur a cliqué sur "Annuler", revenir à la page précédente
+      if (result != true && mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    // Libérer les ressources
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    birthDateController.dispose();
+    countryController.dispose();
+    cityController.dispose();
+    super.dispose();
+  }
 
   // Méthode pour construire un champ de formulaire avec icône et style
   Widget _buildFormField({

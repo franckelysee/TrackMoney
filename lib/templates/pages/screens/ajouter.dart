@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/services/account_service.dart';
+import 'package:trackmoney/services/category_service.dart';
+import 'package:trackmoney/services/notification_service.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/components/customFormFields.dart';
@@ -66,7 +69,7 @@ class _AjouterPageState extends State<AjouterPage> {
   }
 
   void refreshAccounts() async {
-    accounts = await Database.getAllAccounts();
+    accounts = await AccountService.getAllAccounts();
     setState(() {});
   }
 
@@ -80,8 +83,8 @@ class _AjouterPageState extends State<AjouterPage> {
       return;
     }
     try {
-      var newCats = await Database.getAllCategories();
-      accounts = await Database.getAllAccounts();
+      var newCats = await CategoryService.getAllCategories();
+      accounts = await AccountService.getAllAccounts();
       setState(() {
         selectedCategoryid = newCats
             .firstWhere((category) => category.name == selectedCategory)
@@ -111,15 +114,18 @@ class _AjouterPageState extends State<AjouterPage> {
       if (!isbalanceUpdated) {
         return;
       }
-      await Database.addTransaction(transaction);
-      SnackbarNotifier.show(
-          context: context,
-          message: "Transaction ajouté avec succès",
-          type: 'success',
-          actionLabel: 'open',
-          onAction: () {
-            Navigator.push(context, createRoute(AnalysePage()));
-          });
+      await TransactionService.addTransaction(transaction);
+
+      if (mounted) {
+        SnackbarNotifier.show(
+            context: context,
+            message: "Transaction ajouté avec succès",
+            type: 'success',
+            actionLabel: 'open',
+            onAction: () {
+              Navigator.push(context, createRoute(AnalysePage()));
+            });
+      }
 
       // notification
       var notification = NotificationModel(
@@ -132,7 +138,7 @@ class _AjouterPageState extends State<AjouterPage> {
           date: DateTime.now());
 
       // add notification to database
-      await Database.addNotification(notification);
+      await NotificationService.addNotification(notification);
       setState(() {
         _formkey.currentState!.reset();
         priceController.clear();
@@ -145,17 +151,19 @@ class _AjouterPageState extends State<AjouterPage> {
       // Navigator.pushAndRemoveUntil(context, CreateROute(HomePage()),
       //             (Route<dynamic> route) => false);
     } catch (e) {
-      SnackbarNotifier.show(
-          context: context,
-          message: "Erreur lors de l'ajout  de la transaction: $e",
-          type: 'error');
+      if (mounted) {
+        SnackbarNotifier.show(
+            context: context,
+            message: "Erreur lors de l'ajout  de la transaction: $e",
+            type: 'error');
+      }
     }
   }
 
   Future<bool> updateBalance() async {
-    final box = await Hive.openBox<AccountModel>('accounts');
+    final accounts = await AccountService.getAllAccounts();
     final account =
-        box.values.firstWhere((account) => account.type == accountController);
+        accounts.firstWhere((account) => account.type == accountController);
     double newBalance;
     if (spendingTypeController == 'Dépense') {
       newBalance = account.balance! - double.parse(priceController.text);
@@ -163,15 +171,17 @@ class _AjouterPageState extends State<AjouterPage> {
       newBalance = account.balance! + double.parse(priceController.text);
     }
     if (newBalance < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                "Impossible, ce compte ne peut pas débiter cette somme, car son solde est inférieur.")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  "Impossible, ce compte ne peut pas débiter cette somme, car son solde est inférieur.")),
+        );
+      }
       return false;
     }
     account.balance = newBalance;
-    await Database.updateAccount(account);
+    await AccountService.updateAccount(account);
     return true;
   }
 

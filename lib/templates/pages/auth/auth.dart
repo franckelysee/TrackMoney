@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:trackmoney/DataBase/database.dart';
+import 'package:trackmoney/models/divise_model.dart';
+import 'package:trackmoney/models/user_model.dart';
+import 'package:trackmoney/services/app_settings_service.dart';
+import 'package:trackmoney/services/currency_service.dart';
+import 'package:trackmoney/services/user_service.dart';
 import 'package:trackmoney/routes/init_routes.dart';
 import 'package:trackmoney/templates/components/social_media_buttons.dart';
 import 'package:trackmoney/templates/pages/screens/devise.dart';
-import 'package:trackmoney/utils/devise_list.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -30,14 +33,78 @@ class _AuthPageState extends State<AuthPage> {
   //     MaterialPageRoute(builder: (context) => const HomePage()),
   //   );
   // }
+  List<Devise> devises = [];
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     setFirstLaunch();
+    _loadCurrencies();
   }
 
   setFirstLaunch() async {
-    await Database.setFirstLaunch(false);
+    await AppSettingsService.setFirstLaunch(false);
+  }
+
+  // Charger les devises disponibles
+  Future<void> _loadCurrencies() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Charger les devises depuis le service
+      final currencies = await CurrencyService.getAllCurrencies();
+
+      if (mounted) {
+        setState(() {
+          devises = currencies;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      // Utiliser un logger en production au lieu de print
+      debugPrint('Erreur lors du chargement des devises: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Créer un utilisateur visiteur et naviguer vers la page de sélection des devises
+  Future<void> _continueAsGuest() async {
+    try {
+      // Créer un utilisateur visiteur
+      final guestUser = await UserService.createGuestUser();
+
+      // Connecter l'utilisateur visiteur
+      if (guestUser.id != null) {
+        await UserService.updateUser(guestUser.copyWith(isLoggedIn: true));
+      }
+
+      // Naviguer vers la page de sélection des devises
+      if (mounted) {
+        Navigator.of(context).push(createRoute(DeviseSelector(
+          devises: devises,
+          userId: guestUser.id,
+        )));
+      }
+    } catch (e) {
+      // Utiliser un logger en production au lieu de print
+      debugPrint('Erreur lors de la création de l\'utilisateur visiteur: $e');
+      // Afficher un message d'erreur
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Une erreur est survenue. Veuillez réessayer.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -199,11 +266,7 @@ class _AuthPageState extends State<AuthPage> {
               Container(
                 margin: EdgeInsets.only(bottom: 16),
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(createRoute(DeviseSelector(
-                      devises: devises,
-                    )));
-                  },
+                  onPressed: isLoading ? null : _continueAsGuest,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -212,7 +275,8 @@ class _AuthPageState extends State<AuthPage> {
                     backgroundColor: primaryColor.withAlpha(isDarkMode ? 40 : 20),
                   ),
                   child: Text(
-                    "Continuer sans créer de compte",
+                    "Continuer En tant que Visiteur sans créer de compte",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: primaryColor,
                       fontWeight: FontWeight.w600,

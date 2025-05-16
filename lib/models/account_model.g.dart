@@ -21,13 +21,17 @@ class AccountModelAdapter extends TypeAdapter<AccountModel> {
       name: fields[1] as String?,
       type: fields[2] as String?,
       balance: fields[3] as double?,
+      userId: fields[4] as String?,
+      currencyCode: fields[5] as String?,
+      createdAt: fields[6] as DateTime?,
+      updatedAt: fields[7] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, AccountModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +39,15 @@ class AccountModelAdapter extends TypeAdapter<AccountModel> {
       ..writeByte(2)
       ..write(obj.type)
       ..writeByte(3)
-      ..write(obj.balance);
+      ..write(obj.balance)
+      ..writeByte(4)
+      ..write(obj.userId)
+      ..writeByte(5)
+      ..write(obj.currencyCode)
+      ..writeByte(6)
+      ..write(obj.createdAt)
+      ..writeByte(7)
+      ..write(obj.updatedAt);
   }
 
   @override

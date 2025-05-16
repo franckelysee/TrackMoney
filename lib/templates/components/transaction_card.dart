@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/utils/app_config.dart';
+import 'package:trackmoney/utils/currency_utils.dart';
 
 class TransactionCard extends StatefulWidget {
   const TransactionCard(
@@ -24,6 +25,38 @@ class TransactionCard extends StatefulWidget {
 }
 
 class _TransactionCardState extends State<TransactionCard> {
+  String _formattedPrice = '';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrency();
+  }
+
+  Future<void> _loadCurrency() async {
+    try {
+      final formattedAmount = await CurrencyUtils.formatAmount(
+        widget.price,
+        showSign: false,
+      );
+
+      if (mounted) {
+        setState(() {
+          _formattedPrice = formattedAmount;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formattedPrice = '${widget.price} FCFA';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -64,13 +97,22 @@ class _TransactionCardState extends State<TransactionCard> {
                     SizedBox(
                       height: 10,
                     ),
-                    Text(
-                      '${widget.price} FCFA',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: widget.priceColor,
-                      ),
-                    ),
+                    _isLoading
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: widget.priceColor ?? Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : Text(
+                          _formattedPrice,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: widget.priceColor,
+                          ),
+                        ),
                     SizedBox(
                       height: 5,
                     ),

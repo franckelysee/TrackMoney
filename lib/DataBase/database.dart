@@ -1,140 +1,107 @@
 // database.dart
-import 'package:hive_flutter/hive_flutter.dart';
+// Ce fichier est maintenant un wrapper pour les services spécifiques
+// Il est conservé pour la compatibilité avec le code existant
+// À terme, il est recommandé d'utiliser directement les services spécifiques
+
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/category_model.dart';
 import 'package:trackmoney/models/notification_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/services/account_service.dart';
+import 'package:trackmoney/services/app_settings_service.dart';
+import 'package:trackmoney/services/category_service.dart';
+import 'package:trackmoney/services/database_service.dart';
+import 'package:trackmoney/services/notification_service.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 
 class Database {
   // Initialisation de Hive
   static Future<void> initHive() async {
-    await Hive.initFlutter(); // Initialisation de Hive avec Flutter
-    Hive.registerAdapter(
-        NotificationModelAdapter()); // Enregistrer l'adaptateur
-    await Hive.openBox<NotificationModel>(
-        'notifications'); // Ouvrir la boîte de notifications
-
-    // transaction (ajouter page)
-    Hive.registerAdapter(TransactionModelAdapter());
-    await Hive.openBox<TransactionModel>(
-        'transactions'); // Ouvrir la boîte de transactions
-
-    // category (categorypage)
-    Hive.registerAdapter(CategoryModelAdapter());
-    await Hive.openBox<CategoryModel>(
-        'categories'); // Ouvrir la boîte de categories
-
-    // compte (comptepage)
-    Hive.registerAdapter(AccountModelAdapter());
-    await Hive.openBox<AccountModel>('accounts'); // Ouvrir la boîte de comptes
+    await DatabaseService.initHive();
   }
 
   // Vérifier si c'est la première ouverture de l'application
   static Future<bool> isFirstLaunch() async {
-    final box = await Hive.openBox('appSettings');
-    return box.get('isFirstLaunch',
-        defaultValue: true); // Si c'est la première ouverture
+    return await AppSettingsService.isFirstLaunch();
   }
 
   // Mettre à jour l'indicateur de la première ouverture
   static Future<void> setFirstLaunch(bool isFirstLaunch) async {
-    final box = await Hive.openBox('appSettings');
-    await box.put('isFirstLaunch', isFirstLaunch);
+    await AppSettingsService.setFirstLaunch(isFirstLaunch);
   }
 
   // Ajouter une Transaction
-
   static Future<void> addTransaction(TransactionModel transaction) async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    await box.put(transaction.id, transaction);
+    await TransactionService.addTransaction(transaction);
   }
 
   // Récupérer toutes les transactions
   static Future<List<TransactionModel>> getAllTransactions() async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    return box.values.toList();
+    return await TransactionService.getAllTransactions();
   }
 
   // Supprimer une transaction
   static Future<void> deleteTransaction(int id) async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    await box.delete(id);
+    await TransactionService.deleteTransaction(id.toString());
   }
 
   // Ajouter une catégorie
   static Future<void> addCategory(CategoryModel category) async {
-    final box = await Hive.openBox<CategoryModel>('categories');
-    await box.put(category.id, category);
+    await CategoryService.addCategory(category);
   }
 
   // Récupérer toutes les catégories
   static Future<List<CategoryModel>> getAllCategories() async {
-    final box = await Hive.openBox<CategoryModel>('categories');
-    return box.values.toList();
+    return await CategoryService.getAllCategories();
   }
 
   // Supprimer une catégorie
   static Future<void> deleteCategory(int id) async {
-    final box = await Hive.openBox<CategoryModel>('categories');
-    await box.delete(id);
+    await CategoryService.deleteCategory(id.toString());
   }
 
-  // --------------------------------------------------------------
   // Ajouter un compte
   static Future<void> addAccount(AccountModel account) async {
-    final box = await Hive.openBox<AccountModel>('accounts');
-    await box.put(account.id, account);
+    await AccountService.addAccount(account);
   }
 
   // Récupérer tous les comptes
   static Future<List<AccountModel>> getAllAccounts() async {
-    final box = await Hive.openBox<AccountModel>('accounts');
-    return box.values.toList();
+    return await AccountService.getAllAccounts();
   }
 
   // Supprimer un compte
   static Future<void> deleteAccount(int id) async {
-    final box = await Hive.openBox<AccountModel>('accounts');
-    await box.delete(id);
+    await AccountService.deleteAccount(id.toString());
   }
 
-  // modifier le prix du compte
+  // Modifier le prix du compte
   static Future<void> updateAccount(AccountModel account) async {
-    final box = await Hive.openBox<AccountModel>('accounts');
-    await box.put(account.id, account);
+    await AccountService.updateAccount(account);
   }
 
-  // add notification
+  // Ajouter une notification
   static Future<void> addNotification(NotificationModel notification) async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    await box.put(notification.notificationId, notification);
+    await NotificationService.addNotification(notification);
   }
 
-  // get all notifications
+  // Récupérer toutes les notifications
   static Future<List<NotificationModel>> getAllNotifications() async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    return box.values.toList();
+    return await NotificationService.getAllNotifications();
   }
 
-  // delete notification
+  // Supprimer une notification
   static Future<void> deleteNotification(String id) async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    await box.delete(id);
+    await NotificationService.deleteNotification(id);
   }
 
-  // mark the notification as read
+  // Marquer une notification comme lue
   static Future<void> markNotification(String id) async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    var notification = await box.get(id);
-    notification!.isRead = true;
-    await box.put(id, notification);
+    await NotificationService.markNotificationAsRead(id);
   }
 
-  // mark the notification as read
+  // Archiver une notification
   static Future<void> archiveNotification(String id) async {
-    final box = await Hive.openBox<NotificationModel>('notifications');
-    var notification = await box.get(id);
-    notification!.isArchived = true;
-    await box.put(id, notification);
+    await NotificationService.archiveNotification(id);
   }
 }

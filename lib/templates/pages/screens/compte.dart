@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/schemas/transaction_schema.dart';
+import 'package:trackmoney/services/account_service.dart';
+import 'package:trackmoney/services/category_service.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/components/transaction_card.dart';
@@ -46,7 +48,7 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   void fetchAccounts() async {
-    comptes = await Database.getAllAccounts();
+    comptes = await AccountService.getAllAccounts();
     await Future.delayed(
         const Duration(milliseconds: 300)); // Simulate network delay
     setState(() {
@@ -58,8 +60,8 @@ class _ComptePageState extends State<ComptePage> {
   void fetchTransactions() async {
     try {
       var date = DateTime.now();
-      transactions = await Database.getAllTransactions();
-      var categories = await Database.getAllCategories();
+      transactions = await TransactionService.getAllTransactions();
+      var categories = await CategoryService.getAllCategories();
       List<TransactionSchema> data = [];
       setState(() {
         for (var transaction in transactions) {
@@ -96,7 +98,7 @@ class _ComptePageState extends State<ComptePage> {
   }
 
   Future<void> refreshAccounts() async {
-    final updateAccounts = await Database.getAllAccounts();
+    final updateAccounts = await AccountService.getAllAccounts();
     if (updateAccounts.isEmpty) {
       setState(() {
         isLoading = false;
@@ -115,8 +117,8 @@ class _ComptePageState extends State<ComptePage> {
 
   Future<void> _getTodayTransactions() async {
     var today = DateTime.now();
-    var dataTransactions = await Database.getAllTransactions();
-    var dataCategories = await Database.getAllCategories();
+    var dataTransactions = await TransactionService.getAllTransactions();
+    var dataCategories = await CategoryService.getAllCategories();
     List<TransactionSchema> newTransactions = [];
     setState(() {
       for (var transaction in dataTransactions) {
@@ -532,7 +534,7 @@ class _ComptePageState extends State<ComptePage> {
             ),
             SizedBox(height: 30),
             SizedBox(
-              width: 220, // Augmenté la largeur pour éviter le débordement
+              width: 250, // Augmenté la largeur pour éviter le débordement
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
@@ -657,32 +659,37 @@ class _ComptePageState extends State<ComptePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: typeColor.withAlpha(30),
-                            borderRadius: BorderRadius.circular(8),
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: typeColor.withAlpha(30),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              transactionType == TransactionTypesEnum.revenu
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              color: typeColor,
+                              size: 16,
+                            ),
                           ),
-                          child: Icon(
-                            transactionType == TransactionTypesEnum.revenu
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
-                            color: typeColor,
-                            size: 16,
+                          SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: Icon(
@@ -801,14 +808,17 @@ class _ComptePageState extends State<ComptePage> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    Text(
-                      "Aujourd'hui",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.brightness == Brightness.dark
-                            ? Colors.grey[200]
-                            : Colors.grey[800],
+                    Flexible(
+                      child: Text(
+                        "Aujourd'hui",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.grey[200]
+                              : Colors.grey[800],
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

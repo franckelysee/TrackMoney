@@ -4,6 +4,7 @@ import 'package:trackmoney/templates/components/account/select_account_type.dart
 import 'package:trackmoney/templates/components/button.dart';
 import 'package:trackmoney/templates/pages/screens/account_details_page.dart';
 import 'package:trackmoney/utils/account_type_enum.dart';
+import 'package:trackmoney/utils/currency_utils.dart';
 
 class CardComponent extends StatefulWidget {
   const CardComponent({
@@ -31,6 +32,34 @@ class CardComponent extends StatefulWidget {
 }
 
 class _CardComponentState extends State<CardComponent> {
+  String _currency = 'FCFA';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrency();
+  }
+
+  Future<void> _loadCurrency() async {
+    try {
+      final currency = await CurrencyUtils.getUserCurrency();
+
+      if (mounted) {
+        setState(() {
+          _currency = currency;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -153,14 +182,23 @@ class _CardComponentState extends State<CardComponent> {
                       SizedBox(width: 6),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 3),
-                        child: Text(
-                          "FCFA",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withAlpha(220),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        child: _isLoading
+                          ? SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              _currency,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withAlpha(220),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                       ),
                     ],
                   ),

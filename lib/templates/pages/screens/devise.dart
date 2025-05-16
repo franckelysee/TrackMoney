@@ -1,18 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:trackmoney/models/divise_model.dart';
 import 'package:trackmoney/routes/init_routes.dart';
+import 'package:trackmoney/services/user_service.dart';
 import 'package:trackmoney/templates/components/devise_component.dart';
 import 'package:trackmoney/templates/home.dart';
 
 class DeviseSelector extends StatefulWidget {
-  const DeviseSelector({super.key, required this.devises});
+  const DeviseSelector({
+    super.key,
+    required this.devises,
+    this.userId,
+  });
+
   final List<Devise> devises;
+  final String? userId;
+
   @override
   State<DeviseSelector> createState() => _DeviseSelectorState();
 }
 
 class _DeviseSelectorState extends State<DeviseSelector> {
   int selectedIndex = 0;
+  late List<Devise> filteredDevises;
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    filteredDevises = List.from(widget.devises);
+
+    // Ajouter un écouteur pour le champ de recherche
+    searchController.addListener(_filterDevises);
+  }
+
+  @override
+  void dispose() {
+    searchController.removeListener(_filterDevises);
+    searchController.dispose();
+    super.dispose();
+  }
+
+  // Méthode pour naviguer vers la page d'accueil
+  void _navigateToHome() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      createRoute(HomePage()),
+      (Route<dynamic> route) => false
+    );
+  }
+
+  // Filtrer les devises en fonction du texte de recherche
+  void _filterDevises() {
+    final query = searchController.text.toLowerCase();
+
+    setState(() {
+      if (query.isEmpty) {
+        // Si la recherche est vide, afficher toutes les devises
+        filteredDevises = List.from(widget.devises);
+      } else {
+        // Sinon, filtrer les devises en fonction du texte de recherche
+        filteredDevises = widget.devises.where((devise) {
+          return devise.name.toLowerCase().contains(query) ||
+                 devise.devise.toLowerCase().contains(query);
+        }).toList();
+      }
+
+      // Réinitialiser l'index sélectionné si nécessaire
+      if (selectedIndex >= filteredDevises.length && filteredDevises.isNotEmpty) {
+        selectedIndex = 0;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -95,6 +154,7 @@ class _DeviseSelectorState extends State<DeviseSelector> {
                   ],
                 ),
                 child: TextField(
+                  controller: searchController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: "Rechercher une devise...",
@@ -106,10 +166,19 @@ class _DeviseSelectorState extends State<DeviseSelector> {
                       color: theme.colorScheme.primary,
                       size: 20,
                     ),
+                    suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey, size: 20),
+                          onPressed: () {
+                            searchController.clear();
+                          },
+                        )
+                      : null,
                   ),
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black87,
                   ),
+                  onChanged: (_) => _filterDevises(),
                 ),
               ),
 
@@ -140,7 +209,7 @@ class _DeviseSelectorState extends State<DeviseSelector> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Text(
-                        '${widget.devises.length}',
+                        '${filteredDevises.length}',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -172,24 +241,45 @@ class _DeviseSelectorState extends State<DeviseSelector> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      itemCount: widget.devises.length,
-                      itemBuilder: (context, index) {
-                        final devise = widget.devises[index];
-                        return DeviseComponent(
-                          label: devise.name,
-                          devise: devise.devise,
-                          isSelected: selectedIndex == index,
-                          color: theme.colorScheme.primary,
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = index;
-                            });
+                    child: filteredDevises.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 48,
+                                color: theme.colorScheme.primary.withAlpha(150),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                "Aucune devise trouvée",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          itemCount: filteredDevises.length,
+                          itemBuilder: (context, index) {
+                            final devise = filteredDevises[index];
+                            return DeviseComponent(
+                              label: devise.name,
+                              devise: devise.devise,
+                              isSelected: selectedIndex == index,
+                              color: theme.colorScheme.primary,
+                              onTap: () {
+                                setState(() {
+                                  selectedIndex = index;
+                                });
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
                   ),
                 ),
               ),
@@ -208,12 +298,32 @@ class _DeviseSelectorState extends State<DeviseSelector> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      createRoute(HomePage()),
-                      (Route<dynamic> route) => false
-                    );
+                  onPressed: filteredDevises.isEmpty ? null : () async {
+                    // Récupérer la devise sélectionnée
+                    final selectedDevise = filteredDevises[selectedIndex];
+
+                    // Si un ID utilisateur est fourni, mettre à jour la devise par défaut
+                    if (widget.userId != null) {
+                      try {
+                        // Récupérer l'utilisateur
+                        final user = await UserService.getUserById(widget.userId!);
+
+                        if (user != null) {
+                          // Mettre à jour la devise par défaut
+                          await UserService.updateUser(
+                            user.copyWith(defaultCurrency: selectedDevise.devise)
+                          );
+                        }
+                      } catch (e) {
+                        // Utiliser un logger en production au lieu de print
+                        debugPrint('Erreur lors de la mise à jour de la devise: $e');
+                      }
+                    }
+
+                    // Naviguer vers la page d'accueil
+                    if (mounted) {
+                      _navigateToHome();
+                    }
                   },
                   child: Text(
                     "Continuer",

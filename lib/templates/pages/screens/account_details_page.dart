@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/account_model.dart';
-import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/schemas/transaction_schema.dart';
+import 'package:trackmoney/services/account_service.dart';
+import 'package:trackmoney/services/category_service.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 import 'package:trackmoney/templates/components/account/card.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
-import 'package:trackmoney/templates/header.dart';
-import 'package:trackmoney/utils/date_utils.dart';
 import 'package:trackmoney/utils/snackBarNotifyer.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
@@ -150,7 +148,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
       );
 
       // Mettre à jour le compte dans la base de données
-      await Database.updateAccount(updatedAccount);
+      await AccountService.updateAccount(updatedAccount);
 
       // Rafraîchir les données
       if (mounted) {
@@ -272,20 +270,17 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
     try {
       final accountId = widget.account.id;
       if (accountId != null) {
-        // Supprimer directement le compte en utilisant la méthode de la base de données
-        // Nous allons modifier la méthode pour qu'elle accepte un ID de type String
-        final box = await Hive.openBox<AccountModel>('accounts');
-        await box.delete(accountId);
+        // Supprimer le compte en utilisant le service
+        await AccountService.deleteAccount(accountId);
 
         // Supprimer également toutes les transactions associées à ce compte
         if (_hasTransactions) {
-          final transactionsBox = await Hive.openBox<TransactionModel>('transactions');
-          final transactions = transactionsBox.values.where(
-            (transaction) => transaction.accountId == accountId
-          ).toList();
+          // Récupérer toutes les transactions pour ce compte
+          final transactions = await TransactionService.getTransactionsByAccount(accountId);
 
+          // Supprimer chaque transaction
           for (var transaction in transactions) {
-            await transactionsBox.delete(transaction.id);
+            await TransactionService.deleteTransaction(transaction.id);
           }
         }
 
@@ -321,8 +316,8 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
 
     try {
       // Récupérer toutes les transactions pour ce compte
-      final transactions = await Database.getAllTransactions();
-      final categories = await Database.getAllCategories();
+      final transactions = await TransactionService.getAllTransactions();
+      final categories = await CategoryService.getAllCategories();
 
       // Filtrer les transactions pour ce compte spécifique
       final accountTransactions = transactions

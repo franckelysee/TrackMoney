@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trackmoney/utils/currency_utils.dart';
 
 class CategoryCard extends StatefulWidget {
   const CategoryCard(
@@ -23,6 +24,42 @@ class CategoryCard extends StatefulWidget {
 }
 
 class _CategoryCardState extends State<CategoryCard> {
+  String _formattedPrice = '';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.price != null) {
+      _loadCurrency();
+    } else {
+      _isLoading = false;
+    }
+  }
+
+  Future<void> _loadCurrency() async {
+    try {
+      final formattedAmount = await CurrencyUtils.formatAmount(
+        widget.price!,
+        showSign: false,
+      );
+
+      if (mounted) {
+        setState(() {
+          _formattedPrice = formattedAmount;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formattedPrice = '${widget.price!.toStringAsFixed(0)} FCFA';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -93,14 +130,23 @@ class _CategoryCardState extends State<CategoryCard> {
                     color: Colors.white.withAlpha(77), // ~30% d'opacité
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Text(
-                    '${widget.price!.toStringAsFixed(0)} FCFA',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        _formattedPrice,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                 ),
               ),
           ],

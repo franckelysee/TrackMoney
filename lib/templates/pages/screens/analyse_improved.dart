@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/transaction_model.dart';
 import 'package:trackmoney/schemas/transaction_schema.dart';
+import 'package:trackmoney/services/category_service.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 import 'package:trackmoney/templates/components/chart.dart';
 import 'package:trackmoney/templates/components/date_selector.dart';
 import 'package:trackmoney/templates/components/notificated_card.dart';
 import 'package:trackmoney/templates/header.dart';
+import 'package:trackmoney/utils/currency_utils.dart';
 import 'package:trackmoney/utils/date_utils.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 
@@ -28,10 +29,30 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
   int selectedYear = DateTime.now().year;
   List<int> availableYears = [];
 
+  // Devise de l'utilisateur
+  String _userCurrency = 'FCFA';
+
   @override
   void initState() {
     super.initState();
+    _loadUserCurrency();
     _loadTransactions();
+  }
+
+  // Charger la devise de l'utilisateur
+  Future<void> _loadUserCurrency() async {
+    try {
+      final currency = await CurrencyUtils.getUserCurrency();
+
+      if (mounted) {
+        setState(() {
+          _userCurrency = currency;
+        });
+      }
+    } catch (e) {
+      // En cas d'erreur, conserver la devise par défaut
+      debugPrint('Erreur lors du chargement de la devise: $e');
+    }
   }
 
   // Méthode optimisée pour générer une liste de dépenses ou entrées
@@ -111,8 +132,8 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
 
     try {
       // Récupérer toutes les transactions
-      final transactions = await Database.getAllTransactions();
-      final categories = await Database.getAllCategories();
+      final transactions = await TransactionService.getAllTransactions();
+      final categories = await CategoryService.getAllCategories();
 
       // Transformer les transactions en TransactionSchema
       final transactionSchemas = transactions.map((transaction) {
@@ -352,7 +373,7 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
                     child: Container(
                       padding: EdgeInsets.all(16),
                       child: FutureBuilder<List<TransactionModel>>(
-                        future: Database.getAllTransactions(),
+                        future: TransactionService.getAllTransactions(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(
@@ -595,7 +616,7 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
           ),
           SizedBox(height: 12),
           Text(
-            "$amount FCFA",
+            "$amount $_userCurrency",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -654,7 +675,7 @@ class _AnalyseImprovedPageState extends State<AnalyseImprovedPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  "${balance.toStringAsFixed(0)} FCFA",
+                  "${balance.toStringAsFixed(0)} $_userCurrency",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

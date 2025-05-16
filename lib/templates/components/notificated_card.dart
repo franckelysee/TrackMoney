@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trackmoney/utils/currency_utils.dart';
 
 class NotificatedCard extends StatefulWidget {
   const NotificatedCard(
@@ -38,6 +39,37 @@ class NotificatedCard extends StatefulWidget {
 }
 
 class _NotificatedCardState extends State<NotificatedCard> {
+  String? _formattedPrice;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrency();
+  }
+
+  Future<void> _loadCurrency() async {
+    if (widget.price != null) {
+      final formattedAmount = await CurrencyUtils.formatAmount(
+        widget.price!,
+        showSign: true,
+      );
+
+      if (mounted) {
+        setState(() {
+          _formattedPrice = formattedAmount;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -167,16 +199,27 @@ class _NotificatedCardState extends State<NotificatedCard> {
                               : Colors.red.withAlpha(30)),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: Text(
-                      '${widget.price! > 0 ? "+" : ""}${widget.price} FCFA',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: widget.price! > 0
-                            ? (isDarkMode ? Color(0xFF81C784) : Colors.green) // Vert plus clair en mode sombre
-                            : (isDarkMode ? Color(0xFFEF9A9A) : Colors.red),  // Rouge plus clair en mode sombre
-                      ),
-                    ),
+                    child: _isLoading
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: widget.price! > 0
+                              ? (isDarkMode ? Color(0xFF81C784) : Colors.green)
+                              : (isDarkMode ? Color(0xFFEF9A9A) : Colors.red),
+                          ),
+                        )
+                      : Text(
+                          _formattedPrice ?? '${widget.price! > 0 ? "+" : ""}${widget.price} FCFA',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: widget.price! > 0
+                                ? (isDarkMode ? Color(0xFF81C784) : Colors.green) // Vert plus clair en mode sombre
+                                : (isDarkMode ? Color(0xFFEF9A9A) : Colors.red),  // Rouge plus clair en mode sombre
+                          ),
+                        ),
                   ),
 
                 // Élément trailing (optionnel)

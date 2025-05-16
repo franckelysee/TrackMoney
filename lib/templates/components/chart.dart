@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:trackmoney/DataBase/database.dart';
 import 'package:trackmoney/models/transaction_model.dart';
+import 'package:trackmoney/services/transaction_service.dart';
 import 'package:trackmoney/utils/transaction_types_enum.dart';
 import 'package:trackmoney/utils/date_utils.dart';
 
@@ -112,7 +112,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
   // Récupération optimisée des données mensuelles avec filtre par année
   Future<List<Map<String, dynamic>>> _getMonthlySummary() async {
     // Utiliser les transactions passées en paramètre ou les récupérer depuis la base de données
-    final List<TransactionModel> transactions = widget.transactions ?? await Database.getAllTransactions();
+    final List<TransactionModel> transactions = widget.transactions ?? await TransactionService.getAllTransactions();
     final int selectedYear = widget.selectedYear ?? widget.year ?? DateTime.now().year;
     final Map<int, Map<String, dynamic>> monthlyData = {};
 

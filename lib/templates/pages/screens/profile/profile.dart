@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart' show Provider;
+import 'package:trackmoney/models/account_model.dart';
+import 'package:trackmoney/models/user_model.dart';
 import 'package:trackmoney/routes/init_routes.dart';
+import 'package:trackmoney/services/account_service.dart';
+import 'package:trackmoney/services/user_service.dart';
+import 'package:trackmoney/templates/components/auth_required_modal.dart';
+import 'package:trackmoney/templates/components/sync_button.dart';
 import 'package:trackmoney/templates/pages/screens/profile/edit_profile.dart';
-import 'package:trackmoney/utils/app_config.dart';
-import 'dart:ui';
+import 'package:trackmoney/utils/user_utils.dart';
 
 
 class Profile extends StatefulWidget {
@@ -16,6 +20,72 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   Color btnTecxtColor = Colors.white;
+  UserModel? currentUser;
+  List<AccountModel> userAccounts = [];
+  double totalBalance = 0;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+
+    // Vérifier si l'utilisateur est un visiteur après le premier rendu
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkIfGuestUser();
+    });
+  }
+
+  // Vérifier si l'utilisateur est un visiteur et afficher le modal si nécessaire
+  Future<void> _checkIfGuestUser() async {
+    final isGuest = await UserUtils.isGuestUser();
+
+    if (isGuest && mounted) {
+      final result = await AuthRequiredModal.show(
+        context,
+        title: 'Profil non disponible',
+        message: 'Vous êtes actuellement connecté en tant que visiteur. Connectez-vous ou créez un compte pour accéder à votre profil et synchroniser vos données.',
+      );
+
+      // Si l'utilisateur a cliqué sur "Annuler", revenir à la page précédente
+      if (result != true && mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  // Charger les données de l'utilisateur
+  Future<void> _loadUserData() async {
+    try {
+      // Récupérer l'utilisateur actuel
+      currentUser = await UserService.getCurrentUser();
+
+      // Si aucun utilisateur n'est connecté, créer un utilisateur visiteur
+      if (currentUser == null) {
+        currentUser = await UserService.createGuestUser();
+      }
+
+      // Récupérer les comptes de l'utilisateur
+      userAccounts = await AccountService.getAccountsByUserId(currentUser!.id!);
+
+      // Calculer le solde total
+      totalBalance = userAccounts.fold(0, (sum, account) => sum + (account.balance ?? 0));
+
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors du chargement des données utilisateur: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -28,7 +98,7 @@ class _ProfileState extends State<Profile> {
         leading: Container(
           margin: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.7),
+            color: theme.colorScheme.surface.withAlpha(180),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -37,7 +107,13 @@ class _ProfileState extends State<Profile> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: isLoading
+        ? Center(
+            child: CircularProgressIndicator(
+              color: theme.colorScheme.primary,
+            ),
+          )
+        : SingleChildScrollView(
         child: Column(
           children: [
             Stack(
@@ -102,7 +178,7 @@ class _ProfileState extends State<Profile> {
                   Column(
                     children: [
                       Text(
-                        "Mvomo Elysee",
+                        currentUser?.username ?? "Utilisateur",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -112,7 +188,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        "Full-stack Developer",
+                        currentUser?.email ?? "Aucun email",
                         style: TextStyle(
                           fontSize: 16,
                           color: theme.brightness == Brightness.dark
@@ -179,7 +255,7 @@ class _ProfileState extends State<Profile> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    "Mimboman Yaoundé, Cameroun",
+                                    "${currentUser?.city ?? 'Non défini'}, ${currentUser?.country ?? 'Non défini'}",
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -230,7 +306,7 @@ class _ProfileState extends State<Profile> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    "franckelysee671@gmail.com",
+                                    currentUser?.email ?? "Aucun email",
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -283,7 +359,7 @@ class _ProfileState extends State<Profile> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          "100 000 FCFA",
+                          "${totalBalance.toStringAsFixed(0)} ${currentUser?.defaultCurrency ?? 'FCFA'}",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 28,
@@ -329,101 +405,131 @@ class _ProfileState extends State<Profile> {
                   SizedBox(
                     width: double.infinity,
                     height: MediaQuery.of(context).size.height / 4,
-                    child: GridView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.9,
-                      ),
-                      itemCount: 3,
-                      itemBuilder: (context, index) {
-                        // Différentes couleurs pour chaque carte
-                        List<Color> cardColors = [
-                          Color(0xFF6C63FF),  // Violet
-                          Color(0xFF4CAF50),  // Vert
-                          Color(0xFFFFA726),  // Orange
-                        ];
-
-                        // Différents titres pour chaque carte
-                        List<String> cardTitles = [
-                          "Compte Bancaire",
-                          "Épargne",
-                          "Mobile Money"
-                        ];
-
-                        return Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.brightness == Brightness.dark
-                                ? theme.colorScheme.surfaceContainerHighest
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
+                    child: userAccounts.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.account_balance_wallet_outlined,
+                                size: 48,
                                 color: theme.brightness == Brightness.dark
-                                    ? Colors.black26
-                                    : Colors.grey.withAlpha(40),
-                                blurRadius: 8,
-                                offset: Offset(0, 3),
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                "Aucun compte disponible",
+                                style: TextStyle(
+                                  color: theme.brightness == Brightness.dark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  fontSize: 16,
+                                ),
                               ),
                             ],
-                            border: Border.all(
-                              color: theme.brightness == Brightness.dark
-                                  ? cardColors[index].withAlpha(100)
-                                  : cardColors[index].withAlpha(50),
-                              width: 1,
-                            ),
                           ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: theme.brightness == Brightness.dark
-                                        ? cardColors[index].withAlpha(50)
-                                        : cardColors[index].withAlpha(30),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    index == 0 ? Icons.account_balance :
-                                    index == 1 ? Icons.savings :
-                                    Icons.phone_android,
-                                    color: cardColors[index],
-                                    size: 20,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "100.000 FCFA",
-                                  style: TextStyle(
-                                    color: cardColors[index],
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  cardTitles[index],
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: theme.brightness == Brightness.dark
-                                        ? Colors.grey[300]
-                                        : Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
+                        )
+                      : GridView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.9,
                           ),
-                        );
-                      },
-                    ),
+                          itemCount: userAccounts.length > 3 ? 3 : userAccounts.length,
+                          itemBuilder: (context, index) {
+                            // Différentes couleurs pour chaque carte
+                            List<Color> cardColors = [
+                              Color(0xFF6C63FF),  // Violet
+                              Color(0xFF4CAF50),  // Vert
+                              Color(0xFFFFA726),  // Orange
+                            ];
+
+                            final account = userAccounts[index];
+
+                            // Déterminer l'icône en fonction du type de compte
+                            IconData accountIcon;
+                            if (account.type?.toLowerCase().contains('banc') ?? false) {
+                              accountIcon = Icons.account_balance;
+                            } else if (account.type?.toLowerCase().contains('epargne') ?? false) {
+                              accountIcon = Icons.savings;
+                            } else if (account.type?.toLowerCase().contains('mobile') ?? false) {
+                              accountIcon = Icons.phone_android;
+                            } else {
+                              accountIcon = Icons.account_balance_wallet;
+                            }
+
+                            return Container(
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: theme.brightness == Brightness.dark
+                                    ? theme.colorScheme.surfaceContainerHighest
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.brightness == Brightness.dark
+                                        ? Colors.black26
+                                        : Colors.grey.withAlpha(40),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: theme.brightness == Brightness.dark
+                                      ? cardColors[index % 3].withAlpha(100)
+                                      : cardColors[index % 3].withAlpha(50),
+                                  width: 1,
+                                ),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: theme.brightness == Brightness.dark
+                                            ? cardColors[index % 3].withAlpha(50)
+                                            : cardColors[index % 3].withAlpha(30),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        accountIcon,
+                                        color: cardColors[index % 3],
+                                        size: 20,
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "${account.balance?.toStringAsFixed(0) ?? '0'} ${account.currencyCode ?? 'FCFA'}",
+                                      style: TextStyle(
+                                        color: cardColors[index % 3],
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      account.name ?? "Compte",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: theme.brightness == Brightness.dark
+                                            ? Colors.grey[300]
+                                            : Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                   ),
                   SizedBox(height: 30),
                   Container(
@@ -432,8 +538,13 @@ class _ProfileState extends State<Profile> {
                     margin: EdgeInsets.symmetric(horizontal: 20),
                     child: ElevatedButton(
                       onPressed: () {
-                        Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-                        Navigator.push(context, createRoute(EditeProfile()));
+                        Navigator.push(
+                          context,
+                          createRoute(EditeProfile(user: currentUser))
+                        ).then((_) {
+                          // Recharger les données de l'utilisateur après la modification
+                          _loadUserData();
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
@@ -462,6 +573,20 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   SizedBox(height: 20),
+
+                  // Bouton de synchronisation
+                  Container(
+                    width: double.infinity,
+                    height: 55,
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: SyncButton(
+                      onSyncComplete: () {
+                        // Recharger les données après la synchronisation
+                        _loadUserData();
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 30),
 
                 ],
               ),
